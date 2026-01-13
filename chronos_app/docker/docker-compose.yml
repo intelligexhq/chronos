@@ -1,0 +1,26 @@
+services:
+    postgres:
+      image: postgres:15
+      volumes:
+        - local_data:/var/lib/postgresql/data
+      environment:
+        POSTGRES_DB: chronos
+        POSTGRES_USER: chronos
+        POSTGRES_PASSWORD: secret
+
+    chronos:
+      image: chronos:local
+      environment:
+        DATABASE_TYPE: postgres
+        DATABASE_HOST: postgres
+        DATABASE_PORT: 5432
+        DATABASE_NAME: chronos
+        DATABASE_USER: chronos
+        DATABASE_PASSWORD: secret
+      ports:
+        - "3001:3001"
+      depends_on:
+        - postgres
+
+volumes:
+  local_data:

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="120" viewBox="0 0 320 120">
+  <!-- Symmetric lightning bolt
+       Bottom aligned with text baseline
+       Thicker via stroke -->
+  <g transform="translate(65,59) scale(0.55)">
+    <path
+      d="
+        M 0 -24
+        L 14 -24
+        L 2 -2
+        L 14 -2
+        L -2 24
+        L 4 4
+        L -10 4
+        Z"
+      fill="#FFB703"
+      stroke="#FFB703"
+      stroke-width="4"
+      stroke-linejoin="round"/>
+  </g>
+
+  <!-- Brand text -->
+  <text
+    x="85"
+    y="72"
+    font-family="Inter, Poppins, Arial, sans-serif"
+    font-size="40"
+    font-weight="600"
+    fill="#FFFFFF"
+    dominant-baseline="alphabetic">
+    Chronos
+  </text>
+</svg>

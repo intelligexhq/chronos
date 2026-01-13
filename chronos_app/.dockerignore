@@ -1,0 +1,40 @@
+# Dependencies (will be installed fresh in container)
+node_modules
+**/node_modules
+
+# Build outputs (will be built fresh in container)
+dist
+build
+**/dist
+**/build
+
+# Environment files (should not be baked into image)
+.env
+.env.*
+packages/server/.env
+packages/ui/.env
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Docker files
+Dockerfile*
+docker-compose*
+docker/
+
+# Documentation (not needed for build)
+*.md
+LICENSE*
+images/
+assets/
+metrics/
+
+# Turbo cache
+.turbo

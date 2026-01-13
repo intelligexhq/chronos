@@ -1,0 +1,66 @@
+# Build local monorepo image
+# docker build -f Dockerfile.local -t chronos:local .
+
+# Run image
+# docker run -d -p 3000:3000 chronos:local
+
+# =============================================================================
+# Stage 1: Builder - Install dependencies and build the application
+# =============================================================================
+FROM node:20-alpine AS builder
+
+# Install build dependencies (these won't be in the final image)
+RUN apk add --no-cache \
+    libc6-compat \
+    python3 \
+    make \
+    g++ \
+    build-base \
+    cairo-dev \
+    pango-dev \
+    chromium \
+    curl && \
+    npm install -g pnpm
+
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+ENV NODE_OPTIONS=--max-old-space-size=8192
+
+WORKDIR /app
+
+# Copy all source files (respects .dockerignore)
+COPY . .
+
+# Install production dependencies only (skip postinstall hooks like husky) and build
+RUN pnpm install && pnpm build
+
+# =============================================================================
+# Stage 2: Production - Minimal runtime image
+# =============================================================================
+FROM node:20-alpine AS production
+
+# Install only runtime dependencies
+RUN apk add --no-cache \
+    libc6-compat \
+    chromium \
+    curl && \
+    npm install -g pnpm
+
+# app configuration    
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+ENV NODE_ENV=production
+
+WORKDIR /app
+
+# Copy only what's needed from builder (after prune)
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-lock.yaml ./
+COPY --from=builder /app/pnpm-workspace.yaml ./
+COPY --from=builder /app/turbo.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages ./packages
+
+EXPOSE 3000
+
+CMD ["pnpm", "start"]
