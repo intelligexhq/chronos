@@ -8,6 +8,9 @@ services:
         DATABASE_NAME: chronos
         DATABASE_USER: chronos
         DATABASE_PASSWORD: secret
+        CHRONOS_INITIAL_USER_EMAIL: admin@admin.com
+        CHRONOS_INITIAL_USER_PASSWORD: test1234
+        CHRONOS_INITIAL_USER_NAME: admin
         DEBUG: true
       ports:
         - "3001:3000"
@@ -25,18 +28,5 @@ services:
         POSTGRES_USER: chronos
         POSTGRES_PASSWORD: secret
 
-    ## example for running pgvector data store
-    # postgresv:
-    #   image: pgvector/pgvector:pg17
-    #   ports:
-    #     - "5435:5432"
-    #   volumes:
-    #     - vector_data:/var/lib/postgresql/data
-    #   environment:
-    #     POSTGRES_DB: vector
-    #     POSTGRES_USER: chronos
-    #     POSTGRES_PASSWORD: secret
-
 volumes:
   local_data:
-  #vector_data:

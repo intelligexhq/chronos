@@ -6,12 +6,12 @@ import { bootstrap } from './utils/bootstrap'
 async function run() {
     // Register signal handlers
     bootstrap(async () => {
-        logger.info(`Shutting down Flowise...`)
+        logger.info(`Shutting down Chronos...`)
         const serverApp = Server.getInstance()
         if (serverApp) await serverApp.stopApp()
     })
 
-    logger.info('Starting Flowise...')
+    logger.info('Starting Chronos...')
     await DataSource.init()
     await Server.start()
 }

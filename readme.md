@@ -3,9 +3,10 @@
 [Chronos](https://github.com/popularowl/chronos) project is a fork of [Flowise](https://github.com/FlowiseAI/Flowise) - with the goal to maintain a lean visual AI agent builder tool, focused on the local and self hosted deployments. It provides:
 
 - Visual drag-and-drop workflow builder for creating AI agent pipelines.
-- Multiple deployment modes, including simple, worker queue, integrations with local vector databases and local LLM models.
-- Horizontal scalability through Redis-based job queues (scale by increasing number of workers).
-- 100+ LLM and embedding provider integrations.
+- Multiple deployment modes, including simple, worker queues and integrations with local LLM models.
+- Horizontal scalability through Redis-based job queues and workers.
+- 100+ of prebuilt LLM model integrations.
+- Collection of prebuilt AI agent templates.
 
 ## Summary
 -   [Quick Starts](#quick-starts)
@@ -15,7 +16,7 @@
 
 ## Quick Starts
 
-Chronos is tailored for the local and self hosted deployments. Most convinient way to get started with the app is to use the provided example docker compose file.
+Chronos is tailored for the local and self hosted deployments. Most convinient way to get started with the app is to use the provided example docker compose files.
 
 Build and run a local Docker container image:
 
@@ -62,10 +63,6 @@ docker compose -f docker-compose-vectordb.yml exec ollama ollama pull nomic-embe
 
 see more [detailed tutorial for this usecase](https://www.popularowl.com/chronos/vector-database-with-local-embedings/).
 
-
-
-
-
 ## Documentation
 
 "How to" guides for Chronos project are maintained within series of [Chronos tutorials](https://www.popularowl.com/chronos/). Visit them for more details.  
@@ -76,7 +73,7 @@ Chronos allows configuration via set of supported environment variables. See exa
 
 ## Support
 
-We [provide professional services assistance](https://www.popularowl.com/about/) to deploy and run Chronos visual AI agent builder for your organization.
+We [provide professional services](https://www.popularowl.com/about/) to plan, deploy and run Chronos visual AI agent builder within your organization.
 
 ## License
 

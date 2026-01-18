@@ -32,6 +32,7 @@ import 'global-agent/bootstrap'
 import { UsageCacheManager } from './UsageCacheManager'
 import { migrateApiKeysFromJsonToDb } from './utils/apiKey'
 import { ExpressAdapter } from '@bull-board/express'
+import { initializeInitialUser } from './utils/initializeUser'
 
 declare global {
     namespace Express {
@@ -87,6 +88,9 @@ export class App {
             // Run Migrations Scripts
             await this.AppDataSource.runMigrations({ transaction: 'each' })
             logger.info('🔄 [server]: Database migrations completed successfully')
+
+            // Initialize initial user from environment variables (first run only)
+            await initializeInitialUser()
 
             // Initialize Identity Manager
             this.identityManager = await SimpleIdentityManager.getInstance()
