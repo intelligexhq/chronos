@@ -1,14 +1,51 @@
 # Chronos Docker
 
+Collection of Chronos deployment options.
+
+*Build and run a local Docker container image:*
+
 ```bash
-docker compose up -d
-docker compose stop
-docker compose remove
+docker build -f Dockerfile.local -t chronos:local ..
+docker run -d --name chronos -p 3001:3000 chronos:local
+# chronos is now accessable on http://localhost:3001
+docker stop chronos
+```
+
+*Use the local container image in [docker compose](https://docs.docker.com/compose/):*
+
+```bash
+docker compose up  # or docker compose up -d
+docker compose ls
+docker-compose down # or docker-compose down --volumes
+# chronos is now accessable on http://localhost:3001
+```
+
+*Worker mode with redis queues for horizontal scalability of agent request processing:*
+
+```bash
+# run the docker compose which shows how to operate Chronos in queue / worker mode
+docker compose -f docker-compose-workers.yml up 
+# scale workers if needed
+docker compose -f docker-compose-workers.yml up --scale chronos-worker=3
+# if enable you will see BullMQ dashboard at http://localhost:3001/admin/queues
+
+```
+
+*Vector database mode for document embeddings example:*
+
+```bash
+# run with Qdrant vector database and Ollama container for local embeddings
+docker compose -f docker-compose-vectordb.yml up
+# use ollama container and pull the embedding model after startup
+docker compose -f docker-compose-vectordb.yml exec ollama ollama pull nomic-embed-text
+# chronos is now accessible on http://localhost:3001
+# configure vector store in UI: qdrant running at http://qdrant:6333
+# configure embeddings in UI: ollama running at http://ollama:11434
 ```
 
 ## Env Variables
 
-If you like to persist your data (flows, logs, credentials, storage), set these variables in the `.env` file inside `docker` folder:
+To persista the data, or supply data to Chronos app you can use the following enviroenment variables. For more options see [.env.example](.env.example)
 
 ```bash
 # see .env.example for enviroenment variables reference
@@ -18,15 +55,12 @@ SECRETKEY_PATH=/root/.chronos
 BLOB_STORAGE_PATH=/root/.chronos/storage
 ```
 
-
 ## Examples
 
-Multiple examples exists in this directory to to showcase more complex Cronos AI agent builder deployments. Including workers / queue mode; vector database and self hosted ollama setup; and others:
+List of examples:
 
 - [single service deployment](./docker-compose.yml)
 - [multiple worker example](./docker-compose-workers.yml)
 - [vector embeddings with self hosted models](./docker-compose-vectordb.yml)
 
-For more detailed documentation and tutorials, visit [popularowl.com/chronos](https://www.popularowl.com/chronos/). 
-
-We [provide professional services assistance](https://www.popularowl.com/about/) to deploy Chronos visual AI agent builder for your organization.
+We do [provide professional services](https://www.popularowl.com/about/) to deploy, customise and run Chronos visual AI agent builder within your organization enviroenments.
