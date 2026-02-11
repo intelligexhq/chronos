@@ -1,6 +1,6 @@
 # Postgres Vector Store
 
-Postgres Vector Store integration for Flowise
+Postgres Vector Store integration for Chronos
 
 ## 🌱 Env Variables
 
@@ -17,4 +17,4 @@ Postgres Vector Store integration for Flowise
 
 ## License
 
-Source code in this repository is made available under the [Apache License Version 2.0](https://github.com/FlowiseAI/Flowise/blob/master/LICENSE.md).
+Source code in this repository is made available under the [Apache License Version 2.0](https://github.com/intelligexhq/chronos/blob/main/LICENSE.md).

@@ -1,6 +1,6 @@
 # S3 File Loader
 
-DS File Loarder integration for Flowise
+S3 File Loader integration for Chronos
 
 ## 🌱 Env Variables
 
@@ -10,4 +10,4 @@ DS File Loarder integration for Flowise
 
 ## License
 
-Source code in this repository is made available under the [Apache License Version 2.0](https://github.com/FlowiseAI/Flowise/blob/master/LICENSE.md).
+Source code in this repository is made available under the [Apache License Version 2.0](https://github.com/intelligexhq/chronos/blob/main/LICENSE.md).

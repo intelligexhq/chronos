@@ -1010,7 +1010,7 @@
     ]
   },
   "timezone": "",
-  "title": "FlowiseAI Server",
+  "title": "Chronos Server",
   "uid": "PTSqcpJWk",
   "version": 5,
   "weekStart": ""

@@ -632,7 +632,7 @@
     ]
   },
   "timezone": "browser",
-  "title": "FlowiseAI - Custom Metrics",
+  "title": "Chronos - Custom Metrics",
   "uid": "dds4pojnfec5cc",
   "version": 8,
   "weekStart": ""

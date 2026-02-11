@@ -15,7 +15,7 @@ This node provides integration with Azure AI Foundry, supporting both Managed Id
 
 1. **Azure AI Foundry Project** deployed in your Azure subscription
 2. **Private Endpoint** configured in your landing zone
-3. **Managed Identity** (System-Assigned or User-Assigned) assigned to your Flowise container/app service with:
+3. **Managed Identity** (System-Assigned or User-Assigned) assigned to your Chronos container/app service with:
    - Role: `Cognitive Services User` or `Cognitive Services Contributor`
    - Scope: Azure AI Foundry resource
 4. **Network Access**: Ensure Chronos can reach the private endpoint
