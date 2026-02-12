@@ -65,7 +65,7 @@ export const DefaultRedirect = () => {
 
     // If user is not authenticated, redirect to login page
     if (!isAuthenticated) {
-        return <Navigate to="/login" replace />
+        return <Navigate to='/login' replace />
     }
 
     // For open source, show chatflows (no permission checks)

@@ -60,7 +60,8 @@ class AzureAIFoundryApi implements INodeCredential {
                 type: 'string',
                 placeholder: '2024-10-21',
                 default: '2024-10-21',
-                description: 'Azure OpenAI API version. Refer to <a target="_blank" href="https://learn.microsoft.com/en-us/azure/ai-services/openai/reference">documentation</a>'
+                description:
+                    'Azure OpenAI API version. Refer to <a target="_blank" href="https://learn.microsoft.com/en-us/azure/ai-services/openai/reference">documentation</a>'
             }
         ]
     }

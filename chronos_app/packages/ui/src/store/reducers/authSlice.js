@@ -45,12 +45,6 @@ const authSlice = createSlice({
     }
 })
 
-export const {
-    loginSuccess,
-    logoutSuccess,
-    userProfileUpdated,
-    workspaceSwitchSuccess,
-    upgradePlanSuccess,
-    workspaceNameUpdated
-} = authSlice.actions
+export const { loginSuccess, logoutSuccess, userProfileUpdated, workspaceSwitchSuccess, upgradePlanSuccess, workspaceNameUpdated } =
+    authSlice.actions
 export default authSlice.reducer

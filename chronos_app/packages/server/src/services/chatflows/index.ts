@@ -1,9 +1,7 @@
 import { ICommonObject, removeFolderFromStorage } from 'chronos-components'
 import { StatusCodes } from 'http-status-codes'
-import { In } from 'typeorm'
 import { ChatflowType, IReactFlowObject } from '../../Interface'
 import { CHRONOS_COUNTER_STATUS, CHRONOS_METRIC_COUNTERS } from '../../Interface.Metrics'
-import { UsageCacheManager } from '../../UsageCacheManager'
 import { ChatFlow, EnumChatflowType } from '../../database/entities/ChatFlow'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
@@ -16,7 +14,6 @@ import { containsBase64File, updateFlowDataWithFilePaths } from '../../utils/fil
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
 import logger from '../../utils/logger'
-import { updateStorageUsage } from '../../utils/quotaUsage'
 
 export const enum ChatflowErrorMessage {
     INVALID_CHATFLOW_TYPE = 'Invalid Chatflow Type'
@@ -254,9 +251,7 @@ const getChatflowById = async (chatflowId: string): Promise<any> => {
     }
 }
 
-const saveChatflow = async (
-    newChatFlow: ChatFlow
-): Promise<any> => {
+const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
     validateChatflowType(newChatFlow.type)
     const appServer = getRunningExpressApp()
 
@@ -272,10 +267,7 @@ const saveChatflow = async (
         const step1Results = await appServer.AppDataSource.getRepository(ChatFlow).save(chatflow)
 
         // step 2 - convert base64 to file paths and update the chatflow
-        step1Results.flowData = await updateFlowDataWithFilePaths(
-            step1Results.id,
-            incomingFlowData
-        )
+        step1Results.flowData = await updateFlowDataWithFilePaths(step1Results.id, incomingFlowData)
         await _checkAndUpdateDocumentStoreUsage(step1Results)
         dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(step1Results)
     } else {
@@ -301,16 +293,10 @@ const saveChatflow = async (
     return dbResponse
 }
 
-const updateChatflow = async (
-    chatflow: ChatFlow,
-    updateChatFlow: ChatFlow
-): Promise<any> => {
+const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow): Promise<any> => {
     const appServer = getRunningExpressApp()
     if (updateChatFlow.flowData && containsBase64File(updateChatFlow)) {
-        updateChatFlow.flowData = await updateFlowDataWithFilePaths(
-            chatflow.id,
-            updateChatFlow.flowData
-        )
+        updateChatFlow.flowData = await updateFlowDataWithFilePaths(chatflow.id, updateChatFlow.flowData)
     }
     if (updateChatFlow.type || updateChatFlow.type === '') {
         validateChatflowType(updateChatFlow.type)

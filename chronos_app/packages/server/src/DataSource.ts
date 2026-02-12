@@ -63,7 +63,7 @@ export const init = async (): Promise<void> => {
                 ssl: getDatabaseSSLFromEnv()
             })
             break
-        case 'postgres':
+        case 'postgres': {
             // Determine authentication method: Azure managed identity or password
             const useAzureManagedIdentity = process.env.DATABASE_AUTH_TYPE === 'azure-managed-identity'
             const passwordConfig = useAzureManagedIdentity
@@ -98,6 +98,7 @@ export const init = async (): Promise<void> => {
                 applicationName: 'Chronos'
             })
             break
+        }
         default:
             homePath = process.env.DATABASE_PATH ?? chronosPath
             appDataSource = new DataSource({

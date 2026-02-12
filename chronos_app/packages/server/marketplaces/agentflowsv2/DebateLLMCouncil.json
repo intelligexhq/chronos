@@ -146,10 +146,10 @@
                                 "name": "role",
                                 "type": "options",
                                 "options": [
-                                    {"label": "System", "name": "system"},
-                                    {"label": "Assistant", "name": "assistant"},
-                                    {"label": "Developer", "name": "developer"},
-                                    {"label": "User", "name": "user"}
+                                    { "label": "System", "name": "system" },
+                                    { "label": "Assistant", "name": "assistant" },
+                                    { "label": "Developer", "name": "developer" },
+                                    { "label": "User", "name": "user" }
                                 ]
                             },
                             {
@@ -179,12 +179,20 @@
                         "name": "agentMemoryType",
                         "type": "options",
                         "options": [
-                            {"label": "All Messages", "name": "allMessages", "description": "Retrieve all messages from the conversation"},
-                            {"label": "Window Size", "name": "windowSize", "description": "Uses a fixed window size to surface the last N messages"}
+                            {
+                                "label": "All Messages",
+                                "name": "allMessages",
+                                "description": "Retrieve all messages from the conversation"
+                            },
+                            {
+                                "label": "Window Size",
+                                "name": "windowSize",
+                                "description": "Uses a fixed window size to surface the last N messages"
+                            }
                         ],
                         "optional": true,
                         "default": "allMessages",
-                        "show": {"agentEnableMemory": true},
+                        "show": { "agentEnableMemory": true },
                         "id": "agentAgentflow_supervisor-input-agentMemoryType-options",
                         "display": true
                     },
@@ -299,10 +307,10 @@
                                 "name": "role",
                                 "type": "options",
                                 "options": [
-                                    {"label": "System", "name": "system"},
-                                    {"label": "Assistant", "name": "assistant"},
-                                    {"label": "Developer", "name": "developer"},
-                                    {"label": "User", "name": "user"}
+                                    { "label": "System", "name": "system" },
+                                    { "label": "Assistant", "name": "assistant" },
+                                    { "label": "Developer", "name": "developer" },
+                                    { "label": "User", "name": "user" }
                                 ]
                             },
                             {
@@ -335,7 +343,7 @@
                         "rows": 4,
                         "optional": true,
                         "acceptVariable": true,
-                        "show": {"agentEnableMemory": true},
+                        "show": { "agentEnableMemory": true },
                         "id": "agentAgentflow_advocate-input-agentUserMessage-string",
                         "display": true
                     },
@@ -451,10 +459,10 @@
                                 "name": "role",
                                 "type": "options",
                                 "options": [
-                                    {"label": "System", "name": "system"},
-                                    {"label": "Assistant", "name": "assistant"},
-                                    {"label": "Developer", "name": "developer"},
-                                    {"label": "User", "name": "user"}
+                                    { "label": "System", "name": "system" },
+                                    { "label": "Assistant", "name": "assistant" },
+                                    { "label": "Developer", "name": "developer" },
+                                    { "label": "User", "name": "user" }
                                 ]
                             },
                             {
@@ -487,7 +495,7 @@
                         "rows": 4,
                         "optional": true,
                         "acceptVariable": true,
-                        "show": {"agentEnableMemory": true},
+                        "show": { "agentEnableMemory": true },
                         "id": "agentAgentflow_critic-input-agentUserMessage-string",
                         "display": true
                     },
@@ -603,10 +611,10 @@
                                 "name": "role",
                                 "type": "options",
                                 "options": [
-                                    {"label": "System", "name": "system"},
-                                    {"label": "Assistant", "name": "assistant"},
-                                    {"label": "Developer", "name": "developer"},
-                                    {"label": "User", "name": "user"}
+                                    { "label": "System", "name": "system" },
+                                    { "label": "Assistant", "name": "assistant" },
+                                    { "label": "Developer", "name": "developer" },
+                                    { "label": "User", "name": "user" }
                                 ]
                             },
                             {
@@ -639,7 +647,7 @@
                         "rows": 4,
                         "optional": true,
                         "acceptVariable": true,
-                        "show": {"agentEnableMemory": true},
+                        "show": { "agentEnableMemory": true },
                         "id": "agentAgentflow_analyst-input-agentUserMessage-string",
                         "display": true
                     },
@@ -755,10 +763,10 @@
                                 "name": "role",
                                 "type": "options",
                                 "options": [
-                                    {"label": "System", "name": "system"},
-                                    {"label": "Assistant", "name": "assistant"},
-                                    {"label": "Developer", "name": "developer"},
-                                    {"label": "User", "name": "user"}
+                                    { "label": "System", "name": "system" },
+                                    { "label": "Assistant", "name": "assistant" },
+                                    { "label": "Developer", "name": "developer" },
+                                    { "label": "User", "name": "user" }
                                 ]
                             },
                             {
@@ -791,7 +799,7 @@
                         "rows": 4,
                         "optional": true,
                         "acceptVariable": true,
-                        "show": {"agentEnableMemory": true},
+                        "show": { "agentEnableMemory": true },
                         "id": "agentAgentflow_synthesizer-input-agentUserMessage-string",
                         "display": true
                     }

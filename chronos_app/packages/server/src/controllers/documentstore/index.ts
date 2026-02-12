@@ -278,12 +278,7 @@ const deleteDocumentStore = async (req: Request, res: Response, next: NextFuncti
                 `Error: documentStoreController.deleteDocumentStore - storeId not provided!`
             )
         }
-        const apiResponse = await documentStoreService.deleteDocumentStore(
-            req.params.id,
-            '',
-            '',
-            getRunningExpressApp().usageCacheManager
-        )
+        const apiResponse = await documentStoreService.deleteDocumentStore(req.params.id, '', '', getRunningExpressApp().usageCacheManager)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

@@ -105,11 +105,9 @@ export class AuthService {
     }
 
     private generateToken(user: User): string {
-        return jwt.sign(
-            { userId: user.id, email: user.email },
-            AuthService.JWT_SECRET,
-            { expiresIn: AuthService.JWT_EXPIRES_IN } as jwt.SignOptions
-        )
+        return jwt.sign({ userId: user.id, email: user.email }, AuthService.JWT_SECRET, {
+            expiresIn: AuthService.JWT_EXPIRES_IN
+        } as jwt.SignOptions)
     }
 
     private toSimpleUser(user: User): SimpleUser {

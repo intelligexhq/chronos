@@ -155,7 +155,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
     const currentUser = useSelector((state) => state.auth.user)
     const isAuthenticated = useSelector((state) => state.auth.isAuthenticated)
     const [isPricingOpen, setIsPricingOpen] = useState(false)
-    const [starCount, setStarCount] = useState(0)
+    const [_starCount, __setStarCount] = useState(0)
 
     useNotifier()
 
@@ -202,10 +202,10 @@ const Header = ({ handleLeftDrawerToggle }) => {
                     const response = await fetch('https://api.github.com/repos/FlowiseAI/Flowise')
                     const data = await response.json()
                     if (data.stargazers_count) {
-                        setStarCount(data.stargazers_count)
+                        _setStarCount(data.stargazers_count)
                     }
                 } catch (error) {
-                    setStarCount(0)
+                    _setStarCount(0)
                 }
             }
 

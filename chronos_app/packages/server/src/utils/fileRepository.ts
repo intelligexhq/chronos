@@ -46,10 +46,7 @@ export const containsBase64File = (chatflow: ChatFlow) => {
     return found
 }
 
-export const updateFlowDataWithFilePaths = async (
-    chatflowid: string,
-    flowData: string
-) => {
+export const updateFlowDataWithFilePaths = async (chatflowid: string, flowData: string) => {
     try {
         const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
         const re = new RegExp('^data.*;base64', 'i')

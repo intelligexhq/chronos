@@ -66,7 +66,7 @@ const AccountSettings = () => {
 
     const { isCloud } = useConfig()
 
-    const [isLoading, setLoading] = useState(false)
+    const [isLoading, _setLoading] = useState(false)
     const [profileName, setProfileName] = useState(currentUser?.name || '')
     const [email, setEmail] = useState(currentUser?.email || '')
     const [oldPassword, setOldPassword] = useState('')
@@ -122,7 +122,6 @@ const AccountSettings = () => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isCloud])
-
 
     useEffect(() => {
         if (getCurrentUsageApi.data) {

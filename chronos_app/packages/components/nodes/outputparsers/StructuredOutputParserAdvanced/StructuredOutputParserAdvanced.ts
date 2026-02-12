@@ -59,7 +59,6 @@ class AdvancedStructuredOutputParser implements INode {
 
         try {
             const zodSchema = SecureZodSchemaParser.parseZodSchema(schemaString)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const structuredOutputParser = LangchainStructuredOutputParser.fromZodSchema(zodSchema as any)
 
             const baseParse = structuredOutputParser.parse

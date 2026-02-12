@@ -1035,7 +1035,7 @@ const executeNode = async ({
     orgId,
     workspaceId,
     subscriptionId,
-    productId
+    productId: _productId
 }: IExecuteNodeParams): Promise<{
     result: any
     shouldStop?: boolean

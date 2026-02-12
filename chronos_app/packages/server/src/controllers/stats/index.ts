@@ -45,15 +45,7 @@ const getChatflowStats = async (req: Request, res: Response, next: NextFunction)
                 return res.status(500).send(e)
             }
         }
-        const apiResponse = await statsService.getChatflowStats(
-            chatflowid,
-            chatTypes,
-            startDate,
-            endDate,
-            '',
-            true,
-            feedbackTypeFilters
-        )
+        const apiResponse = await statsService.getChatflowStats(chatflowid, chatTypes, startDate, endDate, '', true, feedbackTypeFilters)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

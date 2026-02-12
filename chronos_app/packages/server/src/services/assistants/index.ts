@@ -2,7 +2,7 @@ import { ICommonObject } from 'chronos-components'
 import { StatusCodes } from 'http-status-codes'
 import { cloneDeep, isEqual, uniqWith } from 'lodash'
 import OpenAI from 'openai'
-import { DeleteResult, In, QueryRunner } from 'typeorm'
+import { DeleteResult, QueryRunner } from 'typeorm'
 import { Assistant } from '../../database/entities/Assistant'
 import { Credential } from '../../database/entities/Credential'
 import { DocumentStore } from '../../database/entities/DocumentStore'
@@ -15,7 +15,6 @@ import { INPUT_PARAMS_TYPE } from '../../utils/constants'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import logger from '../../utils/logger'
 import { ASSISTANT_PROMPT_GENERATOR } from '../../utils/prompt'
-import { checkUsageLimit } from '../../utils/quotaUsage'
 import nodesService from '../nodes'
 
 const createAssistant = async (requestBody: any, orgId: string): Promise<Assistant> => {
@@ -386,10 +385,7 @@ const updateAssistant = async (assistantId: string, requestBody: any): Promise<A
     }
 }
 
-const importAssistants = async (
-    newAssistants: Partial<Assistant>[],
-    queryRunner?: QueryRunner
-): Promise<any> => {
+const importAssistants = async (newAssistants: Partial<Assistant>[], queryRunner?: QueryRunner): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         const repository = queryRunner ? queryRunner.manager.getRepository(Assistant) : appServer.AppDataSource.getRepository(Assistant)

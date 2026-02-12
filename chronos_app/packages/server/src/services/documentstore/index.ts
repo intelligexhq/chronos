@@ -166,7 +166,7 @@ const deleteLoaderFromDocumentStore = async (
     }
 }
 
-const getDocumentStoreById = async (storeId: string, workspaceId: string) => {
+const getDocumentStoreById = async (storeId: string, _workspaceId: string) => {
     try {
         const appServer = getRunningExpressApp()
         const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
@@ -187,7 +187,7 @@ const getDocumentStoreById = async (storeId: string, workspaceId: string) => {
     }
 }
 
-const getUsedChatflowNames = async (entity: DocumentStore, workspaceId: string) => {
+const getUsedChatflowNames = async (entity: DocumentStore, _workspaceId: string) => {
     try {
         const appServer = getRunningExpressApp()
         if (entity.whereUsed) {
@@ -552,7 +552,7 @@ const _splitIntoChunks = async (
     appDataSource: DataSource,
     componentNodes: IComponentNodes,
     data: IDocumentStoreLoaderForPreview,
-    workspaceId?: string
+    _workspaceId?: string
 ) => {
     try {
         let splitterInstance = null
@@ -724,7 +724,7 @@ export const previewChunks = async ({ appDataSource, componentNodes, data }: IEx
 const saveProcessingLoader = async (
     appDataSource: DataSource,
     data: IDocumentStoreLoaderForPreview,
-    workspaceId: string
+    _workspaceId: string
 ): Promise<IDocumentStoreLoader> => {
     try {
         const entity = await appDataSource.getRepository(DocumentStore).findOneBy({
@@ -805,13 +805,7 @@ const saveProcessingLoader = async (
     }
 }
 
-export const processLoader = async ({
-    appDataSource,
-    componentNodes,
-    data,
-    docLoaderId,
-    usageCacheManager
-}: IExecuteProcessLoader) => {
+export const processLoader = async ({ appDataSource, componentNodes, data, docLoaderId, usageCacheManager }: IExecuteProcessLoader) => {
     const entity = await appDataSource.getRepository(DocumentStore).findOneBy({
         id: data.storeId
     })
@@ -821,17 +815,7 @@ export const processLoader = async ({
             `Error: documentStoreServices.processLoader - Document store ${data.storeId} not found`
         )
     }
-    await _saveChunksToStorage(
-        appDataSource,
-        componentNodes,
-        data,
-        entity,
-        docLoaderId,
-        '',
-        '',
-        '',
-        usageCacheManager
-    )
+    await _saveChunksToStorage(appDataSource, componentNodes, data, entity, docLoaderId, '', '', '', usageCacheManager)
     return getDocumentStoreFileChunks(appDataSource, data.storeId as string, docLoaderId, '')
 }
 
@@ -1107,7 +1091,7 @@ const updateDocumentStoreUsage = async (chatId: string, storeId: string | undefi
     }
 }
 
-const updateVectorStoreConfigOnly = async (data: ICommonObject, workspaceId: string) => {
+const updateVectorStoreConfigOnly = async (data: ICommonObject, _workspaceId: string) => {
     try {
         const appServer = getRunningExpressApp()
         const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
@@ -1146,7 +1130,7 @@ const updateVectorStoreConfigOnly = async (data: ICommonObject, workspaceId: str
  * // Lenient mode: Reuse existing configs if not provided
  * await saveVectorStoreConfig(ds, { storeId, vectorStoreName, vectorStoreConfig }, false, wsId)
  */
-const saveVectorStoreConfig = async (appDataSource: DataSource, data: ICommonObject, isStrictSave = true, workspaceId: string) => {
+const saveVectorStoreConfig = async (appDataSource: DataSource, data: ICommonObject, isStrictSave = true, _workspaceId: string) => {
     try {
         const entity = await appDataSource.getRepository(DocumentStore).findOneBy({
             id: data.storeId

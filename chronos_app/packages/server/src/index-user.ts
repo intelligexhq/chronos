@@ -56,11 +56,10 @@ async function run() {
             type: 'string',
             description: 'New password for that user'
         })
-        .help()
-        .argv
+        .help().argv
 
     bootstrap(async () => {
-        // No special cleanup needed for user command script usually, 
+        // No special cleanup needed for user command script usually,
         // but keeps consistency.
     })
 

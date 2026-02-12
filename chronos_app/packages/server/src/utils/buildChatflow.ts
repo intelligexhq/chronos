@@ -63,7 +63,7 @@ import { validateFileMimeTypeAndExtensionMatch } from './fileValidation'
 import { validateFlowAPIKey } from './validateKey'
 import logger from './logger'
 import { utilAddChatMessage } from './addChatMesage'
-import { checkPredictions, checkStorage, updatePredictionsUsage, updateStorageUsage } from './quotaUsage'
+import { checkStorage, updatePredictionsUsage, updateStorageUsage } from './quotaUsage'
 import { buildAgentGraph } from './buildAgentGraph'
 import { getErrorMessage } from '../errors/utils'
 import { CHRONOS_METRIC_COUNTERS, CHRONOS_COUNTER_STATUS, IMetricsProvider } from '../Interface.Metrics'
@@ -1032,7 +1032,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         const orgId = ''
         organizationId = orgId
         const subscriptionId = ''
-        const productId = ''
+        const _productId = ''
 
         const executeData: IExecuteFlowParams = {
             incomingInput, // Use the defensively created incomingInput variable

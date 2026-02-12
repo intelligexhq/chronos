@@ -100,27 +100,22 @@ const exportData = async (exportInput: ExportInput, activeWorkspaceId: string): 
             exportInput.agentflowv2 === true ? await chatflowService.getAllChatflows('AGENTFLOW') : []
         AgentFlowV2 = 'data' in AgentFlowV2 ? AgentFlowV2.data : AgentFlowV2
 
-        let AssistantCustom: Assistant[] =
-            exportInput.assistantCustom === true ? await assistantService.getAllAssistants('CUSTOM') : []
+        let AssistantCustom: Assistant[] = exportInput.assistantCustom === true ? await assistantService.getAllAssistants('CUSTOM') : []
 
         let AssistantFlow: ChatFlow[] | { data: ChatFlow[]; total: number } =
             exportInput.assistantCustom === true ? await chatflowService.getAllChatflows('ASSISTANT') : []
         AssistantFlow = 'data' in AssistantFlow ? AssistantFlow.data : AssistantFlow
 
-        let AssistantOpenAI: Assistant[] =
-            exportInput.assistantOpenAI === true ? await assistantService.getAllAssistants('OPENAI') : []
+        let AssistantOpenAI: Assistant[] = exportInput.assistantOpenAI === true ? await assistantService.getAllAssistants('OPENAI') : []
 
-        let AssistantAzure: Assistant[] =
-            exportInput.assistantAzure === true ? await assistantService.getAllAssistants('AZURE') : []
+        let AssistantAzure: Assistant[] = exportInput.assistantAzure === true ? await assistantService.getAllAssistants('AZURE') : []
 
         let ChatFlow: ChatFlow[] | { data: ChatFlow[]; total: number } =
             exportInput.chatflow === true ? await chatflowService.getAllChatflows('CHATFLOW') : []
         ChatFlow = 'data' in ChatFlow ? ChatFlow.data : ChatFlow
 
         let allChatflow: ChatFlow[] | { data: ChatFlow[]; total: number } =
-            exportInput.chat_message === true || exportInput.chat_feedback === true
-                ? await chatflowService.getAllChatflows()
-                : []
+            exportInput.chat_message === true || exportInput.chat_feedback === true ? await chatflowService.getAllChatflows() : []
         allChatflow = 'data' in allChatflow ? allChatflow.data : allChatflow
         const chatflowIds = allChatflow.map((chatflow) => chatflow.id)
 
@@ -148,8 +143,7 @@ const exportData = async (exportInput: ExportInput, activeWorkspaceId: string): 
         const { data: totalExecutions } = exportInput.execution === true ? await executionService.getAllExecutions(filters) : { data: [] }
         let Execution: Execution[] = exportInput.execution === true ? totalExecutions : []
 
-        let Tool: Tool[] | { data: Tool[]; total: number } =
-            exportInput.tool === true ? await toolsService.getAllTools() : []
+        let Tool: Tool[] | { data: Tool[]; total: number } = exportInput.tool === true ? await toolsService.getAllTools() : []
         Tool = 'data' in Tool ? Tool.data : Tool
 
         let Variable: Variable[] | { data: Variable[]; total: number } =
@@ -228,7 +222,7 @@ async function replaceDuplicateIdsForChatMessage(
     queryRunner: QueryRunner,
     originalData: ExportData,
     chatMessages: ChatMessage[],
-    activeWorkspaceId?: string
+    _activeWorkspaceId?: string
 ) {
     try {
         const chatmessageChatflowIds = chatMessages.map((chatMessage) => {
@@ -301,7 +295,7 @@ async function replaceExecutionIdForChatMessage(
     queryRunner: QueryRunner,
     originalData: ExportData,
     chatMessages: ChatMessage[],
-    activeWorkspaceId?: string
+    _activeWorkspaceId?: string
 ) {
     try {
         // step 1 - get all execution ids from chatMessages
@@ -356,7 +350,7 @@ async function replaceDuplicateIdsForChatMessageFeedback(
     queryRunner: QueryRunner,
     originalData: ExportData,
     chatMessageFeedbacks: ChatMessageFeedback[],
-    activeWorkspaceId?: string
+    _activeWorkspaceId?: string
 ) {
     try {
         const feedbackChatflowIds = chatMessageFeedbacks.map((feedback) => {

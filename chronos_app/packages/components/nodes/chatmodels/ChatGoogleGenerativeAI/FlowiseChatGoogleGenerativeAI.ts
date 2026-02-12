@@ -987,7 +987,11 @@ export class LangchainChatGoogleGenerativeAI
                 // Cast to Record<string, any> since this branch handles non-Zod schemas
                 const schemaRecord = schema as Record<string, any>
                 let geminiFunctionDefinition: GenerativeAIFunctionDeclaration
-                if (typeof schemaRecord.name === 'string' && typeof schemaRecord.parameters === 'object' && schemaRecord.parameters != null) {
+                if (
+                    typeof schemaRecord.name === 'string' &&
+                    typeof schemaRecord.parameters === 'object' &&
+                    schemaRecord.parameters != null
+                ) {
                     geminiFunctionDefinition = schemaRecord as GenerativeAIFunctionDeclaration
                     geminiFunctionDefinition.parameters = removeAdditionalProperties(
                         schemaRecord.parameters
