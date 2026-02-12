@@ -66,15 +66,15 @@ const dashboard = {
             title: '',
             type: 'group',
             children: [
-                {
-                    id: 'chatflows',
-                    title: 'Chatflows',
-                    type: 'item',
-                    url: '/chatflows',
-                    icon: icons.IconHierarchy,
-                    breadcrumbs: true,
-                    permission: 'chatflows:view'
-                },
+                // {
+                //     id: 'chatflows',
+                //     title: 'Chatflows',
+                //     type: 'item',
+                //     url: '/chatflows',
+                //     icon: icons.IconHierarchy,
+                //     breadcrumbs: true,
+                //     permission: 'chatflows:view'
+                // },
                 {
                     id: 'agentflows',
                     title: 'Agentflows',
@@ -93,15 +93,15 @@ const dashboard = {
                     breadcrumbs: true,
                     permission: 'executions:view'
                 },
-                {
-                    id: 'assistants',
-                    title: 'Assistants',
-                    type: 'item',
-                    url: '/assistants',
-                    icon: icons.IconRobot,
-                    breadcrumbs: true,
-                    permission: 'assistants:view'
-                },
+                // {
+                //     id: 'assistants',
+                //     title: 'Assistants',
+                //     type: 'item',
+                //     url: '/assistants',
+                //     icon: icons.IconRobot,
+                //     breadcrumbs: true,
+                //     permission: 'assistants:view'
+                // },
                 {
                     id: 'marketplaces',
                     title: 'Marketplaces',
