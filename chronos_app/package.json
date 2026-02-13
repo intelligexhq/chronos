@@ -14,6 +14,8 @@
         "start-worker": "pnpm --filter chronos start-worker",
         "user": "pnpm --filter chronos user",
         "test": "turbo run test",
+        "test:components": "turbo run test --filter=chronos-components",
+        "test:server": "turbo run test --filter=chronos",
         "clean": "pnpm --filter \"./packages/**\" clean",
         "nuke": "pnpm --filter \"./packages/**\" nuke && rimraf node_modules .turbo",
         "format": "prettier --write \"**/*.{ts,tsx,md}\"",

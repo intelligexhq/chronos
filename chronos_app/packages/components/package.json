@@ -9,7 +9,7 @@
         "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
         "clean": "rimraf dist",
         "nuke": "rimraf dist node_modules .turbo",
-        "test": "jest",
+        "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
         "test:watch": "jest --watch",
         "test:coverage": "jest --coverage"
     },

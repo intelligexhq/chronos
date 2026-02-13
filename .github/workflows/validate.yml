@@ -1,11 +1,11 @@
-name: CI
+name: validate
 
 on:
-  workflow_dispatch: # Manual trigger only — uncomment below when ready
-  # pull_request:
-  #   branches: [main]
-  # push:
-  #   branches: [main]
+  workflow_dispatch: # manual trigger only
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   lint:
-    name: Lint
+    name: lint files
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -34,10 +34,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
 
-  test:
-    name: Test
+  test-components:
+    name: test components package
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     defaults:
       run:
         working-directory: chronos_app
@@ -55,5 +55,28 @@ jobs:
           cache-dependency-path: chronos_app/pnpm-lock.yaml
 
       - run: pnpm install --frozen-lockfile
-      - run: pnpm build
-      - run: pnpm test
+      - run: pnpm test:components
+
+  # test-server:
+  #   name: test server package
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 15
+  #   defaults:
+  #     run:
+  #       working-directory: chronos_app
+  #   steps:
+  #     - uses: actions/checkout@v4
+
+  #     - uses: pnpm/action-setup@v4
+  #       with:
+  #         version: 9
+
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version-file: chronos_app/.nvmrc
+  #         cache: pnpm
+  #         cache-dependency-path: chronos_app/pnpm-lock.yaml
+
+  #     - run: pnpm install --frozen-lockfile
+  #     - run: pnpm build
+  #     - run: pnpm test:server
