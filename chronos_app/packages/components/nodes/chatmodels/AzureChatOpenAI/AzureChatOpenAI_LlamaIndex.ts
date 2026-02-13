@@ -10,7 +10,7 @@ interface AzureOpenAIConfig {
     deploymentName?: string
 }
 
-const ALL_AZURE_OPENAI_CHAT_MODELS = {
+const _ALL_AZURE_OPENAI_CHAT_MODELS = {
     'gpt-35-turbo': { contextWindow: 4096, openAIModel: 'gpt-3.5-turbo' },
     'gpt-35-turbo-16k': {
         contextWindow: 16384,
@@ -112,7 +112,7 @@ class AzureChatOpenAI_LlamaIndex_ChatModels implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const modelName = nodeData.inputs?.modelName as keyof typeof ALL_AZURE_OPENAI_CHAT_MODELS
+        const modelName = nodeData.inputs?.modelName as keyof typeof _ALL_AZURE_OPENAI_CHAT_MODELS
         const temperature = nodeData.inputs?.temperature as string
         const maxTokens = nodeData.inputs?.maxTokens as string
         const topP = nodeData.inputs?.topP as string
