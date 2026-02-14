@@ -57,26 +57,26 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:components
 
-  # test-server:
-  #   name: test server package
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 15
-  #   defaults:
-  #     run:
-  #       working-directory: chronos_app
-  #   steps:
-  #     - uses: actions/checkout@v4
+  test-server:
+    name: test server package
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: chronos_app
+    steps:
+      - uses: actions/checkout@v4
 
-  #     - uses: pnpm/action-setup@v4
-  #       with:
-  #         version: 10
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
 
-  #     - uses: actions/setup-node@v4
-  #       with:
-  #         node-version-file: chronos_app/.nvmrc
-  #         cache: pnpm
-  #         cache-dependency-path: chronos_app/pnpm-lock.yaml
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: chronos_app/.nvmrc
+          cache: pnpm
+          cache-dependency-path: chronos_app/pnpm-lock.yaml
 
-  #     - run: pnpm install --frozen-lockfile
-  #     - run: pnpm build
-  #     - run: pnpm test:server
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm test:server
