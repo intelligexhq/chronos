@@ -17,9 +17,7 @@ export function authRouteTest() {
 
         describe('Auth Flow - Signup, Login, Me', () => {
             it('should successfully signup a new user', async () => {
-                const response = await supertest(getRunningExpressApp().app)
-                    .post(`${baseRoute}/signup`)
-                    .send(testUser)
+                const response = await supertest(getRunningExpressApp().app).post(`${baseRoute}/signup`).send(testUser)
 
                 expect(response.status).toEqual(StatusCodes.OK)
                 expect(response.body.user).toBeDefined()
@@ -29,9 +27,7 @@ export function authRouteTest() {
             })
 
             it('should successfully login with the registered user', async () => {
-                const response = await supertest(getRunningExpressApp().app)
-                    .post(`${baseRoute}/login`)
-                    .send(testUser)
+                const response = await supertest(getRunningExpressApp().app).post(`${baseRoute}/login`).send(testUser)
 
                 expect(response.status).toEqual(StatusCodes.OK)
                 expect(response.body.user).toBeDefined()
@@ -80,9 +76,7 @@ export function authRouteTest() {
             })
 
             it('should return 400 when password is missing', async () => {
-                const response = await supertest(getRunningExpressApp().app)
-                    .post(`${baseRoute}/signup`)
-                    .send({ email: 'test@example.com' })
+                const response = await supertest(getRunningExpressApp().app).post(`${baseRoute}/signup`).send({ email: 'test@example.com' })
 
                 expect(response.status).toEqual(StatusCodes.BAD_REQUEST)
                 expect(response.body.error).toEqual('Email and password are required')
