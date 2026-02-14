@@ -9,7 +9,14 @@ import { agentflowv2GeneratorServiceTest } from './services/agentflowv2-generato
 import { apiKeyTest } from './utils/api-key.util.test'
 import { sanitizeUtilTest } from './utils/sanitize.util.test'
 import { domainValidationUtilTest } from './utils/domain-validation.util.test'
+import { indexUtilTest } from './utils/index.util.test'
+import { xssUtilTest } from './utils/XSS.util.test'
+import { buildAgentflowUtilTest } from './utils/buildAgentflow.util.test'
 import { errorUtilsTest } from './errors/utils.test'
+import { internalFlowiseErrorTest } from './errors/internalFlowiseError.test'
+import { cachePoolTest } from './CachePool.test'
+import { abortControllerPoolTest } from './AbortControllerPool.test'
+import { simpleIdentityManagerTest } from './SimpleIdentityManager.test'
 
 // extend test timeout to 6 minutes for long setups (increase as tests grow)
 jest.setTimeout(360000)
@@ -41,8 +48,24 @@ describe('Utils Test', () => {
     apiKeyTest()
     sanitizeUtilTest()
     domainValidationUtilTest()
+    indexUtilTest()
+    xssUtilTest()
+    buildAgentflowUtilTest()
 })
 
 describe('Errors Test', () => {
     errorUtilsTest()
+    internalFlowiseErrorTest()
+})
+
+describe('Cache Test', () => {
+    cachePoolTest()
+})
+
+describe('Pool Test', () => {
+    abortControllerPoolTest()
+})
+
+describe('Identity Test', () => {
+    simpleIdentityManagerTest()
 })
