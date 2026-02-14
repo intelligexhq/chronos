@@ -4,8 +4,8 @@
  */
 
 const mockPyodide = {
-    runPython: jest.fn((code) => null),
-    runPythonAsync: jest.fn(async (code) => null),
+    runPython: jest.fn((_code) => null),
+    runPythonAsync: jest.fn(async (_code) => null),
     loadPackage: jest.fn(async () => {}),
     loadPackagesFromImports: jest.fn(async () => {}),
     globals: {

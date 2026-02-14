@@ -35,7 +35,7 @@ module.exports = {
             'openai|' +
             'zod-to-json-schema|' +
             '@mistralai' +
-        ')/)'
+            ')/)'
     ],
 
     // Increase timeout for slow tests
@@ -51,13 +51,8 @@ module.exports = {
         '!src/handler.ts'
     ],
     coverageDirectory: '<rootDir>/coverage',
-    coverageReporters: ['text', 'lcov', 'html'],
+    coverageReporters: ['text', 'lcov', 'html', 'json-summary'],
 
     // Skip handler.ts related files from coverage path
-    coveragePathIgnorePatterns: [
-        '/node_modules/',
-        '/dist/',
-        'handler.ts'
-    ]
+    coveragePathIgnorePatterns: ['/node_modules/', '/dist/', 'handler.ts']
 }
-

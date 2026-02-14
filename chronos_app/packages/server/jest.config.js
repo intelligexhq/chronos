@@ -19,5 +19,10 @@ module.exports = {
     moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
 
     // Display individual test results with the test suite hierarchy.
-    verbose: true
+    verbose: true,
+
+    // Coverage configuration
+    collectCoverageFrom: ['src/**/*.ts', '!src/**/*.d.ts', '!src/database/migrations/**'],
+    coverageDirectory: '<rootDir>/coverage',
+    coverageReporters: ['text', 'lcov', 'html', 'json-summary']
 }
