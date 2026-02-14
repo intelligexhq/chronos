@@ -32,7 +32,135 @@ jobs:
           cache-dependency-path: chronos_app/pnpm-lock.yaml
 
       - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
+
+      - name: Run linter
+        id: lint
+        run: |
+          pnpm lint --format json --output-file eslint-results.json || true
+          pnpm lint 2>&1 | tee eslint-output.txt || echo "LINT_FAILED=true" >> $GITHUB_ENV
+
+      - name: Upload lint results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eslint-results
+          path: |
+            chronos_app/eslint-results.json
+            chronos_app/eslint-output.txt
+          retention-days: 1
+
+      - name: Fail if lint errors
+        if: env.LINT_FAILED == 'true'
+        run: exit 1
+
+  lint-report:
+    name: post lint report
+    runs-on: ubuntu-latest
+    needs: [lint]
+    if: always() && github.event_name == 'pull_request'
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Download lint results
+        uses: actions/download-artifact@v4
+        with:
+          name: eslint-results
+          path: lint-results
+
+      - name: Generate lint comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            let lintData = [];
+            let parseError = false;
+
+            try {
+              const raw = fs.readFileSync('lint-results/eslint-results.json', 'utf8');
+              lintData = JSON.parse(raw);
+            } catch (e) {
+              console.log(`Could not parse ESLint JSON: ${e.message}`);
+              parseError = true;
+            }
+
+            // Calculate totals
+            let totalErrors = 0;
+            let totalWarnings = 0;
+            let filesWithIssues = [];
+
+            if (!parseError && Array.isArray(lintData)) {
+              for (const file of lintData) {
+                totalErrors += file.errorCount || 0;
+                totalWarnings += file.warningCount || 0;
+                if (file.errorCount > 0 || file.warningCount > 0) {
+                  filesWithIssues.push({
+                    path: file.filePath.replace(/.*chronos_app\//, ''),
+                    errors: file.errorCount,
+                    warnings: file.warningCount
+                  });
+                }
+              }
+            }
+
+            // Build comment body
+            let body = '## 🔍 Lint Report\n\n';
+
+            if (parseError) {
+              body += '⚠️ Could not parse lint results\n';
+            } else if (totalErrors === 0 && totalWarnings === 0) {
+              body += '✅ **No lint issues found!**\n';
+            } else {
+              const statusIcon = totalErrors > 0 ? '❌' : '⚠️';
+              body += `${statusIcon} **${totalErrors} error(s)** and **${totalWarnings} warning(s)** found\n\n`;
+
+              if (filesWithIssues.length > 0) {
+                body += '<details>\n<summary>Files with issues</summary>\n\n';
+                body += '| File | Errors | Warnings |\n';
+                body += '|------|--------|----------|\n';
+                for (const file of filesWithIssues.slice(0, 20)) {
+                  const errIcon = file.errors > 0 ? '🔴' : '';
+                  const warnIcon = file.warnings > 0 ? '🟡' : '';
+                  body += `| \`${file.path}\` | ${errIcon} ${file.errors} | ${warnIcon} ${file.warnings} |\n`;
+                }
+                if (filesWithIssues.length > 20) {
+                  body += `| ... and ${filesWithIssues.length - 20} more files | | |\n`;
+                }
+                body += '</details>\n';
+              }
+            }
+
+            body += '\n*Updated on each push*';
+
+            // Find existing lint comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('🔍 Lint Report')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body,
+              });
+              console.log('Updated existing lint comment');
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body,
+              });
+              console.log('Created new lint comment');
+            }
 
   test-components:
     name: test components package
@@ -55,7 +183,8 @@ jobs:
           cache-dependency-path: chronos_app/pnpm-lock.yaml
 
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test:components
+      - name: Run tests
+        run: pnpm test:components
 
   test-server:
     name: test server package
@@ -79,4 +208,110 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - run: pnpm test:server
+      - name: Run tests with coverage
+        run: pnpm test:server -- --coverage
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-server
+          path: chronos_app/packages/server/coverage/coverage-summary.json
+          retention-days: 1
+
+  coverage-report:
+    name: post coverage report
+    runs-on: ubuntu-latest
+    needs: [test-server]
+    if: github.event_name == 'pull_request'
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Download server coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-server
+          path: coverage/server
+
+      - name: Generate coverage comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            /**
+             * Reads and parses coverage summary JSON file
+             * @param {string} path - Path to coverage-summary.json
+             * @returns {object|null} Parsed coverage data or null if not found
+             */
+            function readCoverage(path) {
+              try {
+                const data = JSON.parse(fs.readFileSync(path, 'utf8'));
+                return data.total;
+              } catch (e) {
+                console.log(`Could not read ${path}: ${e.message}`);
+                return null;
+              }
+            }
+
+            /**
+             * Formats a percentage value with color indicator
+             * @param {number} pct - Percentage value
+             * @returns {string} Formatted percentage string
+             */
+            function formatPct(pct) {
+              const value = pct.toFixed(2);
+              if (pct >= 80) return `🟢 ${value}%`;
+              if (pct >= 20) return `🟡 ${value}%`;
+              return `🔴 ${value}%`;
+            }
+
+            const serverCov = readCoverage('coverage/server/coverage-summary.json');
+
+            let body = '## 📊 Test Coverage Report\n\n';
+            body += '| Package | Statements | Branches | Functions | Lines |\n';
+            body += '|---------|------------|----------|-----------|-------|\n';
+
+            if (serverCov) {
+              body += `| **server** | ${formatPct(serverCov.statements.pct)} | ${formatPct(serverCov.branches.pct)} | ${formatPct(serverCov.functions.pct)} | ${formatPct(serverCov.lines.pct)} |\n`;
+            } else {
+              body += '| **server** | ⚠️ No data | ⚠️ No data | ⚠️ No data | ⚠️ No data |\n';
+            }
+
+            body += '\n<details>\n<summary>Coverage thresholds</summary>\n\n';
+            body += '- 🟢 Good: ≥80%\n';
+            body += '- 🟡 Acceptable: ≥20%\n';
+            body += '- 🔴 Needs improvement: <20%\n';
+            body += '</details>\n\n';
+            body += '*Updated on each push*';
+
+            // Find existing coverage comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('📊 Test Coverage Report')
+            );
+
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body,
+              });
+              console.log('Updated existing coverage comment');
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body,
+              });
+              console.log('Created new coverage comment');
+            }

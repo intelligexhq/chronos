@@ -19,7 +19,7 @@
         "clean": "pnpm --filter \"./packages/**\" clean",
         "nuke": "pnpm --filter \"./packages/**\" nuke && rimraf node_modules .turbo",
         "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-        "lint": "eslint \"**/*.{js,jsx,ts,tsx,json,md}\"",
+        "lint": "eslint packages --ext .js,.jsx,.ts,.tsx,.json,.md",
         "lint-fix": "pnpm lint --fix",
         "quick": "pretty-quick --staged",
         "migration:create": "pnpm typeorm migration:create"

@@ -9,8 +9,10 @@ import { getRunningExpressApp } from '../../../src/utils/getRunningExpressApp'
 export function authRouteTest() {
     describe('Auth Route', () => {
         const baseRoute = '/api/v1/auth'
+        // Use unique email per test run to avoid conflicts with existing users
+        const uniqueId = Date.now()
         const testUser = {
-            email: 'test@test.com',
+            email: `test-${uniqueId}@test.com`,
             password: 'test1234'
         }
         let authToken: string
