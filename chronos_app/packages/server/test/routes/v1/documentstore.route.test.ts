@@ -17,7 +17,7 @@ async function getAuthToken(): Promise<string> {
 /**
  * Helper to create a test document store
  */
-async function createTestDocumentStore(authToken: string): Promise<string> {
+async function _createTestDocumentStore(authToken: string): Promise<string> {
     const storeData = {
         name: `Test Store ${Date.now()}`,
         description: 'Test document store for automated tests'

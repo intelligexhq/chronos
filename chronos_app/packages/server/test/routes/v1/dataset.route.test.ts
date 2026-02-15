@@ -17,7 +17,7 @@ async function getAuthToken(): Promise<string> {
 /**
  * Helper to create a test dataset
  */
-async function createTestDataset(authToken: string): Promise<string> {
+async function _createTestDataset(authToken: string): Promise<string> {
     const datasetData = {
         name: `Test Dataset ${Date.now()}`,
         description: 'Test dataset for automated tests'
@@ -166,9 +166,7 @@ export function datasetRouteTest() {
 
         describe('POST /api/v1/datasets/set', () => {
             it('should require authentication', async () => {
-                const response = await supertest(getRunningExpressApp().app)
-                    .post('/api/v1/datasets/set')
-                    .send({ name: 'Test Dataset' })
+                const response = await supertest(getRunningExpressApp().app).post('/api/v1/datasets/set').send({ name: 'Test Dataset' })
 
                 expect([401, 403]).toContain(response.status)
             })
