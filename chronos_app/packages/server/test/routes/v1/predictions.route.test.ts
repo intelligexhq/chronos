@@ -211,13 +211,11 @@ export function predictionsRouteTest() {
                 const authToken = await getAuthToken()
                 const chatflowId = await createTestChatflow(authToken)
 
-                const response = await supertest(getRunningExpressApp().app)
-                    .post(`${baseRoute}/${chatflowId}`)
-                    .send({
-                        question: 'Hello',
-                        streaming: false,
-                        uploads: []
-                    })
+                const response = await supertest(getRunningExpressApp().app).post(`${baseRoute}/${chatflowId}`).send({
+                    question: 'Hello',
+                    streaming: false,
+                    uploads: []
+                })
 
                 expect([StatusCodes.OK, StatusCodes.INTERNAL_SERVER_ERROR]).toContain(response.status)
 

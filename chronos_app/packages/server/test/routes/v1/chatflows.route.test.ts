@@ -126,9 +126,7 @@ export function chatflowsRouteTest() {
 
         describe('PUT /api/v1/chatflows/:id', () => {
             it('should require authentication', async () => {
-                const response = await supertest(getRunningExpressApp().app)
-                    .put('/api/v1/chatflows/test-id')
-                    .send({ name: 'Updated Name' })
+                const response = await supertest(getRunningExpressApp().app).put('/api/v1/chatflows/test-id').send({ name: 'Updated Name' })
 
                 expect([401, 403]).toContain(response.status)
             })
