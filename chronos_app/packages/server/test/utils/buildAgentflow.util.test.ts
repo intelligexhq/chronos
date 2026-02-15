@@ -25,7 +25,7 @@ const createMockNode = (id: string, data: Partial<INodeData> = {}): IReactFlowNo
         height: 100,
         selected: false,
         dragging: false
-    }) as unknown as IReactFlowNode
+    } as unknown as IReactFlowNode)
 
 // Helper to create mock edge with minimal required fields
 const createMockEdge = (source: string, target: string, sourceHandle = 'output-0'): IReactFlowEdge =>
@@ -37,7 +37,7 @@ const createMockEdge = (source: string, target: string, sourceHandle = 'output-0
         targetHandle: 'input-0',
         type: 'buttonedge',
         data: {}
-    }) as IReactFlowEdge
+    } as IReactFlowEdge)
 
 // Helper to create a waiting node for testing
 const createMockWaitingNode = (
@@ -234,10 +234,7 @@ export function buildAgentflowUtilTest() {
             })
 
             it('should return empty array when no edges target the node', () => {
-                const edges: IReactFlowEdge[] = [
-                    createMockEdge('node1', 'node2', 'output-0'),
-                    createMockEdge('node2', 'node3', 'output-0')
-                ]
+                const edges: IReactFlowEdge[] = [createMockEdge('node1', 'node2', 'output-0'), createMockEdge('node2', 'node3', 'output-0')]
                 const result = getNodeInputConnections(edges, 'node4')
                 expect(result).toHaveLength(0)
             })
@@ -277,10 +274,7 @@ export function buildAgentflowUtilTest() {
                     createMockNode('node2', { name: 'llmAgentflow' }),
                     createMockNode('node3', { name: 'llmAgentflow' })
                 ]
-                const edges: IReactFlowEdge[] = [
-                    createMockEdge('node1', 'node3'),
-                    createMockEdge('node2', 'node3')
-                ]
+                const edges: IReactFlowEdge[] = [createMockEdge('node1', 'node3'), createMockEdge('node2', 'node3')]
                 const result = setupNodeDependencies('node3', edges, nodes)
                 expect(result.nodeId).toBe('node3')
                 expect(result.expectedInputs.has('node1')).toBe(true)
@@ -293,10 +287,7 @@ export function buildAgentflowUtilTest() {
                     createMockNode('node2', { name: 'llmAgentflow' }),
                     createMockNode('node3', { name: 'llmAgentflow' })
                 ]
-                const edges: IReactFlowEdge[] = [
-                    createMockEdge('condition1', 'node2'),
-                    createMockEdge('node2', 'node3')
-                ]
+                const edges: IReactFlowEdge[] = [createMockEdge('condition1', 'node2'), createMockEdge('node2', 'node3')]
                 const result = setupNodeDependencies('node3', edges, nodes)
                 expect(result.isConditional).toBe(true)
             })
@@ -645,9 +636,7 @@ export function buildAgentflowUtilTest() {
                 const nodes: IReactFlowNode[] = [createMockNode('start1'), createMockNode('start2')]
                 const startingNodeIds = ['start1', 'start2']
 
-                expect(() => checkForMultipleStartNodes(startingNodeIds, false, nodes)).toThrow(
-                    'Multiple starting nodes are not allowed'
-                )
+                expect(() => checkForMultipleStartNodes(startingNodeIds, false, nodes)).toThrow('Multiple starting nodes are not allowed')
             })
 
             it('should not modify array when single starting node', () => {
@@ -676,6 +665,302 @@ export function buildAgentflowUtilTest() {
 
                 // Should throw because start1 and start2 remain after removing iteration1
                 expect(() => checkForMultipleStartNodes(startingNodeIds, false, nodes)).toThrow()
+            })
+        })
+
+        // Additional edge case tests for branch coverage
+
+        describe('parseFormStringToJson - additional edge cases', () => {
+            it('should handle Windows line endings (CRLF)', () => {
+                const result = parseFormStringToJson('name: John\r\nage: 30')
+                expect(result).toEqual({ name: 'John', age: '30' })
+            })
+
+            it('should handle multiple colons in value', () => {
+                const result = parseFormStringToJson('url: http://example.com:8080/path')
+                expect(result).toEqual({ url: 'http://example.com:8080/path' })
+            })
+
+            it('should handle only whitespace lines', () => {
+                const result = parseFormStringToJson('   \n  \n   ')
+                expect(result).toEqual({})
+            })
+
+            it('should handle tabs in value', () => {
+                // Tab after colon - the function trims values so tabs are handled
+                const result = parseFormStringToJson('name: \tJohn\t')
+                expect(result).toEqual({ name: 'John' })
+            })
+        })
+
+        describe('combineNodeInputs - additional edge cases', () => {
+            it('should handle inputs with only error property', () => {
+                const error = new Error('Only error')
+                const inputs = new Map()
+                inputs.set('node1', { error })
+                const result = combineNodeInputs(inputs)
+                expect(result.error).toBe(error)
+            })
+
+            it('should handle deeply nested json objects', () => {
+                const inputs = new Map()
+                inputs.set('node1', { json: { level1: { level2: { level3: 'deep' } } } })
+                const result = combineNodeInputs(inputs)
+                // Single input returns unchanged, so json is directly the value
+                expect(result.json.level1.level2.level3).toBe('deep')
+            })
+
+            it('should handle arrays in json', () => {
+                const inputs = new Map()
+                inputs.set('node1', { json: { items: [1, 2, 3] } })
+                inputs.set('node2', { json: { items: [4, 5, 6] } })
+                const result = combineNodeInputs(inputs)
+                expect(result.json.node1.items).toEqual([1, 2, 3])
+                expect(result.json.node2.items).toEqual([4, 5, 6])
+            })
+
+            it('should handle boolean values', () => {
+                const inputs = new Map()
+                inputs.set('node1', { json: { active: true } })
+                inputs.set('node2', { json: { active: false } })
+                const result = combineNodeInputs(inputs)
+                expect(result.json.node1.active).toBe(true)
+                expect(result.json.node2.active).toBe(false)
+            })
+
+            it('should handle empty text strings', () => {
+                const inputs = new Map()
+                inputs.set('node1', { text: '' })
+                inputs.set('node2', { text: 'Hello' })
+                const result = combineNodeInputs(inputs)
+                expect(result.text).toContain('Hello')
+            })
+
+            it('should handle mixed json and text inputs', () => {
+                const inputs = new Map()
+                inputs.set('node1', { json: { key: 'value' }, text: 'Text1' })
+                inputs.set('node2', { json: { other: 'data' }, text: 'Text2' })
+                const result = combineNodeInputs(inputs)
+                expect(result.json).toBeDefined()
+                expect(result.text).toBe('Text1\nText2')
+            })
+        })
+
+        describe('setupNodeDependencies - additional edge cases', () => {
+            it('should handle multiple condition nodes in path', () => {
+                const nodes: IReactFlowNode[] = [
+                    createMockNode('cond1', { name: 'conditionAgentflow' }),
+                    createMockNode('cond2', { name: 'conditionAgentflow' }),
+                    createMockNode('node3', { name: 'llmAgentflow' })
+                ]
+                const edges: IReactFlowEdge[] = [createMockEdge('cond1', 'cond2'), createMockEdge('cond2', 'node3')]
+                const result = setupNodeDependencies('node3', edges, nodes)
+                expect(result.isConditional).toBe(true)
+            })
+
+            it('should handle humanInputAgentflow as conditional', () => {
+                const nodes: IReactFlowNode[] = [
+                    createMockNode('human1', { name: 'humanInputAgentflow' }),
+                    createMockNode('node2', { name: 'llmAgentflow' })
+                ]
+                const edges: IReactFlowEdge[] = [createMockEdge('human1', 'node2')]
+                const result = setupNodeDependencies('node2', edges, nodes)
+                expect(result.isConditional).toBe(true)
+            })
+
+            it('should handle self-referencing edges', () => {
+                const nodes: IReactFlowNode[] = [createMockNode('node1', { name: 'llmAgentflow' })]
+                const edges: IReactFlowEdge[] = [createMockEdge('node1', 'node1')]
+                const result = setupNodeDependencies('node1', edges, nodes)
+                expect(result.expectedInputs.has('node1')).toBe(true)
+            })
+        })
+
+        describe('hasReceivedRequiredInputs - additional edge cases', () => {
+            it('should handle multiple conditional groups', () => {
+                const receivedInputs = new Map()
+                receivedInputs.set('branchA', { json: { value: 1 } })
+                receivedInputs.set('branchC', { json: { value: 2 } })
+
+                const conditionalGroups = new Map<string, string[]>()
+                conditionalGroups.set('condition1', ['branchA', 'branchB'])
+                conditionalGroups.set('condition2', ['branchC', 'branchD'])
+
+                const waitingNode = createMockWaitingNode('merge', {
+                    receivedInputs,
+                    isConditional: true,
+                    conditionalGroups
+                })
+
+                const result = hasReceivedRequiredInputs(waitingNode)
+                expect(result).toBe(true)
+            })
+
+            it('should return false when one conditional group not satisfied', () => {
+                const receivedInputs = new Map()
+                receivedInputs.set('branchA', { json: { value: 1 } })
+                // Missing input from condition2's branches
+
+                const conditionalGroups = new Map<string, string[]>()
+                conditionalGroups.set('condition1', ['branchA', 'branchB'])
+                conditionalGroups.set('condition2', ['branchC', 'branchD'])
+
+                const waitingNode = createMockWaitingNode('merge', {
+                    receivedInputs,
+                    isConditional: true,
+                    conditionalGroups
+                })
+
+                const result = hasReceivedRequiredInputs(waitingNode)
+                expect(result).toBe(false)
+            })
+
+            it('should handle conditional with empty groups', () => {
+                const waitingNode = createMockWaitingNode('merge', {
+                    receivedInputs: new Map(),
+                    isConditional: true,
+                    conditionalGroups: new Map()
+                })
+
+                const result = hasReceivedRequiredInputs(waitingNode)
+                expect(result).toBe(true)
+            })
+        })
+
+        describe('determineNodesToIgnore - additional edge cases', () => {
+            it('should handle all conditions fulfilled', async () => {
+                const node = createMockNode('cond1', { name: 'conditionAgentflow' })
+                const result = {
+                    output: {
+                        conditions: [{ isFulfilled: true }, { isFulfilled: true }]
+                    }
+                }
+                const edges: IReactFlowEdge[] = [
+                    createMockEdge('cond1', 'nodeA', 'cond1-output-0'),
+                    createMockEdge('cond1', 'nodeB', 'cond1-output-1')
+                ]
+
+                const ignoreNodeIds = await determineNodesToIgnore(node, result, edges, 'cond1')
+                expect(ignoreNodeIds).toHaveLength(0)
+            })
+
+            it('should handle all conditions unfulfilled', async () => {
+                const node = createMockNode('cond1', { name: 'conditionAgentflow' })
+                const result = {
+                    output: {
+                        conditions: [{ isFulfilled: false }, { isFulfilled: false }]
+                    }
+                }
+                const edges: IReactFlowEdge[] = [
+                    createMockEdge('cond1', 'nodeA', 'cond1-output-0'),
+                    createMockEdge('cond1', 'nodeB', 'cond1-output-1')
+                ]
+
+                const ignoreNodeIds = await determineNodesToIgnore(node, result, edges, 'cond1')
+                expect(ignoreNodeIds).toHaveLength(2)
+                expect(ignoreNodeIds).toContain('nodeA')
+                expect(ignoreNodeIds).toContain('nodeB')
+            })
+
+            it('should handle edge with non-matching source handle prefix', async () => {
+                const node = createMockNode('cond1', { name: 'conditionAgentflow' })
+                const result = {
+                    output: {
+                        conditions: [{ isFulfilled: false }]
+                    }
+                }
+                const edges: IReactFlowEdge[] = [createMockEdge('cond1', 'nodeA', 'other-output-0')]
+
+                const ignoreNodeIds = await determineNodesToIgnore(node, result, edges, 'cond1')
+                expect(ignoreNodeIds).toHaveLength(0) // Should not match
+            })
+
+            it('should handle result with undefined output', async () => {
+                const node = createMockNode('cond1', { name: 'conditionAgentflow' })
+                const result = {}
+                const edges: IReactFlowEdge[] = [createMockEdge('cond1', 'nodeA', 'cond1-output-0')]
+
+                const ignoreNodeIds = await determineNodesToIgnore(node, result, edges, 'cond1')
+                expect(ignoreNodeIds).toEqual([])
+            })
+
+            it('should handle empty conditions array', async () => {
+                const node = createMockNode('cond1', { name: 'conditionAgentflow' })
+                const result = { output: { conditions: [] } }
+                const edges: IReactFlowEdge[] = [createMockEdge('cond1', 'nodeA', 'cond1-output-0')]
+
+                const ignoreNodeIds = await determineNodesToIgnore(node, result, edges, 'cond1')
+                expect(ignoreNodeIds).toEqual([])
+            })
+        })
+
+        describe('findConditionParent - additional edge cases', () => {
+            it('should find closest condition parent with multiple ancestors', () => {
+                const nodes: IReactFlowNode[] = [
+                    createMockNode('cond1', { name: 'conditionAgentflow' }),
+                    createMockNode('cond2', { name: 'conditionAgentflow' }),
+                    createMockNode('node3', { name: 'llmAgentflow' }),
+                    createMockNode('node4', { name: 'llmAgentflow' })
+                ]
+                const edges: IReactFlowEdge[] = [
+                    createMockEdge('cond1', 'cond2'),
+                    createMockEdge('cond2', 'node3'),
+                    createMockEdge('node3', 'node4')
+                ]
+                // Should find the closest condition parent (cond2)
+                const result = findConditionParent('node3', edges, nodes)
+                expect(result).toBe('cond2')
+            })
+
+            it('should handle diamond pattern', () => {
+                const nodes: IReactFlowNode[] = [
+                    createMockNode('cond1', { name: 'conditionAgentflow' }),
+                    createMockNode('branchA', { name: 'llmAgentflow' }),
+                    createMockNode('branchB', { name: 'llmAgentflow' }),
+                    createMockNode('merge', { name: 'llmAgentflow' })
+                ]
+                const edges: IReactFlowEdge[] = [
+                    createMockEdge('cond1', 'branchA'),
+                    createMockEdge('cond1', 'branchB'),
+                    createMockEdge('branchA', 'merge'),
+                    createMockEdge('branchB', 'merge')
+                ]
+                const result = findConditionParent('merge', edges, nodes)
+                expect(result).toBe('cond1')
+            })
+
+            it('should handle conditionAgentAgentflow type', () => {
+                const nodes: IReactFlowNode[] = [
+                    createMockNode('cond1', { name: 'conditionAgentAgentflow' }),
+                    createMockNode('node2', { name: 'llmAgentflow' })
+                ]
+                const edges: IReactFlowEdge[] = [createMockEdge('cond1', 'node2')]
+                const result = findConditionParent('node2', edges, nodes)
+                expect(result).toBe('cond1')
+            })
+        })
+
+        describe('getNodeInputConnections - additional edge cases', () => {
+            it('should handle edges with undefined sourceHandle', () => {
+                const edge = createMockEdge('node1', 'node2')
+                ;(edge as any).sourceHandle = undefined
+                const edges: IReactFlowEdge[] = [edge]
+                const result = getNodeInputConnections(edges, 'node2')
+                expect(result).toHaveLength(1)
+            })
+
+            it('should handle edges with null sourceHandle', () => {
+                const edge = createMockEdge('node1', 'node2')
+                ;(edge as any).sourceHandle = null
+                const edges: IReactFlowEdge[] = [edge]
+                const result = getNodeInputConnections(edges, 'node2')
+                expect(result).toHaveLength(1)
+            })
+
+            it('should handle multiple edges from same source', () => {
+                const edges: IReactFlowEdge[] = [createMockEdge('node1', 'node2', 'output-0'), createMockEdge('node1', 'node2', 'output-1')]
+                const result = getNodeInputConnections(edges, 'node2')
+                expect(result).toHaveLength(2)
             })
         })
     })

@@ -260,7 +260,7 @@ jobs:
              */
             function formatPct(pct) {
               const value = pct.toFixed(2);
-              if (pct >= 80) return `🟢 ${value}%`;
+              if (pct >= 50) return `🟢 ${value}%`;
               if (pct >= 20) return `🟡 ${value}%`;
               return `🔴 ${value}%`;
             }
@@ -278,7 +278,7 @@ jobs:
             }
 
             body += '\n<details>\n<summary>Coverage thresholds</summary>\n\n';
-            body += '- 🟢 Good: ≥80%\n';
+            body += '- 🟢 Good: ≥50%\n';
             body += '- 🟡 Acceptable: ≥20%\n';
             body += '- 🔴 Needs improvement: <20%\n';
             body += '</details>\n\n';

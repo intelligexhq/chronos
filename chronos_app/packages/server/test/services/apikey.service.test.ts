@@ -1,5 +1,4 @@
 import { createMockRepository, createMockQueryBuilder } from '../mocks/appServer.mock'
-import { ApiKey } from '../../src/database/entities/ApiKey'
 
 // Mock getRunningExpressApp before importing the service
 const mockRepository = createMockRepository()
@@ -18,9 +17,7 @@ jest.mock('../../src/utils/getRunningExpressApp', () => ({
 
 // Mock addChatflowsCount to return the input with chatflowsCount added
 jest.mock('../../src/utils/addChatflowsCount', () => ({
-    addChatflowsCount: jest.fn((keys: any[]) =>
-        keys.map((k) => ({ ...k, chatflowsCount: 0 }))
-    )
+    addChatflowsCount: jest.fn((keys: any[]) => keys.map((k) => ({ ...k, chatflowsCount: 0 })))
 }))
 
 // Import the service after mocking
@@ -71,7 +68,7 @@ export function apikeyServiceTest() {
                 mockRepository.create.mockReturnValue({ id: '1', keyName: 'DefaultKey' })
                 mockRepository.save.mockResolvedValue({ id: '1', keyName: 'DefaultKey' })
 
-                const result = await apikeyService.getAllApiKeys(true)
+                const _result = await apikeyService.getAllApiKeys(true)
 
                 expect(mockRepository.save).toHaveBeenCalled()
             })
@@ -133,7 +130,7 @@ export function apikeyServiceTest() {
                 mockRepository.save.mockResolvedValue({ id: '1', keyName: 'NewKey' })
                 mockQueryBuilder.getManyAndCount.mockResolvedValueOnce([[{ id: '1', keyName: 'NewKey' }], 1])
 
-                const result = await apikeyService.createApiKey('NewKey')
+                const _result = await apikeyService.createApiKey('NewKey')
 
                 expect(mockRepository.create).toHaveBeenCalled()
                 expect(mockRepository.save).toHaveBeenCalled()
@@ -164,7 +161,7 @@ export function apikeyServiceTest() {
                 mockRepository.save.mockResolvedValue({ ...existingKey, keyName: 'NewName' })
                 mockQueryBuilder.getManyAndCount.mockResolvedValueOnce([[{ ...existingKey, keyName: 'NewName' }], 1])
 
-                const result = await apikeyService.updateApiKey('1', 'NewName')
+                const _result = await apikeyService.updateApiKey('1', 'NewName')
 
                 expect(mockRepository.save).toHaveBeenCalled()
             })
@@ -210,7 +207,7 @@ export function apikeyServiceTest() {
         })
 
         describe('importKeys', () => {
-            const createValidBase64Keys = (keys: any[]) => {
+            const createValidBase64Keys = (keys: any) => {
                 const json = JSON.stringify(keys)
                 const base64 = Buffer.from(json).toString('base64')
                 return `data:application/json;base64,${base64}`
@@ -274,7 +271,7 @@ export function apikeyServiceTest() {
                 mockRepository.save.mockImplementation((k: any) => Promise.resolve(k))
                 mockQueryBuilder.getManyAndCount.mockResolvedValueOnce([validKeys, 1])
 
-                const result = await apikeyService.importKeys(body)
+                const _result = await apikeyService.importKeys(body)
 
                 expect(mockRepository.save).toHaveBeenCalled()
             })

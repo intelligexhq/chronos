@@ -69,8 +69,9 @@ export function variablesServiceTest() {
                     type: 'runtime'
                 } as Variable
 
-                await expect(variablesService.createVariable(runtimeVariable, 'org-123'))
-                    .rejects.toThrow('Cloud platform does not support runtime variables')
+                await expect(variablesService.createVariable(runtimeVariable, 'org-123')).rejects.toThrow(
+                    'Cloud platform does not support runtime variables'
+                )
             })
 
             it('should allow runtime variables on open source platform', async () => {
@@ -143,10 +144,7 @@ export function variablesServiceTest() {
 
                 await variablesService.getAllVariables()
 
-                expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-                    'variable.type != :type',
-                    { type: 'runtime' }
-                )
+                expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('variable.type != :type', { type: 'runtime' })
             })
 
             it('should not filter runtime variables on open source platform', async () => {
@@ -182,8 +180,7 @@ export function variablesServiceTest() {
                 mockIdentityManager.getPlatformType.mockReturnValue(Platform.CLOUD)
                 mockRepository.findOneBy.mockResolvedValue({ id: 'var-1', type: 'runtime' })
 
-                await expect(variablesService.getVariableById('var-1'))
-                    .rejects.toThrow('Cloud platform does not support runtime variables')
+                await expect(variablesService.getVariableById('var-1')).rejects.toThrow('Cloud platform does not support runtime variables')
             })
         })
 
@@ -209,8 +206,9 @@ export function variablesServiceTest() {
                 const existingVariable = { id: 'var-1', name: 'VAR', type: 'static' } as Variable
                 const updatedData = { type: 'runtime' } as Variable
 
-                await expect(variablesService.updateVariable(existingVariable, updatedData))
-                    .rejects.toThrow('Cloud platform does not support runtime variables')
+                await expect(variablesService.updateVariable(existingVariable, updatedData)).rejects.toThrow(
+                    'Cloud platform does not support runtime variables'
+                )
             })
         })
 
@@ -224,7 +222,7 @@ export function variablesServiceTest() {
                 mockQueryBuilder.getMany.mockResolvedValue([]) // No existing IDs
                 mockRepository.insert.mockResolvedValue({ identifiers: [{ id: 'new-1' }, { id: 'new-2' }] })
 
-                const result = await variablesService.importVariables(newVariables as Partial<Variable>[])
+                const _result = await variablesService.importVariables(newVariables as Partial<Variable>[])
 
                 expect(mockRepository.insert).toHaveBeenCalled()
             })
@@ -237,18 +235,13 @@ export function variablesServiceTest() {
             })
 
             it('should throw error for invalid UUID', async () => {
-                const invalidVariables = [
-                    { id: 'not-a-valid-uuid', name: 'VAR', value: 'val', type: 'static' }
-                ]
+                const invalidVariables = [{ id: 'not-a-valid-uuid', name: 'VAR', value: 'val', type: 'static' }]
 
-                await expect(variablesService.importVariables(invalidVariables as Partial<Variable>[]))
-                    .rejects.toThrow('invalid id')
+                await expect(variablesService.importVariables(invalidVariables as Partial<Variable>[])).rejects.toThrow('invalid id')
             })
 
             it('should rename duplicate variables', async () => {
-                const variables = [
-                    { id: 'existing-id', name: 'VAR1', value: 'val1', type: 'static' }
-                ]
+                const variables = [{ id: 'existing-id', name: 'VAR1', value: 'val1', type: 'static' }]
 
                 mockQueryBuilder.getMany.mockResolvedValue([{ id: 'existing-id' }])
                 mockRepository.insert.mockResolvedValue({ identifiers: [] })
@@ -257,9 +250,7 @@ export function variablesServiceTest() {
 
                 // The insert should be called with modified variable (name + ' (1)')
                 expect(mockRepository.insert).toHaveBeenCalledWith(
-                    expect.arrayContaining([
-                        expect.objectContaining({ name: 'VAR1 (1)', id: undefined })
-                    ])
+                    expect.arrayContaining([expect.objectContaining({ name: 'VAR1 (1)', id: undefined })])
                 )
             })
 
@@ -278,9 +269,7 @@ export function variablesServiceTest() {
 
                 // Should only insert static variables
                 expect(mockRepository.insert).toHaveBeenCalledWith(
-                    expect.arrayContaining([
-                        expect.objectContaining({ name: 'STATIC_VAR' })
-                    ])
+                    expect.arrayContaining([expect.objectContaining({ name: 'STATIC_VAR' })])
                 )
                 const insertCall = mockRepository.insert.mock.calls[0][0]
                 expect(insertCall.find((v: any) => v.type === 'runtime')).toBeUndefined()

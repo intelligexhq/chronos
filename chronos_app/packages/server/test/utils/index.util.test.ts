@@ -30,7 +30,7 @@ const createMockNode = (id: string, data: Partial<INodeData> = {}): IReactFlowNo
         height: 100,
         selected: false,
         dragging: false
-    }) as unknown as IReactFlowNode
+    } as unknown as IReactFlowNode)
 
 // Helper to create mock edge with minimal required fields
 const createMockEdge = (id: string, source: string, target: string): IReactFlowEdge =>
@@ -42,7 +42,7 @@ const createMockEdge = (id: string, source: string, target: string): IReactFlowE
         targetHandle: 'in',
         type: 'buttonedge',
         data: {}
-    }) as IReactFlowEdge
+    } as IReactFlowEdge)
 
 /**
  * Test suite for core utility functions in utils/index.ts
@@ -66,7 +66,7 @@ export function indexUtilTest() {
 
         describe('constructGraphs', () => {
             it('should construct a directed graph from nodes and edges', () => {
-                const { graph, nodeDependencies } = constructGraphs(sampleNodes, sampleEdges)
+                const { graph, nodeDependencies: _nodeDependencies } = constructGraphs(sampleNodes, sampleEdges)
 
                 expect(graph['node1']).toContain('node2')
                 expect(graph['node2']).toContain('node3')
@@ -134,10 +134,7 @@ export function indexUtilTest() {
             })
 
             it('should handle merging graphs', () => {
-                const mergingEdges: IReactFlowEdge[] = [
-                    createMockEdge('e1-3', 'node1', 'node3'),
-                    createMockEdge('e2-3', 'node2', 'node3')
-                ]
+                const mergingEdges: IReactFlowEdge[] = [createMockEdge('e1-3', 'node1', 'node3'), createMockEdge('e2-3', 'node2', 'node3')]
                 const { nodeDependencies } = constructGraphs(sampleNodes, mergingEdges)
 
                 expect(nodeDependencies['node3']).toBe(2) // Two incoming edges
@@ -239,10 +236,7 @@ export function indexUtilTest() {
             })
 
             it('should handle cycles without infinite loop', () => {
-                const cyclicEdges: IReactFlowEdge[] = [
-                    createMockEdge('e1-2', 'node1', 'node2'),
-                    createMockEdge('e2-1', 'node2', 'node1')
-                ]
+                const cyclicEdges: IReactFlowEdge[] = [createMockEdge('e1-2', 'node1', 'node2'), createMockEdge('e2-1', 'node2', 'node1')]
                 const nodes: IReactFlowNode[] = [createMockNode('node1'), createMockNode('node2')]
                 const { graph } = constructGraphs(nodes, cyclicEdges)
                 const connectedNodes = getAllConnectedNodes(graph, 'node1')
@@ -605,10 +599,7 @@ export function indexUtilTest() {
 
         describe('findMemoryNode', () => {
             it('should find memory node connected via edge', () => {
-                const nodes = [
-                    createMockNode('memory1', { category: 'Memory' }),
-                    createMockNode('llm1', { category: 'LLM' })
-                ]
+                const nodes = [createMockNode('memory1', { category: 'Memory' }), createMockNode('llm1', { category: 'LLM' })]
                 const edges = [createMockEdge('e1', 'memory1', 'llm1')]
 
                 const result = findMemoryNode(nodes, edges)
@@ -616,10 +607,7 @@ export function indexUtilTest() {
             })
 
             it('should return undefined when no memory node', () => {
-                const nodes = [
-                    createMockNode('llm1', { category: 'LLM' }),
-                    createMockNode('chain1', { category: 'Chains' })
-                ]
+                const nodes = [createMockNode('llm1', { category: 'LLM' }), createMockNode('chain1', { category: 'Chains' })]
                 const edges = [createMockEdge('e1', 'llm1', 'chain1')]
 
                 const result = findMemoryNode(nodes, edges)
@@ -627,10 +615,7 @@ export function indexUtilTest() {
             })
 
             it('should return undefined when memory node exists but not connected', () => {
-                const nodes = [
-                    createMockNode('memory1', { category: 'Memory' }),
-                    createMockNode('llm1', { category: 'LLM' })
-                ]
+                const nodes = [createMockNode('memory1', { category: 'Memory' }), createMockNode('llm1', { category: 'LLM' })]
                 // No edge from memory node
                 const edges = [createMockEdge('e1', 'llm1', 'other')]
 
