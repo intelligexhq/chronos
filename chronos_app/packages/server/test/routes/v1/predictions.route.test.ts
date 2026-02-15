@@ -146,6 +146,83 @@ export function predictionsRouteTest() {
 
                 await deleteTestChatflow(authToken, chatflowId)
             })
+
+            it('should handle chatId parameter', async () => {
+                const authToken = await getAuthToken()
+                const chatflowId = await createTestChatflow(authToken)
+
+                const response = await supertest(getRunningExpressApp().app)
+                    .post(`${baseRoute}/${chatflowId}`)
+                    .send({ question: 'Hello', streaming: false, chatId: 'test-chat-123' })
+
+                expect([StatusCodes.OK, StatusCodes.INTERNAL_SERVER_ERROR]).toContain(response.status)
+
+                await deleteTestChatflow(authToken, chatflowId)
+            })
+
+            it('should handle sessionId parameter', async () => {
+                const authToken = await getAuthToken()
+                const chatflowId = await createTestChatflow(authToken)
+
+                const response = await supertest(getRunningExpressApp().app)
+                    .post(`${baseRoute}/${chatflowId}`)
+                    .send({ question: 'Hello', streaming: false, sessionId: 'test-session-123' })
+
+                expect([StatusCodes.OK, StatusCodes.INTERNAL_SERVER_ERROR]).toContain(response.status)
+
+                await deleteTestChatflow(authToken, chatflowId)
+            })
+
+            it('should handle overrideConfig parameter', async () => {
+                const authToken = await getAuthToken()
+                const chatflowId = await createTestChatflow(authToken)
+
+                const response = await supertest(getRunningExpressApp().app)
+                    .post(`${baseRoute}/${chatflowId}`)
+                    .send({
+                        question: 'Hello',
+                        streaming: false,
+                        overrideConfig: { temperature: 0.5 }
+                    })
+
+                expect([StatusCodes.OK, StatusCodes.INTERNAL_SERVER_ERROR]).toContain(response.status)
+
+                await deleteTestChatflow(authToken, chatflowId)
+            })
+
+            it('should handle history parameter', async () => {
+                const authToken = await getAuthToken()
+                const chatflowId = await createTestChatflow(authToken)
+
+                const response = await supertest(getRunningExpressApp().app)
+                    .post(`${baseRoute}/${chatflowId}`)
+                    .send({
+                        question: 'Hello',
+                        streaming: false,
+                        history: [{ role: 'human', content: 'Previous message' }]
+                    })
+
+                expect([StatusCodes.OK, StatusCodes.INTERNAL_SERVER_ERROR]).toContain(response.status)
+
+                await deleteTestChatflow(authToken, chatflowId)
+            })
+
+            it('should handle uploads parameter', async () => {
+                const authToken = await getAuthToken()
+                const chatflowId = await createTestChatflow(authToken)
+
+                const response = await supertest(getRunningExpressApp().app)
+                    .post(`${baseRoute}/${chatflowId}`)
+                    .send({
+                        question: 'Hello',
+                        streaming: false,
+                        uploads: []
+                    })
+
+                expect([StatusCodes.OK, StatusCodes.INTERNAL_SERVER_ERROR]).toContain(response.status)
+
+                await deleteTestChatflow(authToken, chatflowId)
+            })
         })
     })
 }

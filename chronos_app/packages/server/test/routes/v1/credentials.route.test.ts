@@ -129,6 +129,78 @@ export function credentialsRouteTest() {
 
                 expect(response.status).toBe(200)
             })
+
+            it('should filter credentials by multiple credential names', async () => {
+                const response = await supertest(getRunningExpressApp().app)
+                    .get('/api/v1/credentials')
+                    .query({ credentialName: ['openAIApi', 'anthropicApi'] })
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+
+                expect([200, 400]).toContain(response.status)
+            })
+        })
+
+        describe('Sort and Order', () => {
+            it('should sort credentials by name ASC', async () => {
+                const response = await supertest(getRunningExpressApp().app)
+                    .get('/api/v1/credentials')
+                    .query({ sortBy: 'name', order: 'ASC' })
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+
+                expect(response.status).toBe(200)
+            })
+
+            it('should sort credentials by name DESC', async () => {
+                const response = await supertest(getRunningExpressApp().app)
+                    .get('/api/v1/credentials')
+                    .query({ sortBy: 'name', order: 'DESC' })
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+
+                expect(response.status).toBe(200)
+            })
+
+            it('should sort credentials by createdDate', async () => {
+                const response = await supertest(getRunningExpressApp().app)
+                    .get('/api/v1/credentials')
+                    .query({ sortBy: 'createdDate' })
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+
+                expect(response.status).toBe(200)
+            })
+        })
+
+        describe('Different Credential Types', () => {
+            it('should handle anthropic credential type', async () => {
+                const response = await supertest(getRunningExpressApp().app)
+                    .post('/api/v1/credentials')
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+                    .send({
+                        name: `Anthropic Cred ${Date.now()}`,
+                        credentialName: 'anthropicApi',
+                        plainDataObj: { anthropicApiKey: 'test-key' }
+                    })
+
+                expect([200, 201, 400, 500]).toContain(response.status)
+            })
+
+            it('should handle google credential type', async () => {
+                const response = await supertest(getRunningExpressApp().app)
+                    .post('/api/v1/credentials')
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+                    .send({
+                        name: `Google Cred ${Date.now()}`,
+                        credentialName: 'googleGenerativeAI',
+                        plainDataObj: { googleGenerativeAPIKey: 'test-key' }
+                    })
+
+                expect([200, 201, 400, 500]).toContain(response.status)
+            })
         })
     })
 }

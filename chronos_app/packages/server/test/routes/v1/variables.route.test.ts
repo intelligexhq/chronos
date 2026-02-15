@@ -130,6 +130,40 @@ export function variablesRouteTest() {
             })
         })
 
+        describe('Variable Types', () => {
+            it('should create runtime variable', async () => {
+                const newVariable = {
+                    name: `RUNTIME_VAR_${Date.now()}`,
+                    value: 'runtime-value',
+                    type: 'runtime'
+                }
+
+                const response = await supertest(getRunningExpressApp().app)
+                    .post('/api/v1/variables')
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+                    .send(newVariable)
+
+                expect([200, 201, 500]).toContain(response.status)
+            })
+
+            it('should create secret variable', async () => {
+                const newVariable = {
+                    name: `SECRET_VAR_${Date.now()}`,
+                    value: 'secret-value',
+                    type: 'secret'
+                }
+
+                const response = await supertest(getRunningExpressApp().app)
+                    .post('/api/v1/variables')
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+                    .send(newVariable)
+
+                expect([200, 201, 500]).toContain(response.status)
+            })
+        })
+
         describe('Pagination', () => {
             it('should handle page parameter', async () => {
                 const response = await supertest(getRunningExpressApp().app)

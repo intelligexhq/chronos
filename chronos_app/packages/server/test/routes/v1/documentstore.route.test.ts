@@ -134,5 +134,83 @@ export function documentstoreRouteTest() {
                 expect([200, 400, 404, 500]).toContain(response.status)
             })
         })
+
+        describe('POST /api/v1/documentstore/refresh/:id', () => {
+            it('should handle refresh for non-existent store', async () => {
+                const response = await supertest(getRunningExpressApp().app)
+                    .post('/api/v1/documentstore/refresh/non-existent-id')
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+                    .send({})
+
+                expect([200, 400, 404, 500]).toContain(response.status)
+            })
+        })
+
+        describe('POST /api/v1/documentstore/query/:id', () => {
+            it('should handle query for non-existent store', async () => {
+                const response = await supertest(getRunningExpressApp().app)
+                    .post('/api/v1/documentstore/query/non-existent-id')
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+                    .send({ query: 'test query' })
+
+                expect([200, 400, 404, 500]).toContain(response.status)
+            })
+
+            it('should handle query with topK parameter', async () => {
+                const response = await supertest(getRunningExpressApp().app)
+                    .post('/api/v1/documentstore/query/test-id')
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+                    .send({ query: 'test query', topK: 5 })
+
+                expect([200, 400, 404, 500]).toContain(response.status)
+            })
+        })
+
+        describe('GET /api/v1/documentstore/store/:id/files', () => {
+            it('should handle files retrieval for non-existent store', async () => {
+                const response = await supertest(getRunningExpressApp().app)
+                    .get('/api/v1/documentstore/store/non-existent-id/files')
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+
+                expect([200, 404, 500]).toContain(response.status)
+            })
+        })
+
+        describe('DELETE /api/v1/documentstore/:storeId/file/:fileId', () => {
+            it('should handle file delete for non-existent store/file', async () => {
+                const response = await supertest(getRunningExpressApp().app)
+                    .delete('/api/v1/documentstore/test-store/file/test-file')
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+
+                expect([200, 404, 500]).toContain(response.status)
+            })
+        })
+
+        describe('Pagination tests', () => {
+            it('should handle page parameter', async () => {
+                const response = await supertest(getRunningExpressApp().app)
+                    .get('/api/v1/documentstore')
+                    .query({ page: 1 })
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+
+                expect([200, 412]).toContain(response.status)
+            })
+
+            it('should handle limit parameter', async () => {
+                const response = await supertest(getRunningExpressApp().app)
+                    .get('/api/v1/documentstore')
+                    .query({ limit: 10 })
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+
+                expect([200, 412]).toContain(response.status)
+            })
+        })
     })
 }

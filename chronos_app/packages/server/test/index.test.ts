@@ -23,6 +23,42 @@ import { chatflowsExtendedRouteTest } from './routes/v1/chatflows-extended.route
 import { assistantsRouteTest } from './routes/v1/assistants.route.test'
 import { flowConfigRouteTest } from './routes/v1/flow-config.route.test'
 import { internalPredictionsRouteTest } from './routes/v1/internal-predictions.route.test'
+import { datasetRouteTest } from './routes/v1/dataset.route.test'
+import { leadsRouteTest } from './routes/v1/leads.route.test'
+import { exportImportRouteTest } from './routes/v1/export-import.route.test'
+import { logRouteTest } from './routes/v1/log.route.test'
+import { chatflowsStreamingRouteTest } from './routes/v1/chatflows-streaming.route.test'
+import { chatflowsUploadsRouteTest } from './routes/v1/chatflows-uploads.route.test'
+import { publicChatflowsRouteTest } from './routes/v1/public-chatflows.route.test'
+import { verifyRouteTest } from './routes/v1/verify.route.test'
+import { loadPromptsRouteTest } from './routes/v1/load-prompts.route.test'
+import { vectorsRouteTest } from './routes/v1/vectors.route.test'
+import { nodeConfigsRouteTest } from './routes/v1/node-configs.route.test'
+import { evaluationsRouteTest } from './routes/v1/evaluations.route.test'
+import { fetchLinksRouteTest } from './routes/v1/fetch-links.route.test'
+import { openaiAssistantsRouteTest } from './routes/v1/openai-assistants.route.test'
+import { pricingRouteTest } from './routes/v1/pricing.route.test'
+import { componentsCredentialsRouteTest } from './routes/v1/components-credentials.route.test'
+import { getUploadFileRouteTest } from './routes/v1/get-upload-file.route.test'
+import { nodeIconsRouteTest } from './routes/v1/node-icons.route.test'
+import { attachmentsRouteTest } from './routes/v1/attachments.route.test'
+import { evaluatorRouteTest } from './routes/v1/evaluator.route.test'
+import { publicChatbotsRouteTest } from './routes/v1/public-chatbots.route.test'
+import { publicExecutionsRouteTest } from './routes/v1/public-executions.route.test'
+import { nodeLoadMethodsRouteTest } from './routes/v1/node-load-methods.route.test'
+import { nodeCustomFunctionsRouteTest } from './routes/v1/node-custom-functions.route.test'
+import { getUploadPathRouteTest } from './routes/v1/get-upload-path.route.test'
+import { componentsCredentialsIconRouteTest } from './routes/v1/components-credentials-icon.route.test'
+import { filesRouteTest } from './routes/v1/files.route.test'
+import { validationRouteTest } from './routes/v1/validation.route.test'
+import { openaiAssistantsVectorStoreRouteTest } from './routes/v1/openai-assistants-vector-store.route.test'
+import { openaiAssistantsFilesRouteTest } from './routes/v1/openai-assistants-files.route.test'
+import { textToSpeechRouteTest } from './routes/v1/text-to-speech.route.test'
+import { chatflowsRouteTest } from './routes/v1/chatflows.route.test'
+import { internalChatMessagesRouteTest } from './routes/v1/internal-chat-messages.route.test'
+import { nvidiaNimRouteTest } from './routes/v1/nvidia-nim.route.test'
+import { oauth2RouteTest } from './routes/v1/oauth2.route.test'
+import { openaiRealtimeRouteTest } from './routes/v1/openai-realtime.route.test'
 import { chatflowsServiceTest } from './services/chatflows.service.test'
 import { agentflowv2GeneratorServiceTest } from './services/agentflowv2-generator.service.test'
 import { apiKeyTest } from './utils/api-key.util.test'
@@ -81,6 +117,42 @@ describe('Routes Test', () => {
     assistantsRouteTest()
     flowConfigRouteTest()
     internalPredictionsRouteTest()
+    datasetRouteTest()
+    leadsRouteTest()
+    exportImportRouteTest()
+    logRouteTest()
+    chatflowsStreamingRouteTest()
+    chatflowsUploadsRouteTest()
+    publicChatflowsRouteTest()
+    verifyRouteTest()
+    loadPromptsRouteTest()
+    vectorsRouteTest()
+    nodeConfigsRouteTest()
+    evaluationsRouteTest()
+    fetchLinksRouteTest()
+    openaiAssistantsRouteTest()
+    pricingRouteTest()
+    componentsCredentialsRouteTest()
+    getUploadFileRouteTest()
+    nodeIconsRouteTest()
+    attachmentsRouteTest()
+    evaluatorRouteTest()
+    publicChatbotsRouteTest()
+    publicExecutionsRouteTest()
+    nodeLoadMethodsRouteTest()
+    nodeCustomFunctionsRouteTest()
+    getUploadPathRouteTest()
+    componentsCredentialsIconRouteTest()
+    filesRouteTest()
+    validationRouteTest()
+    openaiAssistantsVectorStoreRouteTest()
+    openaiAssistantsFilesRouteTest()
+    textToSpeechRouteTest()
+    chatflowsRouteTest()
+    internalChatMessagesRouteTest()
+    nvidiaNimRouteTest()
+    oauth2RouteTest()
+    openaiRealtimeRouteTest()
 })
 
 describe('Services Test', () => {
