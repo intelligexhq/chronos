@@ -103,7 +103,7 @@ export class App {
 
             // Initialize abort controllers pool
             this.abortControllerPool = new AbortControllerPool()
-            logger.info('⏹️ [server]: Abort controllers pool initialized successfully')
+            logger.info('⏹️  [server]: Abort controllers pool initialized successfully')
 
             // Initialize encryption key
             await getEncryptionKey()

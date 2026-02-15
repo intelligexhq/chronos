@@ -38,6 +38,10 @@
 ## turbo
 .turbo
 
+## docker local data
+docker/.chronos
+docker/.postgres_data
+
 ## secrets
 **/*.key
 **/api.json

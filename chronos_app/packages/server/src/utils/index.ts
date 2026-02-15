@@ -1614,6 +1614,10 @@ export const decryptCredentialData = async (
 ): Promise<ICredentialDataDecrypted> => {
     let decryptedDataStr: string
 
+    const encryptionMismatchError = new Error(
+        'Encryption mismatch. Check the encryption keys are configured correctly. Node itself is healthy.'
+    )
+
     if (USE_AWS_SECRETS_MANAGER && secretsManagerClient) {
         try {
             if (encryptedData.startsWith('FlowiseCredential_')) {
@@ -1633,13 +1637,26 @@ export const decryptCredentialData = async (
             }
         } catch (error) {
             console.error(error)
+            const errorMessage = error instanceof Error ? error.message : String(error)
+            if (errorMessage.includes('Malformed UTF-8 data')) {
+                throw encryptionMismatchError
+            }
             throw new Error('Failed to decrypt credential data.')
         }
     } else {
         // Fallback to existing code
-        const encryptKey = await getEncryptionKey()
-        const decryptedData = AES.decrypt(encryptedData, encryptKey)
-        decryptedDataStr = decryptedData.toString(enc.Utf8)
+        try {
+            const encryptKey = await getEncryptionKey()
+            const decryptedData = AES.decrypt(encryptedData, encryptKey)
+            decryptedDataStr = decryptedData.toString(enc.Utf8)
+        } catch (error) {
+            console.error(error)
+            const errorMessage = error instanceof Error ? error.message : String(error)
+            if (errorMessage.includes('Malformed UTF-8 data')) {
+                throw encryptionMismatchError
+            }
+            throw new Error('Failed to decrypt credential data.')
+        }
     }
 
     if (!decryptedDataStr) return {}
