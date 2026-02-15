@@ -55,9 +55,7 @@ export function textToSpeechRouteTest() {
 
         describe('POST /api/v1/tts/generate', () => {
             it('should require authentication', async () => {
-                const response = await supertest(getRunningExpressApp().app)
-                    .post('/api/v1/tts/generate')
-                    .send({ text: 'Hello world' })
+                const response = await supertest(getRunningExpressApp().app).post('/api/v1/tts/generate').send({ text: 'Hello world' })
 
                 expect([401, 403]).toContain(response.status)
             })
@@ -319,9 +317,7 @@ export function textToSpeechRouteTest() {
 
         describe('GET /api/v1/tts/voices', () => {
             it('should require authentication', async () => {
-                const response = await supertest(getRunningExpressApp().app)
-                    .get('/api/v1/tts/voices')
-                    .query({ provider: 'openai' })
+                const response = await supertest(getRunningExpressApp().app).get('/api/v1/tts/voices').query({ provider: 'openai' })
 
                 expect([401, 403]).toContain(response.status)
             })

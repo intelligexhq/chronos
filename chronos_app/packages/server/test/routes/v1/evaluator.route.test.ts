@@ -298,8 +298,7 @@ export function evaluatorRouteTest() {
             })
 
             it('should require authentication for delete', async () => {
-                const response = await supertest(getRunningExpressApp().app)
-                    .delete('/api/v1/evaluators/test-id')
+                const response = await supertest(getRunningExpressApp().app).delete('/api/v1/evaluators/test-id')
 
                 expect([401, 403]).toContain(response.status)
             })
