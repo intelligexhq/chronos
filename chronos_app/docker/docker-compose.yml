@@ -14,6 +14,8 @@ services:
         DEBUG: true
       ports:
         - "3001:3000"
+      volumes:
+        - ./.chronos:/root/.chronos
       depends_on:
         - postgres
 
@@ -22,11 +24,8 @@ services:
       ports:
         - "5432:5432"
       volumes:
-        - local_data:/var/lib/postgresql/data
+        - ./.postgres_data:/var/lib/postgresql/data
       environment:
         POSTGRES_DB: chronos
         POSTGRES_USER: chronos
         POSTGRES_PASSWORD: secret
-
-volumes:
-  local_data:

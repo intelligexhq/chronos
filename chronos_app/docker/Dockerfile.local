@@ -22,13 +22,28 @@ RUN apk add --no-cache \
     npm install -g pnpm
 ENV NODE_OPTIONS=--max-old-space-size=8192
 
+# Target Linux platform to avoid installing macOS binaries
+ENV npm_config_platform=linux
+ENV npm_config_arch=x64
+
 WORKDIR /app
 
 # Copy all source files (respects .dockerignore)
 COPY . .
 
-# Install production dependencies only (skip postinstall hooks like husky) and build
-RUN pnpm install && pnpm build && CI=true pnpm prune --prod
+# Install all deps (needed for build), build, then reinstall prod-only deps
+RUN pnpm install && \
+    pnpm build && \
+    # Remove all node_modules and reinstall production only
+    rm -rf node_modules packages/*/node_modules && \
+    pnpm install --prod && \
+    # Clean up unnecessary files from node_modules (conservative)
+    find node_modules -name "*.d.ts" -type f -delete && \
+    find node_modules -name "*.map" -type f -delete && \
+    # Remove any macOS binaries (not needed in Linux container)
+    find node_modules -type d -name "*-darwin-*" -exec rm -rf {} + 2>/dev/null || true && \
+    find node_modules -type d -name "*-darwin64" -exec rm -rf {} + 2>/dev/null || true && \
+    rm -rf node_modules/.cache
 
 # =============================================================================
 # Stage 2: Production - Minimal runtime image

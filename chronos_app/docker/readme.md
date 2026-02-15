@@ -14,7 +14,7 @@ docker stop chronos
 *Use the local container image in [docker compose](https://docs.docker.com/compose/):*
 
 ```bash
-docker compose up  # or docker compose up -d
+docker compose -f docker-compose.yml up  # or docker compose -f docker-compose.yml up -d
 docker compose ls
 docker-compose down # or docker-compose down --volumes
 # chronos is now accessable on http://localhost:3001
