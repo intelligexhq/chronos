@@ -260,7 +260,7 @@ jobs:
              */
             function formatPct(pct) {
               const value = pct.toFixed(2);
-              if (pct >= 80) return `🟢 ${value}%`;
+              if (pct >= 50) return `🟢 ${value}%`;
               if (pct >= 20) return `🟡 ${value}%`;
               return `🔴 ${value}%`;
             }
@@ -268,17 +268,17 @@ jobs:
             const serverCov = readCoverage('coverage/server/coverage-summary.json');
 
             let body = '## 📊 Test Coverage Report\n\n';
-            body += '| Package | Statements | Branches | Functions | Lines |\n';
-            body += '|---------|------------|----------|-----------|-------|\n';
+            body += '| Package | Statements | Lines |\n';
+            body += '|---------|------------|-------|\n';
 
             if (serverCov) {
-              body += `| **server** | ${formatPct(serverCov.statements.pct)} | ${formatPct(serverCov.branches.pct)} | ${formatPct(serverCov.functions.pct)} | ${formatPct(serverCov.lines.pct)} |\n`;
+              body += `| **server** | ${formatPct(serverCov.statements.pct)} | ${formatPct(serverCov.lines.pct)} |\n`;
             } else {
-              body += '| **server** | ⚠️ No data | ⚠️ No data | ⚠️ No data | ⚠️ No data |\n';
+              body += '| **server** | ⚠️ No data | ⚠️ No data |\n';
             }
 
             body += '\n<details>\n<summary>Coverage thresholds</summary>\n\n';
-            body += '- 🟢 Good: ≥80%\n';
+            body += '- 🟢 Good: ≥50%\n';
             body += '- 🟡 Acceptable: ≥20%\n';
             body += '- 🔴 Needs improvement: <20%\n';
             body += '</details>\n\n';

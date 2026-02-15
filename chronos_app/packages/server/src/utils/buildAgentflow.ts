@@ -60,7 +60,7 @@ import { getWorkspaceSearchOptions } from './openSourceStubs'
 import { UsageCacheManager } from '../UsageCacheManager'
 import { generateTTSForResponseStream, shouldAutoPlayTTS } from './buildChatflow'
 
-interface IWaitingNode {
+export interface IWaitingNode {
     nodeId: string
     receivedInputs: Map<string, any>
     expectedInputs: Set<string>
@@ -68,7 +68,7 @@ interface IWaitingNode {
     conditionalGroups: Map<string, string[]>
 }
 
-interface INodeQueue {
+export interface INodeQueue {
     nodeId: string
     data: any
     inputs: Record<string, any>
@@ -603,7 +603,7 @@ export const resolveVariables = async (
  * const connections = getNodeInputConnections(nodes, edges, 'llmAgentflow_2');
  * // Returns array of two edge objects connecting to llmAgentflow_2
  */
-function getNodeInputConnections(edges: IReactFlowEdge[], nodeId: string): IReactFlowEdge[] {
+export function getNodeInputConnections(edges: IReactFlowEdge[], nodeId: string): IReactFlowEdge[] {
     // Filter edges where target matches the nodeId
     const inputConnections = edges.filter((edge) => edge.target === nodeId)
 
@@ -622,7 +622,7 @@ function getNodeInputConnections(edges: IReactFlowEdge[], nodeId: string): IReac
 /**
  * Analyzes node dependencies and sets up expected inputs
  */
-function setupNodeDependencies(nodeId: string, edges: IReactFlowEdge[], nodes: IReactFlowNode[]): IWaitingNode {
+export function setupNodeDependencies(nodeId: string, edges: IReactFlowEdge[], nodes: IReactFlowNode[]): IWaitingNode {
     logger.debug(`\n🔍 Analyzing dependencies for node: ${nodeId}`)
     const inputConnections = getNodeInputConnections(edges, nodeId)
     const waitingNode: IWaitingNode = {
@@ -669,7 +669,7 @@ function setupNodeDependencies(nodeId: string, edges: IReactFlowEdge[], nodes: I
 /**
  * Finds the parent condition node for a given node, if any
  */
-function findConditionParent(nodeId: string, edges: IReactFlowEdge[], nodes: IReactFlowNode[]): string | null {
+export function findConditionParent(nodeId: string, edges: IReactFlowEdge[], nodes: IReactFlowNode[]): string | null {
     const currentNode = nodes.find((n) => n.id === nodeId)
     if (!currentNode) return null
     if (
@@ -720,7 +720,7 @@ function findConditionParent(nodeId: string, edges: IReactFlowEdge[], nodes: IRe
 /**
  * Checks if a node has received all required inputs
  */
-function hasReceivedRequiredInputs(waitingNode: IWaitingNode): boolean {
+export function hasReceivedRequiredInputs(waitingNode: IWaitingNode): boolean {
     logger.debug(`\n✨ Checking inputs for node: ${waitingNode.nodeId}`)
 
     // Check non-conditional required inputs
@@ -749,7 +749,7 @@ function hasReceivedRequiredInputs(waitingNode: IWaitingNode): boolean {
  * @param nodeId - Current node ID
  * @returns Array of node IDs that should be ignored
  */
-async function determineNodesToIgnore(
+export async function determineNodesToIgnore(
     currentNode: IReactFlowNode,
     result: any,
     edges: IReactFlowEdge[],
@@ -913,7 +913,7 @@ async function processNodeOutputs({
  *    text: 'Hello\nWorld'
  *  }
  */
-function combineNodeInputs(receivedInputs: Map<string, any>): any {
+export function combineNodeInputs(receivedInputs: Map<string, any>): any {
     // Filter out null/undefined inputs
     const validInputs = new Map(Array.from(receivedInputs.entries()).filter(([_, value]) => value !== null && value !== undefined))
 
@@ -1432,7 +1432,7 @@ const executeNode = async ({
     }
 }
 
-const checkForMultipleStartNodes = (startingNodeIds: string[], isRecursive: boolean, nodes: IReactFlowNode[]) => {
+export const checkForMultipleStartNodes = (startingNodeIds: string[], isRecursive: boolean, nodes: IReactFlowNode[]) => {
     // For non-recursive, loop through and check if each starting node is inside an iteration node, if yes, delete it
     const clonedStartingNodeIds = [...startingNodeIds]
     for (const nodeId of clonedStartingNodeIds) {
@@ -1447,7 +1447,7 @@ const checkForMultipleStartNodes = (startingNodeIds: string[], isRecursive: bool
     }
 }
 
-const parseFormStringToJson = (formString: string): Record<string, string> => {
+export const parseFormStringToJson = (formString: string): Record<string, string> => {
     const result: Record<string, string> = {}
     const lines = formString.split('\n')
 
