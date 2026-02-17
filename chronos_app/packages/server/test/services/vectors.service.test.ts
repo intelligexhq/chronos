@@ -45,7 +45,7 @@ export function vectorsServiceTest() {
                 expect(mockUpsertVector).toHaveBeenCalledWith(mockRequest, true)
             })
 
-            it('should throw InternalFlowiseError when upsertVector fails', async () => {
+            it('should throw InternalChronosError when upsertVector fails', async () => {
                 const mockRequest = { body: {} } as Request
                 mockUpsertVector.mockRejectedValue(new Error('Vector store error'))
 

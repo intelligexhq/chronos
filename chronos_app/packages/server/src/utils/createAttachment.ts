@@ -17,7 +17,7 @@ import logger from './logger'
 import { getErrorMessage } from '../errors/utils'
 import { checkStorage, updateStorageUsage } from './quotaUsage'
 import { ChatFlow } from '../database/entities/ChatFlow'
-import { InternalFlowiseError } from '../errors/internalFlowiseError'
+import { InternalChronosError } from '../errors/internalChronosError'
 import { StatusCodes } from 'http-status-codes'
 
 /**
@@ -31,10 +31,10 @@ export const createFileAttachment = async (req: Request) => {
     const chatId = req.params.chatId
 
     if (!chatflowid || !isValidUUID(chatflowid)) {
-        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid chatflowId format - must be a valid UUID')
+        throw new InternalChronosError(StatusCodes.BAD_REQUEST, 'Invalid chatflowId format - must be a valid UUID')
     }
     if (isPathTraversal(chatflowid) || (chatId && isPathTraversal(chatId))) {
-        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid path characters detected')
+        throw new InternalChronosError(StatusCodes.BAD_REQUEST, 'Invalid path characters detected')
     }
 
     // Validate chatflow exists and check API key
@@ -42,7 +42,7 @@ export const createFileAttachment = async (req: Request) => {
         id: chatflowid
     })
     if (!chatflow) {
-        throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
+        throw new InternalChronosError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
     }
 
     // Open source: No workspace/organization needed
@@ -86,7 +86,7 @@ export const createFileAttachment = async (req: Request) => {
 
     // Check if file upload is enabled
     if (!fileUploadEnabled) {
-        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'File upload is not enabled for this chatflow')
+        throw new InternalChronosError(StatusCodes.BAD_REQUEST, 'File upload is not enabled for this chatflow')
     }
 
     // Find FileLoader node
@@ -107,7 +107,7 @@ export const createFileAttachment = async (req: Request) => {
         const isBase64 = req.body.base64
         for (const file of files) {
             if (!allowedFileTypes.length) {
-                throw new InternalFlowiseError(
+                throw new InternalChronosError(
                     StatusCodes.BAD_REQUEST,
                     `File type '${file.mimetype}' is not allowed. Allowed types: ${allowedFileTypes.join(', ')}`
                 )
@@ -115,7 +115,7 @@ export const createFileAttachment = async (req: Request) => {
 
             // Validate file type against allowed types
             if (allowedFileTypes.length > 0 && !allowedFileTypes.includes(file.mimetype)) {
-                throw new InternalFlowiseError(
+                throw new InternalChronosError(
                     StatusCodes.BAD_REQUEST,
                     `File type '${file.mimetype}' is not allowed. Allowed types: ${allowedFileTypes.join(', ')}`
                 )

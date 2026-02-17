@@ -1,13 +1,13 @@
 import { NextFunction, Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { InternalChronosError } from '../../errors/internalChronosError'
 import { AssistantType } from '../../Interface'
 import assistantsService from '../../services/assistants'
 
 const createAssistant = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (!req.body) {
-            throw new InternalFlowiseError(
+            throw new InternalChronosError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: assistantsController.createAssistant - body not provided!`
             )
@@ -24,7 +24,7 @@ const createAssistant = async (req: Request, res: Response, next: NextFunction) 
 const deleteAssistant = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params === 'undefined' || !req.params.id) {
-            throw new InternalFlowiseError(
+            throw new InternalChronosError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: assistantsController.deleteAssistant - id not provided!`
             )
@@ -49,7 +49,7 @@ const getAllAssistants = async (req: Request, res: Response, next: NextFunction)
 const getAssistantById = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params === 'undefined' || !req.params.id) {
-            throw new InternalFlowiseError(
+            throw new InternalChronosError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: assistantsController.getAssistantById - id not provided!`
             )
@@ -64,13 +64,13 @@ const getAssistantById = async (req: Request, res: Response, next: NextFunction)
 const updateAssistant = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params === 'undefined' || !req.params.id) {
-            throw new InternalFlowiseError(
+            throw new InternalChronosError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: assistantsController.updateAssistant - id not provided!`
             )
         }
         if (!req.body) {
-            throw new InternalFlowiseError(
+            throw new InternalChronosError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: assistantsController.updateAssistant - body not provided!`
             )
@@ -112,7 +112,7 @@ const getTools = async (req: Request, res: Response, next: NextFunction) => {
 const generateAssistantInstruction = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (!req.body) {
-            throw new InternalFlowiseError(
+            throw new InternalChronosError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: assistantsController.generateAssistantInstruction - body not provided!`
             )

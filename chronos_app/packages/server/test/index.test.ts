@@ -74,7 +74,7 @@ import { loggerUtilTest } from './utils/logger.util.test'
 import { validateKeyUtilTest } from './utils/validateKey.util.test'
 import { rateLimitUtilTest } from './utils/rateLimit.util.test'
 import { errorUtilsTest } from './errors/utils.test'
-import { internalFlowiseErrorTest } from './errors/internalFlowiseError.test'
+import { internalChronosErrorTest } from './errors/internalChronosError.test'
 import { cachePoolTest } from './CachePool.test'
 import { abortControllerPoolTest } from './AbortControllerPool.test'
 import { simpleIdentityManagerTest } from './SimpleIdentityManager.test'
@@ -177,7 +177,7 @@ describe('Utils Test', () => {
 
 describe('Errors Test', () => {
     errorUtilsTest()
-    internalFlowiseErrorTest()
+    internalChronosErrorTest()
 })
 
 describe('Cache Test', () => {

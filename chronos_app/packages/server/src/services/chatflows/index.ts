@@ -6,7 +6,7 @@ import { ChatFlow, EnumChatflowType } from '../../database/entities/ChatFlow'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
 import { UpsertHistory } from '../../database/entities/UpsertHistory'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { InternalChronosError } from '../../errors/internalChronosError'
 import { getErrorMessage } from '../../errors/utils'
 import documentStoreService from '../../services/documentstore'
 import { constructGraphs, getAppVersion, getEndingNodes, getTelemetryFlowObj, isFlowValidForStream } from '../../utils'
@@ -21,7 +21,7 @@ export const enum ChatflowErrorMessage {
 
 export function validateChatflowType(type: ChatflowType | undefined) {
     if (!Object.values(EnumChatflowType).includes(type as EnumChatflowType))
-        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, ChatflowErrorMessage.INVALID_CHATFLOW_TYPE)
+        throw new InternalChronosError(StatusCodes.BAD_REQUEST, ChatflowErrorMessage.INVALID_CHATFLOW_TYPE)
 }
 
 // Check if chatflow valid for streaming
@@ -33,7 +33,7 @@ const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<a
             id: chatflowId
         })
         if (!chatflow) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
+            throw new InternalChronosError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
         }
 
         /* Check for post-processing settings, if available isStreamValid is always false */
@@ -77,7 +77,7 @@ const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<a
         const dbResponse = { isStreaming: isStreaming }
         return dbResponse
     } catch (error) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: chatflowsService.checkIfChatflowIsValidForStreaming - ${getErrorMessage(error)}`
         )
@@ -90,7 +90,7 @@ const checkIfChatflowIsValidForUploads = async (chatflowId: string): Promise<any
         const dbResponse = await utilGetUploadsConfig(chatflowId)
         return dbResponse
     } catch (error) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: chatflowsService.checkIfChatflowIsValidForUploads - ${getErrorMessage(error)}`
         )
@@ -125,7 +125,7 @@ const deleteChatflow = async (chatflowId: string): Promise<any> => {
         }
         return dbResponse
     } catch (error) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: chatflowsService.deleteChatflow - ${getErrorMessage(error)}`
         )
@@ -162,7 +162,7 @@ const getAllChatflows = async (type?: ChatflowType, page: number = -1, limit: nu
             return data
         }
     } catch (error) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: chatflowsService.getAllChatflows - ${getErrorMessage(error)}`
         )
@@ -181,7 +181,7 @@ async function getAllChatflowsCountByOrganization(type: ChatflowType, _organizat
         const chatflowsCount = await appServer.AppDataSource.getRepository(ChatFlow).countBy({ type })
         return chatflowsCount
     } catch (error) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: chatflowsService.getAllChatflowsCountByOrganization - ${getErrorMessage(error)}`
         )
@@ -200,7 +200,7 @@ const getAllChatflowsCount = async (type?: ChatflowType): Promise<number> => {
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).count()
         return dbResponse
     } catch (error) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: chatflowsService.getAllChatflowsCount - ${getErrorMessage(error)}`
         )
@@ -220,11 +220,11 @@ const getChatflowByApiKey = async (apiKeyId: string, keyonly?: unknown): Promise
 
         const dbResponse = await query.orderBy('cf.name', 'ASC').getMany()
         if (dbResponse.length < 1) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow not found in the database!`)
+            throw new InternalChronosError(StatusCodes.NOT_FOUND, `Chatflow not found in the database!`)
         }
         return dbResponse
     } catch (error) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: chatflowsService.getChatflowByApiKey - ${getErrorMessage(error)}`
         )
@@ -240,11 +240,11 @@ const getChatflowById = async (chatflowId: string): Promise<any> => {
             }
         })
         if (!dbResponse) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found in the database!`)
+            throw new InternalChronosError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found in the database!`)
         }
         return dbResponse
     } catch (error) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: chatflowsService.getChatflowById - ${getErrorMessage(error)}`
         )
@@ -319,7 +319,7 @@ const getSinglePublicChatbotConfig = async (chatflowId: string): Promise<any> =>
             id: chatflowId
         })
         if (!dbResponse) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
+            throw new InternalChronosError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
         }
         const uploadsConfig = await utilGetUploadsConfig(chatflowId)
         // even if chatbotConfig is not set but uploads are enabled
@@ -342,12 +342,12 @@ const getSinglePublicChatbotConfig = async (chatflowId: string): Promise<any> =>
                 delete parsedConfig.allowedOriginsError
                 return { ...parsedConfig, uploads: uploadsConfig, flowData: dbResponse.flowData, isTTSEnabled }
             } catch (e) {
-                throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error parsing Chatbot Config for Chatflow ${chatflowId}`)
+                throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, `Error parsing Chatbot Config for Chatflow ${chatflowId}`)
             }
         }
         return 'OK'
     } catch (error) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: chatflowsService.getSinglePublicChatbotConfig - ${getErrorMessage(error)}`
         )
@@ -374,13 +374,13 @@ const checkIfChatflowHasChanged = async (chatflowId: string, lastUpdatedDateTime
             id: chatflowId
         })
         if (!chatflow) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
+            throw new InternalChronosError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
         }
         // parse the lastUpdatedDateTime as a date and
         //check if the updatedDate is the same as the lastUpdatedDateTime
         return { hasChanged: chatflow.updatedDate.toISOString() !== lastUpdatedDateTime }
     } catch (error) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: chatflowsService.checkIfChatflowHasChanged - ${getErrorMessage(error)}`
         )

@@ -1,5 +1,5 @@
 import { validateMimeTypeAndExtensionMatch } from 'chronos-components'
-import { InternalFlowiseError } from '../errors/internalFlowiseError'
+import { InternalChronosError } from '../errors/internalChronosError'
 import { StatusCodes } from 'http-status-codes'
 import { getErrorMessage } from '../errors/utils'
 
@@ -12,7 +12,7 @@ import { getErrorMessage } from '../errors/utils'
  *
  * @param {string} filename The original filename
  * @param {string} mimetype The declared MIME type
- * @throws {InternalFlowiseError} If validation fails, throws BAD_REQUEST error
+ * @throws {InternalChronosError} If validation fails, throws BAD_REQUEST error
  * @example
  * ```typescript
  * validateFileMimeTypeAndExtensionMatch(file.originalname, file.mimetype)
@@ -22,6 +22,6 @@ export function validateFileMimeTypeAndExtensionMatch(filename: string, mimetype
     try {
         validateMimeTypeAndExtensionMatch(filename, mimetype)
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, getErrorMessage(error))
+        throw new InternalChronosError(StatusCodes.BAD_REQUEST, getErrorMessage(error))
     }
 }
