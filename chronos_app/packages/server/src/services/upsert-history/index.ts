@@ -2,7 +2,7 @@ import { MoreThanOrEqual, LessThanOrEqual, Between } from 'typeorm'
 import { StatusCodes } from 'http-status-codes'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { UpsertHistory } from '../../database/entities/UpsertHistory'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { InternalChronosError } from '../../errors/internalChronosError'
 import { getErrorMessage } from '../../errors/utils'
 
 const getAllUpsertHistory = async (
@@ -43,7 +43,7 @@ const getAllUpsertHistory = async (
 
         return upsertHistory
     } catch (error) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: upsertHistoryServices.getAllUpsertHistory - ${getErrorMessage(error)}`
         )
@@ -56,7 +56,7 @@ const patchDeleteUpsertHistory = async (ids: string[] = []): Promise<any> => {
         const dbResponse = await appServer.AppDataSource.getRepository(UpsertHistory).delete(ids)
         return dbResponse
     } catch (error) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: upsertHistoryServices.patchDeleteUpsertHistory - ${getErrorMessage(error)}`
         )

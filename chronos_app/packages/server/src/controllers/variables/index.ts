@@ -1,14 +1,14 @@
 import { Request, Response, NextFunction } from 'express'
 import variablesService from '../../services/variables'
 import { Variable } from '../../database/entities/Variable'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { InternalChronosError } from '../../errors/internalChronosError'
 import { StatusCodes } from 'http-status-codes'
 import { getPageAndLimitParams } from '../../utils/pagination'
 
 const createVariable = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.body === 'undefined') {
-            throw new InternalFlowiseError(
+            throw new InternalChronosError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: variablesController.createVariable - body not provided!`
             )
@@ -27,7 +27,7 @@ const createVariable = async (req: Request, res: Response, next: NextFunction) =
 const deleteVariable = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params === 'undefined' || !req.params.id) {
-            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, 'Error: variablesController.deleteVariable - id not provided!')
+            throw new InternalChronosError(StatusCodes.PRECONDITION_FAILED, 'Error: variablesController.deleteVariable - id not provided!')
         }
         const apiResponse = await variablesService.deleteVariable(req.params.id)
         return res.json(apiResponse)
@@ -49,10 +49,10 @@ const getAllVariables = async (req: Request, res: Response, next: NextFunction) 
 const updateVariable = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params === 'undefined' || !req.params.id) {
-            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, 'Error: variablesController.updateVariable - id not provided!')
+            throw new InternalChronosError(StatusCodes.PRECONDITION_FAILED, 'Error: variablesController.updateVariable - id not provided!')
         }
         if (typeof req.body === 'undefined') {
-            throw new InternalFlowiseError(
+            throw new InternalChronosError(
                 StatusCodes.PRECONDITION_FAILED,
                 'Error: variablesController.updateVariable - body not provided!'
             )

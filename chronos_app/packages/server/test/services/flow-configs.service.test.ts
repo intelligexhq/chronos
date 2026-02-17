@@ -75,7 +75,7 @@ export function flowConfigsServiceTest() {
                 await expect(flowConfigsService.getSingleFlowConfig('non-existent')).rejects.toThrow('Chatflow non-existent not found')
             })
 
-            it('should throw InternalFlowiseError on general error', async () => {
+            it('should throw InternalChronosError on general error', async () => {
                 mockGetChatflowById.mockRejectedValue(new Error('Database error'))
 
                 await expect(flowConfigsService.getSingleFlowConfig('flow-1')).rejects.toThrow(

@@ -52,7 +52,7 @@ export function leadsServiceTest() {
                 expect(result).toEqual([])
             })
 
-            it('should throw InternalFlowiseError on database error', async () => {
+            it('should throw InternalChronosError on database error', async () => {
                 mockRepository.find.mockRejectedValue(new Error('Database connection failed'))
 
                 await expect(leadsService.getAllLeads('flow-1')).rejects.toThrow('Error: leadsService.getAllLeads')
@@ -96,7 +96,7 @@ export function leadsServiceTest() {
                 expect(mockRepository.save).toHaveBeenCalled()
             })
 
-            it('should throw InternalFlowiseError on save error', async () => {
+            it('should throw InternalChronosError on save error', async () => {
                 mockRepository.create.mockReturnValue({})
                 mockRepository.save.mockRejectedValue(new Error('Save failed'))
 

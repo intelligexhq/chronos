@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
 import { ChatFlow } from '../database/entities/ChatFlow'
-import { InternalFlowiseError } from '../errors/internalFlowiseError'
+import { InternalChronosError } from '../errors/internalChronosError'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 import { getErrorMessage } from '../errors/utils'
 
@@ -31,6 +31,6 @@ export const addChatflowsCount = async (keys: any) => {
         }
         return tmpResult
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: addChatflowsCount - ${getErrorMessage(error)}`)
+        throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: addChatflowsCount - ${getErrorMessage(error)}`)
     }
 }

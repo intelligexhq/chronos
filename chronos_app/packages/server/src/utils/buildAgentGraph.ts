@@ -22,7 +22,7 @@ import { BaseMessage, HumanMessage, AIMessage, AIMessageChunk, ToolMessage } fro
 import { IChatFlow, IComponentNodes, IDepthQueue, IReactFlowNode, IReactFlowEdge, IMessage, IncomingInput, IFlowConfig } from '../Interface'
 import { databaseEntities, clearSessionMemory, getAPIOverrideConfig } from '../utils'
 import { replaceInputsWithConfig, resolveVariables } from '.'
-import { InternalFlowiseError } from '../errors/internalFlowiseError'
+import { InternalChronosError } from '../errors/internalChronosError'
 import { getErrorMessage } from '../errors/utils'
 import logger from './logger'
 import { Variable } from '../database/entities/Variable'
@@ -404,7 +404,7 @@ export const buildAgentGraph = async ({
         return streamResults
     } catch (e) {
         logger.error(`[server]: [${orgId}]: Error:`, e)
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error buildAgentGraph - ${getErrorMessage(e)}`)
+        throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, `Error buildAgentGraph - ${getErrorMessage(e)}`)
     }
 }
 
@@ -502,7 +502,7 @@ const compileMultiAgentsGraph = async (params: MultiAgentsGraphParams) => {
 
             workflowGraph.addNode(workerResult.name, workerResult.node)
         } catch (e) {
-            throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error initialize worker nodes - ${getErrorMessage(e)}`)
+            throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, `Error initialize worker nodes - ${getErrorMessage(e)}`)
         }
     }
 
@@ -543,7 +543,7 @@ const compileMultiAgentsGraph = async (params: MultiAgentsGraphParams) => {
                         question = await moderation.checkForViolations(question)
                     }
                 } catch (e) {
-                    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, getErrorMessage(e))
+                    throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, getErrorMessage(e))
                 }
             }
 
@@ -611,7 +611,7 @@ const compileMultiAgentsGraph = async (params: MultiAgentsGraphParams) => {
                 }
             )
         } catch (e) {
-            throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error initialize supervisor nodes - ${getErrorMessage(e)}`)
+            throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, `Error initialize supervisor nodes - ${getErrorMessage(e)}`)
         }
     }
 }
@@ -675,14 +675,14 @@ const compileSeqAgentsGraph = async (params: SeqAgentsGraphParams) => {
 
     /*** Validate Graph ***/
     const startAgentNodes: IReactFlowNode[] = reactFlowNodes.filter((node: IReactFlowNode) => node.data.name === 'seqStart')
-    if (!startAgentNodes.length) throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, 'Start node not found')
+    if (!startAgentNodes.length) throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, 'Start node not found')
     if (startAgentNodes.length > 1)
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, 'Graph should have only one start node')
+        throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, 'Graph should have only one start node')
 
     const endAgentNodes: IReactFlowNode[] = reactFlowNodes.filter((node: IReactFlowNode) => node.data.name === 'seqEnd')
     const loopNodes: IReactFlowNode[] = reactFlowNodes.filter((node: IReactFlowNode) => node.data.name === 'seqLoop')
     if (!endAgentNodes.length && !loopNodes.length) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, 'Graph should have at least one End/Loop node')
+        throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, 'Graph should have at least one End/Loop node')
     }
     /*** End of Validation ***/
 
@@ -894,7 +894,7 @@ const compileSeqAgentsGraph = async (params: SeqAgentsGraphParams) => {
                                         question = await moderation.checkForViolations(question)
                                     }
                                 } catch (e) {
-                                    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, getErrorMessage(e))
+                                    throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, getErrorMessage(e))
                                 }
                             }
                             //@ts-ignore
@@ -939,7 +939,7 @@ const compileSeqAgentsGraph = async (params: SeqAgentsGraphParams) => {
                     }
                 }
             } catch (e) {
-                throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error initialize agent nodes - ${getErrorMessage(e)}`)
+                throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, `Error initialize agent nodes - ${getErrorMessage(e)}`)
             }
         }
     }
@@ -1053,7 +1053,7 @@ const compileSeqAgentsGraph = async (params: SeqAgentsGraphParams) => {
         })
     } catch (e) {
         logger.error(`[${options.orgId}]: Error compile graph`, e)
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error compile graph - ${getErrorMessage(e)}`)
+        throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, `Error compile graph - ${getErrorMessage(e)}`)
     }
 }
 

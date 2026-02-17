@@ -1,5 +1,12 @@
 # Chronos - Visual AI agent builder
 
+![Build Status](https://github.com/intelligexhq/chronos/actions/workflows/validate.yml/badge.svg)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE.md)
+[![Node Version](https://img.shields.io/badge/node-%3E%3D24-brightgreen)](chronos_app/.nvmrc)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![GitHub Issues](https://img.shields.io/github/issues/intelligexhq/chronos)](https://github.com/intelligexhq/chronos/issues)
+
+
 <div align=center style="padding-bottom: 35px;">
 <img src="./resources/chronos_main_page.gif" width="600"/>
 </div>

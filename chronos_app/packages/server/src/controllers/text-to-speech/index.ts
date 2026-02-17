@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import { convertTextToSpeechStream } from 'chronos-components'
 import { StatusCodes } from 'http-status-codes'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { InternalChronosError } from '../../errors/internalChronosError'
 import chatflowsService from '../../services/chatflows'
 import textToSpeechService from '../../services/text-to-speech'
 import { databaseEntities } from '../../utils'
@@ -21,7 +21,7 @@ const generateTextToSpeech = async (req: Request, res: Response) => {
         } = req.body
 
         if (!text) {
-            throw new InternalFlowiseError(
+            throw new InternalChronosError(
                 StatusCodes.BAD_REQUEST,
                 `Error: textToSpeechController.generateTextToSpeech - text not provided!`
             )
@@ -37,7 +37,7 @@ const generateTextToSpeech = async (req: Request, res: Response) => {
             // Find the provider with status: true
             const activeProviderKey = Object.keys(ttsConfig).find((key) => ttsConfig[key].status === true)
             if (!activeProviderKey) {
-                throw new InternalFlowiseError(
+                throw new InternalChronosError(
                     StatusCodes.BAD_REQUEST,
                     `Error: textToSpeechController.generateTextToSpeech - no active TTS provider configured in chatflow!`
                 )
@@ -57,14 +57,14 @@ const generateTextToSpeech = async (req: Request, res: Response) => {
         }
 
         if (!provider) {
-            throw new InternalFlowiseError(
+            throw new InternalChronosError(
                 StatusCodes.BAD_REQUEST,
                 `Error: textToSpeechController.generateTextToSpeech - provider not provided!`
             )
         }
 
         if (!credentialId) {
-            throw new InternalFlowiseError(
+            throw new InternalChronosError(
                 StatusCodes.BAD_REQUEST,
                 `Error: textToSpeechController.generateTextToSpeech - credentialId not provided!`
             )
@@ -159,21 +159,21 @@ const abortTextToSpeech = async (req: Request, res: Response) => {
         const { chatId, chatMessageId, chatflowId } = req.body
 
         if (!chatId) {
-            throw new InternalFlowiseError(
+            throw new InternalChronosError(
                 StatusCodes.BAD_REQUEST,
                 `Error: textToSpeechController.abortTextToSpeech - chatId not provided!`
             )
         }
 
         if (!chatMessageId) {
-            throw new InternalFlowiseError(
+            throw new InternalChronosError(
                 StatusCodes.BAD_REQUEST,
                 `Error: textToSpeechController.abortTextToSpeech - chatMessageId not provided!`
             )
         }
 
         if (!chatflowId) {
-            throw new InternalFlowiseError(
+            throw new InternalChronosError(
                 StatusCodes.BAD_REQUEST,
                 `Error: textToSpeechController.abortTextToSpeech - chatflowId not provided!`
             )
@@ -208,7 +208,7 @@ const getVoices = async (req: Request, res: Response, next: NextFunction) => {
         const { provider, credentialId } = req.query
 
         if (!provider) {
-            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Error: textToSpeechController.getVoices - provider not provided!`)
+            throw new InternalChronosError(StatusCodes.BAD_REQUEST, `Error: textToSpeechController.getVoices - provider not provided!`)
         }
 
         const voices = await textToSpeechService.getVoices(provider as any, credentialId as string)

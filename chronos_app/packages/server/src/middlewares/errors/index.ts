@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { InternalChronosError } from '../../errors/internalChronosError'
 
 // we need eslint because we have to pass next arg for the error middleware
 // eslint-disable-next-line
-async function errorHandlerMiddleware(err: InternalFlowiseError, req: Request, res: Response, next: NextFunction) {
+async function errorHandlerMiddleware(err: InternalChronosError, req: Request, res: Response, next: NextFunction) {
     const statusCode = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR
     if (err.message.includes('401 Incorrect API key provided'))
         err.message = '401 Invalid model key or Incorrect local model configuration.'

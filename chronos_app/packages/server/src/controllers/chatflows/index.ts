@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { ChatFlow } from '../../database/entities/ChatFlow'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { InternalChronosError } from '../../errors/internalChronosError'
 import { ChatflowType } from '../../Interface'
 import apiKeyService from '../../services/apikey'
 import chatflowsService from '../../services/chatflows'
@@ -11,7 +11,7 @@ import { getPageAndLimitParams } from '../../utils/pagination'
 const checkIfChatflowIsValidForStreaming = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params === 'undefined' || !req.params.id) {
-            throw new InternalFlowiseError(
+            throw new InternalChronosError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: chatflowsController.checkIfChatflowIsValidForStreaming - id not provided!`
             )
@@ -26,7 +26,7 @@ const checkIfChatflowIsValidForStreaming = async (req: Request, res: Response, n
 const checkIfChatflowIsValidForUploads = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params === 'undefined' || !req.params.id) {
-            throw new InternalFlowiseError(
+            throw new InternalChronosError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: chatflowsController.checkIfChatflowIsValidForUploads - id not provided!`
             )
@@ -41,7 +41,7 @@ const checkIfChatflowIsValidForUploads = async (req: Request, res: Response, nex
 const deleteChatflow = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params === 'undefined' || !req.params.id) {
-            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsController.deleteChatflow - id not provided!`)
+            throw new InternalChronosError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsController.deleteChatflow - id not provided!`)
         }
         const apiResponse = await chatflowsService.deleteChatflow(req.params.id)
         return res.json(apiResponse)
@@ -64,7 +64,7 @@ const getAllChatflows = async (req: Request, res: Response, next: NextFunction) 
 const getChatflowByApiKey = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params === 'undefined' || !req.params.apikey) {
-            throw new InternalFlowiseError(
+            throw new InternalChronosError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: chatflowsController.getChatflowByApiKey - apikey not provided!`
             )
@@ -83,7 +83,7 @@ const getChatflowByApiKey = async (req: Request, res: Response, next: NextFuncti
 const getChatflowById = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params === 'undefined' || !req.params.id) {
-            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsController.getChatflowById - id not provided!`)
+            throw new InternalChronosError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsController.getChatflowById - id not provided!`)
         }
         const apiResponse = await chatflowsService.getChatflowById(req.params.id)
         return res.json(apiResponse)
@@ -95,7 +95,7 @@ const getChatflowById = async (req: Request, res: Response, next: NextFunction) 
 const saveChatflow = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (!req.body) {
-            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsController.saveChatflow - body not provided!`)
+            throw new InternalChronosError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsController.saveChatflow - body not provided!`)
         }
         const body = req.body
         const newChatFlow = new ChatFlow()
@@ -110,7 +110,7 @@ const saveChatflow = async (req: Request, res: Response, next: NextFunction) => 
 const updateChatflow = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params === 'undefined' || !req.params.id) {
-            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsController.updateChatflow - id not provided!`)
+            throw new InternalChronosError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsController.updateChatflow - id not provided!`)
         }
         const chatflow = await chatflowsService.getChatflowById(req.params.id)
         if (!chatflow) {
@@ -134,7 +134,7 @@ const updateChatflow = async (req: Request, res: Response, next: NextFunction) =
 const getSinglePublicChatflow = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params === 'undefined' || !req.params.id) {
-            throw new InternalFlowiseError(
+            throw new InternalChronosError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: chatflowsController.getSinglePublicChatflow - id not provided!`
             )
@@ -154,7 +154,7 @@ const getSinglePublicChatflow = async (req: Request, res: Response, next: NextFu
 const getSinglePublicChatbotConfig = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params === 'undefined' || !req.params.id) {
-            throw new InternalFlowiseError(
+            throw new InternalChronosError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: chatflowsController.getSinglePublicChatbotConfig - id not provided!`
             )
@@ -169,13 +169,13 @@ const getSinglePublicChatbotConfig = async (req: Request, res: Response, next: N
 const checkIfChatflowHasChanged = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params === 'undefined' || !req.params.id) {
-            throw new InternalFlowiseError(
+            throw new InternalChronosError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: chatflowsController.checkIfChatflowHasChanged - id not provided!`
             )
         }
         if (!req.params.lastUpdatedDateTime) {
-            throw new InternalFlowiseError(
+            throw new InternalChronosError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: chatflowsController.checkIfChatflowHasChanged - lastUpdatedDateTime not provided!`
             )

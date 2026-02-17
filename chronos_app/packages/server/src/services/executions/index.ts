@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes'
 import { In } from 'typeorm'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { Execution } from '../../database/entities/Execution'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { InternalChronosError } from '../../errors/internalChronosError'
 import { getErrorMessage } from '../../errors/utils'
 import { ExecutionState, IAgentflowExecutedData } from '../../Interface'
 import { _removeCredentialId } from '../../utils'
@@ -27,11 +27,11 @@ const getExecutionById = async (executionId: string): Promise<Execution | null> 
 
         const res = await executionRepository.findOne({ where: { id: executionId } })
         if (!res) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Execution ${executionId} not found`)
+            throw new InternalChronosError(StatusCodes.NOT_FOUND, `Execution ${executionId} not found`)
         }
         return res
     } catch (error) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: executionsService.getExecutionById - ${getErrorMessage(error)}`
         )
@@ -44,14 +44,14 @@ const getPublicExecutionById = async (executionId: string): Promise<Execution | 
         const executionRepository = appServer.AppDataSource.getRepository(Execution)
         const res = await executionRepository.findOne({ where: { id: executionId, isPublic: true } })
         if (!res) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Execution ${executionId} not found`)
+            throw new InternalChronosError(StatusCodes.NOT_FOUND, `Execution ${executionId} not found`)
         }
         const executionData = typeof res?.executionData === 'string' ? JSON.parse(res?.executionData) : res?.executionData
         const executionDataWithoutCredentialId = executionData.map((data: IAgentflowExecutedData) => _removeCredentialId(data))
         const stringifiedExecutionData = JSON.stringify(executionDataWithoutCredentialId)
         return { ...res, executionData: stringifiedExecutionData }
     } catch (error) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: executionsService.getPublicExecutionById - ${getErrorMessage(error)}`
         )
@@ -92,7 +92,7 @@ const getAllExecutions = async (filters: ExecutionFilters = {}): Promise<{ data:
 
         return { data, total }
     } catch (error) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: executionsService.getAllExecutions - ${getErrorMessage(error)}`
         )
@@ -105,7 +105,7 @@ const updateExecution = async (executionId: string, data: Partial<Execution>): P
 
         const execution = await appServer.AppDataSource.getRepository(Execution).findOneBy({ id: executionId })
         if (!execution) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Execution ${executionId} not found`)
+            throw new InternalChronosError(StatusCodes.NOT_FOUND, `Execution ${executionId} not found`)
         }
         const updateExecution = new Execution()
         Object.assign(updateExecution, data)
@@ -113,7 +113,7 @@ const updateExecution = async (executionId: string, data: Partial<Execution>): P
         const dbResponse = await appServer.AppDataSource.getRepository(Execution).save(execution)
         return dbResponse
     } catch (error) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: executionsService.updateExecution - ${getErrorMessage(error)}`
         )
@@ -141,7 +141,7 @@ const deleteExecutions = async (executionIds: string[]): Promise<{ success: bool
             deletedCount: result.affected || 0
         }
     } catch (error) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: executionsService.deleteExecutions - ${getErrorMessage(error)}`
         )

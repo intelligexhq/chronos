@@ -1,51 +1,51 @@
-import { InternalFlowiseError } from '../../src/errors/internalFlowiseError'
+import { InternalChronosError } from '../../src/errors/internalChronosError'
 import { StatusCodes } from 'http-status-codes'
 
 /**
- * Test suite for InternalFlowiseError class
+ * Test suite for InternalChronosError class
  * Tests custom error creation and properties
  */
-export function internalFlowiseErrorTest() {
-    describe('InternalFlowiseError', () => {
+export function internalChronosErrorTest() {
+    describe('InternalChronosError', () => {
         it('should create error with status code and message', () => {
-            const error = new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Resource not found')
+            const error = new InternalChronosError(StatusCodes.NOT_FOUND, 'Resource not found')
 
             expect(error).toBeInstanceOf(Error)
-            expect(error).toBeInstanceOf(InternalFlowiseError)
+            expect(error).toBeInstanceOf(InternalChronosError)
             expect(error.statusCode).toBe(404)
             expect(error.message).toBe('Resource not found')
         })
 
         it('should create error with 500 status code', () => {
-            const error = new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, 'Something went wrong')
+            const error = new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, 'Something went wrong')
 
             expect(error.statusCode).toBe(500)
             expect(error.message).toBe('Something went wrong')
         })
 
         it('should create error with 401 unauthorized status', () => {
-            const error = new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Unauthorized')
+            const error = new InternalChronosError(StatusCodes.UNAUTHORIZED, 'Unauthorized')
 
             expect(error.statusCode).toBe(401)
             expect(error.message).toBe('Unauthorized')
         })
 
         it('should create error with 400 bad request status', () => {
-            const error = new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid input')
+            const error = new InternalChronosError(StatusCodes.BAD_REQUEST, 'Invalid input')
 
             expect(error.statusCode).toBe(400)
             expect(error.message).toBe('Invalid input')
         })
 
         it('should create error with 403 forbidden status', () => {
-            const error = new InternalFlowiseError(StatusCodes.FORBIDDEN, 'Access denied')
+            const error = new InternalChronosError(StatusCodes.FORBIDDEN, 'Access denied')
 
             expect(error.statusCode).toBe(403)
             expect(error.message).toBe('Access denied')
         })
 
         it('should have a stack trace', () => {
-            const error = new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Test error')
+            const error = new InternalChronosError(StatusCodes.NOT_FOUND, 'Test error')
 
             expect(error.stack).toBeDefined()
             // Stack trace starts with error message, includes file location
@@ -54,28 +54,28 @@ export function internalFlowiseErrorTest() {
 
         it('should be throwable and catchable', () => {
             expect(() => {
-                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Test throw')
-            }).toThrow(InternalFlowiseError)
+                throw new InternalChronosError(StatusCodes.NOT_FOUND, 'Test throw')
+            }).toThrow(InternalChronosError)
         })
 
         it('should preserve status code when caught', () => {
             try {
-                throw new InternalFlowiseError(StatusCodes.CONFLICT, 'Conflict error')
+                throw new InternalChronosError(StatusCodes.CONFLICT, 'Conflict error')
             } catch (error) {
-                expect((error as InternalFlowiseError).statusCode).toBe(409)
-                expect((error as InternalFlowiseError).message).toBe('Conflict error')
+                expect((error as InternalChronosError).statusCode).toBe(409)
+                expect((error as InternalChronosError).message).toBe('Conflict error')
             }
         })
 
         it('should work with custom numeric status codes', () => {
-            const error = new InternalFlowiseError(418, "I'm a teapot")
+            const error = new InternalChronosError(418, "I'm a teapot")
 
             expect(error.statusCode).toBe(418)
             expect(error.message).toBe("I'm a teapot")
         })
 
         it('should handle empty message', () => {
-            const error = new InternalFlowiseError(StatusCodes.NOT_FOUND, '')
+            const error = new InternalChronosError(StatusCodes.NOT_FOUND, '')
 
             expect(error.statusCode).toBe(404)
             expect(error.message).toBe('')
@@ -83,18 +83,18 @@ export function internalFlowiseErrorTest() {
 
         it('should handle long error messages', () => {
             const longMessage = 'A'.repeat(1000)
-            const error = new InternalFlowiseError(StatusCodes.BAD_REQUEST, longMessage)
+            const error = new InternalChronosError(StatusCodes.BAD_REQUEST, longMessage)
 
             expect(error.message).toBe(longMessage)
             expect(error.message).toHaveLength(1000)
         })
 
         it('should be identifiable via instanceof check', () => {
-            const error = new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Test')
+            const error = new InternalChronosError(StatusCodes.NOT_FOUND, 'Test')
             const regularError = new Error('Regular error')
 
-            expect(error instanceof InternalFlowiseError).toBe(true)
-            expect(regularError instanceof InternalFlowiseError).toBe(false)
+            expect(error instanceof InternalChronosError).toBe(true)
+            expect(regularError instanceof InternalChronosError).toBe(false)
         })
     })
 }

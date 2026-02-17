@@ -6,7 +6,7 @@ import { DeleteResult, QueryRunner } from 'typeorm'
 import { Assistant } from '../../database/entities/Assistant'
 import { Credential } from '../../database/entities/Credential'
 import { DocumentStore } from '../../database/entities/DocumentStore'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { InternalChronosError } from '../../errors/internalChronosError'
 import { getErrorMessage } from '../../errors/utils'
 import { AssistantType } from '../../Interface'
 import { CHRONOS_COUNTER_STATUS, CHRONOS_METRIC_COUNTERS } from '../../Interface.Metrics'
@@ -21,7 +21,7 @@ const createAssistant = async (requestBody: any, orgId: string): Promise<Assista
     try {
         const appServer = getRunningExpressApp()
         if (!requestBody.details) {
-            throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Invalid request body`)
+            throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, `Invalid request body`)
         }
         const assistantDetails = JSON.parse(requestBody.details)
 
@@ -52,14 +52,14 @@ const createAssistant = async (requestBody: any, orgId: string): Promise<Assista
             })
 
             if (!credential) {
-                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${requestBody.credential} not found`)
+                throw new InternalChronosError(StatusCodes.NOT_FOUND, `Credential ${requestBody.credential} not found`)
             }
 
             // Decrpyt credentialData
             const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
             const openAIApiKey = decryptedCredentialData['openAIApiKey']
             if (!openAIApiKey) {
-                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `OpenAI ApiKey not found`)
+                throw new InternalChronosError(StatusCodes.NOT_FOUND, `OpenAI ApiKey not found`)
             }
             const openai = new OpenAI({ apiKey: openAIApiKey })
 
@@ -129,7 +129,7 @@ const createAssistant = async (requestBody: any, orgId: string): Promise<Assista
 
             requestBody.details = JSON.stringify(newAssistantDetails)
         } catch (error) {
-            throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error creating new assistant - ${getErrorMessage(error)}`)
+            throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, `Error creating new assistant - ${getErrorMessage(error)}`)
         }
         const newAssistant = new Assistant()
         Object.assign(newAssistant, requestBody)
@@ -150,7 +150,7 @@ const createAssistant = async (requestBody: any, orgId: string): Promise<Assista
 
         return dbResponse
     } catch (error) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: assistantsService.createAssistant - ${getErrorMessage(error)}`
         )
@@ -164,7 +164,7 @@ const deleteAssistant = async (assistantId: string, isDeleteBoth: any): Promise<
             id: assistantId
         })
         if (!assistant) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Assistant ${assistantId} not found`)
+            throw new InternalChronosError(StatusCodes.NOT_FOUND, `Assistant ${assistantId} not found`)
         }
         if (assistant.type === 'CUSTOM') {
             const dbResponse = await appServer.AppDataSource.getRepository(Assistant).delete({ id: assistantId })
@@ -177,14 +177,14 @@ const deleteAssistant = async (assistantId: string, isDeleteBoth: any): Promise<
             })
 
             if (!credential) {
-                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${assistant.credential} not found`)
+                throw new InternalChronosError(StatusCodes.NOT_FOUND, `Credential ${assistant.credential} not found`)
             }
 
             // Decrpyt credentialData
             const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
             const openAIApiKey = decryptedCredentialData['openAIApiKey']
             if (!openAIApiKey) {
-                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `OpenAI ApiKey not found`)
+                throw new InternalChronosError(StatusCodes.NOT_FOUND, `OpenAI ApiKey not found`)
             }
 
             const openai = new OpenAI({ apiKey: openAIApiKey })
@@ -192,10 +192,10 @@ const deleteAssistant = async (assistantId: string, isDeleteBoth: any): Promise<
             if (isDeleteBoth) await openai.beta.assistants.del(assistantDetails.id)
             return dbResponse
         } catch (error: any) {
-            throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error deleting assistant - ${getErrorMessage(error)}`)
+            throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, `Error deleting assistant - ${getErrorMessage(error)}`)
         }
     } catch (error) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: assistantsService.deleteAssistant - ${getErrorMessage(error)}`
         )
@@ -214,7 +214,7 @@ async function getAssistantsCountByOrganization(type: AssistantType, _organizati
         const assistantsCount = await appServer.AppDataSource.getRepository(Assistant).countBy({ type })
         return assistantsCount
     } catch (error) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: assistantsService.getAssistantsCountByOrganization - ${getErrorMessage(error)}`
         )
@@ -233,7 +233,7 @@ const getAllAssistants = async (type?: AssistantType): Promise<Assistant[]> => {
         const dbResponse = await appServer.AppDataSource.getRepository(Assistant).find()
         return dbResponse
     } catch (error) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: assistantsService.getAllAssistants - ${getErrorMessage(error)}`
         )
@@ -252,7 +252,7 @@ const getAllAssistantsCount = async (type?: AssistantType): Promise<number> => {
         const dbResponse = await appServer.AppDataSource.getRepository(Assistant).count()
         return dbResponse
     } catch (error) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: assistantsService.getAllAssistantsCount - ${getErrorMessage(error)}`
         )
@@ -266,11 +266,11 @@ const getAssistantById = async (assistantId: string): Promise<Assistant> => {
             id: assistantId
         })
         if (!dbResponse) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Assistant ${assistantId} not found`)
+            throw new InternalChronosError(StatusCodes.NOT_FOUND, `Assistant ${assistantId} not found`)
         }
         return dbResponse
     } catch (error) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: assistantsService.getAssistantById - ${getErrorMessage(error)}`
         )
@@ -285,7 +285,7 @@ const updateAssistant = async (assistantId: string, requestBody: any): Promise<A
         })
 
         if (!assistant) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Assistant ${assistantId} not found`)
+            throw new InternalChronosError(StatusCodes.NOT_FOUND, `Assistant ${assistantId} not found`)
         }
 
         if (assistant.type === 'CUSTOM') {
@@ -307,14 +307,14 @@ const updateAssistant = async (assistantId: string, requestBody: any): Promise<A
             })
 
             if (!credential) {
-                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${body.credential} not found`)
+                throw new InternalChronosError(StatusCodes.NOT_FOUND, `Credential ${body.credential} not found`)
             }
 
             // Decrpyt credentialData
             const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
             const openAIApiKey = decryptedCredentialData['openAIApiKey']
             if (!openAIApiKey) {
-                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `OpenAI ApiKey not found`)
+                throw new InternalChronosError(StatusCodes.NOT_FOUND, `OpenAI ApiKey not found`)
             }
 
             const openai = new OpenAI({ apiKey: openAIApiKey })
@@ -375,10 +375,10 @@ const updateAssistant = async (assistantId: string, requestBody: any): Promise<A
             const dbResponse = await appServer.AppDataSource.getRepository(Assistant).save(assistant)
             return dbResponse
         } catch (error) {
-            throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error updating assistant - ${getErrorMessage(error)}`)
+            throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, `Error updating assistant - ${getErrorMessage(error)}`)
         }
     } catch (error) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: assistantsService.updateAssistant - ${getErrorMessage(error)}`
         )
@@ -428,7 +428,7 @@ const importAssistants = async (newAssistants: Partial<Assistant>[], queryRunner
 
         return insertResponse
     } catch (error) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: assistantsService.importAssistants - ${getErrorMessage(error)}`
         )
@@ -440,7 +440,7 @@ const getChatModels = async (): Promise<any> => {
         const dbResponse = await nodesService.getAllNodesForCategory('Chat Models')
         return dbResponse.filter((node) => !node.tags?.includes('LlamaIndex'))
     } catch (error) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: assistantsService.getChatModels - ${getErrorMessage(error)}`
         )
@@ -464,7 +464,7 @@ const getDocumentStores = async (): Promise<any> => {
         }
         return returnData
     } catch (error) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: assistantsService.getDocumentStores - ${getErrorMessage(error)}`
         )
@@ -483,7 +483,7 @@ const getTools = async (): Promise<any> => {
         })
         return filteredTools
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: assistantsService.getTools - ${getErrorMessage(error)}`)
+        throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: assistantsService.getTools - ${getErrorMessage(error)}`)
     }
 }
 
@@ -517,12 +517,12 @@ const generateAssistantInstruction = async (task: string, selectedChatModel: ICo
             return { content }
         }
 
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: assistantsService.generateAssistantInstruction - Error generating tool description`
         )
     } catch (error) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: assistantsService.generateAssistantInstruction - ${getErrorMessage(error)}`
         )

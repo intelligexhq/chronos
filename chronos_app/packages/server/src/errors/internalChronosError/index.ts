@@ -1,4 +1,4 @@
-export class InternalFlowiseError extends Error {
+export class InternalChronosError extends Error {
     statusCode: number
     constructor(statusCode: number, message: string) {
         super(message)
