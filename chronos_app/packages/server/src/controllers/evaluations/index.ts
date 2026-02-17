@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { InternalChronosError } from '../../errors/internalChronosError'
 import { StatusCodes } from 'http-status-codes'
 import evaluationsService from '../../services/evaluations'
 import { getPageAndLimitParams } from '../../utils/pagination'
@@ -7,7 +7,7 @@ import { getPageAndLimitParams } from '../../utils/pagination'
 const createEvaluation = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (!req.body) {
-            throw new InternalFlowiseError(
+            throw new InternalChronosError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: evaluationsService.createEvaluation - body not provided!`
             )
@@ -26,7 +26,7 @@ const createEvaluation = async (req: Request, res: Response, next: NextFunction)
 const runAgain = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params === 'undefined' || !req.params.id) {
-            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: evaluationsService.runAgain - id not provided!`)
+            throw new InternalChronosError(StatusCodes.PRECONDITION_FAILED, `Error: evaluationsService.runAgain - id not provided!`)
         }
         const orgId = ''
         const httpProtocol = req.get('x-forwarded-proto') || req.get('X-Forwarded-Proto') || req.protocol
@@ -41,7 +41,7 @@ const runAgain = async (req: Request, res: Response, next: NextFunction) => {
 const getEvaluation = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params === 'undefined' || !req.params.id) {
-            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: evaluationsService.getEvaluation - id not provided!`)
+            throw new InternalChronosError(StatusCodes.PRECONDITION_FAILED, `Error: evaluationsService.getEvaluation - id not provided!`)
         }
         const apiResponse = await evaluationsService.getEvaluation(req.params.id)
         return res.json(apiResponse)
@@ -53,7 +53,7 @@ const getEvaluation = async (req: Request, res: Response, next: NextFunction) =>
 const deleteEvaluation = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params === 'undefined' || !req.params.id) {
-            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: evaluationsService.deleteEvaluation - id not provided!`)
+            throw new InternalChronosError(StatusCodes.PRECONDITION_FAILED, `Error: evaluationsService.deleteEvaluation - id not provided!`)
         }
         const apiResponse = await evaluationsService.deleteEvaluation(req.params.id)
         return res.json(apiResponse)
@@ -75,7 +75,7 @@ const getAllEvaluations = async (req: Request, res: Response, next: NextFunction
 const isOutdated = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params === 'undefined' || !req.params.id) {
-            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: evaluationsService.isOutdated - id not provided!`)
+            throw new InternalChronosError(StatusCodes.PRECONDITION_FAILED, `Error: evaluationsService.isOutdated - id not provided!`)
         }
         const apiResponse = await evaluationsService.isOutdated(req.params.id)
         return res.json(apiResponse)
@@ -87,7 +87,7 @@ const isOutdated = async (req: Request, res: Response, next: NextFunction) => {
 const getVersions = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params === 'undefined' || !req.params.id) {
-            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: evaluationsService.getVersions - id not provided!`)
+            throw new InternalChronosError(StatusCodes.PRECONDITION_FAILED, `Error: evaluationsService.getVersions - id not provided!`)
         }
         const apiResponse = await evaluationsService.getVersions(req.params.id)
         return res.json(apiResponse)

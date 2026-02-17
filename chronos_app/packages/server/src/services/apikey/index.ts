@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { generateAPIKey, generateSecretHash } from '../../utils/apiKey'
 import { addChatflowsCount } from '../../utils/addChatflowsCount'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { InternalChronosError } from '../../errors/internalChronosError'
 import { getErrorMessage } from '../../errors/utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { ApiKey } from '../../database/entities/ApiKey'
@@ -35,7 +35,7 @@ const getAllApiKeys = async (autoCreateNewKey?: boolean, page: number = -1, limi
         }
         return keys
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.getAllApiKeys - ${getErrorMessage(error)}`)
+        throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.getAllApiKeys - ${getErrorMessage(error)}`)
     }
 }
 
@@ -50,7 +50,7 @@ const getApiKey = async (apiKey: string) => {
         }
         return currentKey
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.getApiKey - ${getErrorMessage(error)}`)
+        throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.getApiKey - ${getErrorMessage(error)}`)
     }
 }
 
@@ -65,7 +65,7 @@ const getApiKeyById = async (apiKeyId: string) => {
         }
         return currentKey
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.getApiKeyById - ${getErrorMessage(error)}`)
+        throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.getApiKeyById - ${getErrorMessage(error)}`)
     }
 }
 
@@ -83,7 +83,7 @@ const createApiKey = async (keyName: string) => {
         await appServer.AppDataSource.getRepository(ApiKey).save(key)
         return await getAllApiKeysFromDB()
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.createApiKey - ${getErrorMessage(error)}`)
+        throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.createApiKey - ${getErrorMessage(error)}`)
     }
 }
 
@@ -95,13 +95,13 @@ const updateApiKey = async (id: string, keyName: string) => {
             id: id
         })
         if (!currentKey) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `ApiKey ${currentKey} not found`)
+            throw new InternalChronosError(StatusCodes.NOT_FOUND, `ApiKey ${currentKey} not found`)
         }
         currentKey.keyName = keyName
         await appServer.AppDataSource.getRepository(ApiKey).save(currentKey)
         return await getAllApiKeysFromDB()
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.updateApiKey - ${getErrorMessage(error)}`)
+        throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.updateApiKey - ${getErrorMessage(error)}`)
     }
 }
 
@@ -110,11 +110,11 @@ const deleteApiKey = async (id: string) => {
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(ApiKey).delete({ id })
         if (!dbResponse) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `ApiKey ${id} not found`)
+            throw new InternalChronosError(StatusCodes.NOT_FOUND, `ApiKey ${id} not found`)
         }
         return dbResponse
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.deleteApiKey - ${getErrorMessage(error)}`)
+        throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.deleteApiKey - ${getErrorMessage(error)}`)
     }
 }
 
@@ -123,7 +123,7 @@ const importKeys = async (body: any) => {
         const jsonFile = body.jsonFile
         const splitDataURI = jsonFile.split(',')
         if (splitDataURI[0] !== 'data:application/json;base64') {
-            throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Invalid dataURI`)
+            throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, `Invalid dataURI`)
         }
         const bf = Buffer.from(splitDataURI[1] || '', 'base64')
         const plain = bf.toString('utf8')
@@ -131,31 +131,31 @@ const importKeys = async (body: any) => {
 
         // Validate schema of imported keys
         if (!Array.isArray(keys)) {
-            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Invalid format: Expected an array of API keys`)
+            throw new InternalChronosError(StatusCodes.BAD_REQUEST, `Invalid format: Expected an array of API keys`)
         }
 
         const requiredFields = ['keyName', 'apiKey', 'apiSecret', 'createdAt', 'id']
         for (let i = 0; i < keys.length; i++) {
             const key = keys[i]
             if (typeof key !== 'object' || key === null) {
-                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Invalid format: Key at index ${i} is not an object`)
+                throw new InternalChronosError(StatusCodes.BAD_REQUEST, `Invalid format: Key at index ${i} is not an object`)
             }
 
             for (const field of requiredFields) {
                 if (!(field in key)) {
-                    throw new InternalFlowiseError(
+                    throw new InternalChronosError(
                         StatusCodes.BAD_REQUEST,
                         `Invalid format: Key at index ${i} is missing required field '${field}'`
                     )
                 }
                 if (typeof key[field] !== 'string') {
-                    throw new InternalFlowiseError(
+                    throw new InternalChronosError(
                         StatusCodes.BAD_REQUEST,
                         `Invalid format: Key at index ${i} field '${field}' must be a string`
                     )
                 }
                 if (key[field].trim() === '') {
-                    throw new InternalFlowiseError(
+                    throw new InternalChronosError(
                         StatusCodes.BAD_REQUEST,
                         `Invalid format: Key at index ${i} field '${field}' cannot be empty`
                     )
@@ -175,7 +175,7 @@ const importKeys = async (body: any) => {
             for (const key of keys) {
                 const keyNameExists = allApiKeys.find((k) => k.keyName === key.keyName)
                 if (keyNameExists) {
-                    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Key with name ${key.keyName} already exists`)
+                    throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, `Key with name ${key.keyName} already exists`)
                 }
             }
         }
@@ -218,7 +218,7 @@ const importKeys = async (body: any) => {
         }
         return await getAllApiKeysFromDB()
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.importKeys - ${getErrorMessage(error)}`)
+        throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.importKeys - ${getErrorMessage(error)}`)
     }
 }
 
@@ -229,14 +229,14 @@ const verifyApiKey = async (paramApiKey: string): Promise<string> => {
             apiKey: paramApiKey
         })
         if (!apiKey) {
-            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
+            throw new InternalChronosError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
         }
         return 'OK'
     } catch (error) {
-        if (error instanceof InternalFlowiseError && error.statusCode === StatusCodes.UNAUTHORIZED) {
+        if (error instanceof InternalChronosError && error.statusCode === StatusCodes.UNAUTHORIZED) {
             throw error
         } else {
-            throw new InternalFlowiseError(
+            throw new InternalChronosError(
                 StatusCodes.INTERNAL_SERVER_ERROR,
                 `Error: apikeyService.verifyApiKey - ${getErrorMessage(error)}`
             )

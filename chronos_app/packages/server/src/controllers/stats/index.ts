@@ -2,12 +2,12 @@ import { StatusCodes } from 'http-status-codes'
 import { Request, Response, NextFunction } from 'express'
 import statsService from '../../services/stats'
 import { ChatMessageRatingType, ChatType } from '../../Interface'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { InternalChronosError } from '../../errors/internalChronosError'
 
 const getChatflowStats = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params === 'undefined' || !req.params.id) {
-            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: statsController.getChatflowStats - id not provided!`)
+            throw new InternalChronosError(StatusCodes.PRECONDITION_FAILED, `Error: statsController.getChatflowStats - id not provided!`)
         }
         const chatflowid = req.params.id
         const _chatTypes = req.query?.chatType as string | undefined

@@ -3,7 +3,7 @@ import fs from 'fs'
 import contentDisposition from 'content-disposition'
 import { streamStorageFile } from 'chronos-components'
 import { StatusCodes } from 'http-status-codes'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { InternalChronosError } from '../../errors/internalChronosError'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 
@@ -24,7 +24,7 @@ const streamUploadedFile = async (req: Request, res: Response, next: NextFunctio
             id: chatflowId
         })
         if (!chatflow) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
+            throw new InternalChronosError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
         }
         const orgId = ''
 
@@ -36,7 +36,7 @@ const streamUploadedFile = async (req: Request, res: Response, next: NextFunctio
         }
         const fileStream = await streamStorageFile(chatflowId, chatId, fileName, orgId)
 
-        if (!fileStream) throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: streamStorageFile`)
+        if (!fileStream) throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: streamStorageFile`)
 
         if (fileStream instanceof fs.ReadStream && fileStream?.pipe) {
             fileStream.pipe(res)

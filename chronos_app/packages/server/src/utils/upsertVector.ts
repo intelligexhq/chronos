@@ -26,7 +26,7 @@ import { IncomingInput, INodeDirectedGraph, IReactFlowObject, ChatType, IExecute
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 import { UpsertHistory } from '../database/entities/UpsertHistory'
-import { InternalFlowiseError } from '../errors/internalFlowiseError'
+import { InternalChronosError } from '../errors/internalChronosError'
 import { StatusCodes } from 'http-status-codes'
 import { checkStorage, updateStorageUsage } from './quotaUsage'
 import { validateFileMimeTypeAndExtensionMatch } from './fileValidation'
@@ -139,21 +139,21 @@ export const executeUpsert = async ({
     const vsNodes = nodes.filter((node) => node.data.category === 'Vector Stores')
     const vsNodesWithFileUpload = vsNodes.filter((node) => node.data.inputs?.fileUpload)
     if (vsNodesWithFileUpload.length > 1) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, 'Multiple vector store nodes with fileUpload enabled')
+        throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, 'Multiple vector store nodes with fileUpload enabled')
     } else if (vsNodesWithFileUpload.length === 1 && !stopNodeId) {
         stopNodeId = vsNodesWithFileUpload[0].data.id
     }
 
     /*** Check if multiple vector store nodes exist, and if stopNodeId is specified ***/
     if (vsNodes.length > 1 && !stopNodeId) {
-        throw new InternalFlowiseError(
+        throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             'There are multiple vector nodes, please provide stopNodeId in body request'
         )
     } else if (vsNodes.length === 1 && !stopNodeId) {
         stopNodeId = vsNodes[0].data.id
     } else if (!vsNodes.length && !stopNodeId) {
-        throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'No vector node found')
+        throw new InternalChronosError(StatusCodes.NOT_FOUND, 'No vector node found')
     }
 
     /*** Get Starting Nodes with Reversed Graph ***/
@@ -244,7 +244,7 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
             id: chatflowid
         })
         if (!chatflow) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
+            throw new InternalChronosError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
         }
 
         const httpProtocol = req.get('x-forwarded-proto') || req.protocol
@@ -256,7 +256,7 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
         if (!isInternal) {
             const isKeyValidated = await validateFlowAPIKey(req, chatflow)
             if (!isKeyValidated) {
-                throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
+                throw new InternalChronosError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
             }
         }
 
@@ -306,10 +306,10 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
         logger.error('[server]: Error:', e)
         appServer.metricsProvider?.incrementCounter(CHRONOS_METRIC_COUNTERS.VECTORSTORE_UPSERT, { status: CHRONOS_COUNTER_STATUS.FAILURE })
 
-        if (e instanceof InternalFlowiseError && e.statusCode === StatusCodes.UNAUTHORIZED) {
+        if (e instanceof InternalChronosError && e.statusCode === StatusCodes.UNAUTHORIZED) {
             throw e
         } else {
-            throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, getErrorMessage(e))
+            throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, getErrorMessage(e))
         }
     }
 }

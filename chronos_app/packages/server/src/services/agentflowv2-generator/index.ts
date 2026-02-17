@@ -1,5 +1,5 @@
 import { StatusCodes } from 'http-status-codes'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { InternalChronosError } from '../../errors/internalChronosError'
 import { getErrorMessage } from '../../errors/utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import path from 'path'
@@ -244,7 +244,7 @@ const generateAgentflowv2 = async (question: string, selectedChatModel: Record<s
             } as any // Type assertion to avoid type errors
         }
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: generateAgentflowv2 - ${getErrorMessage(error)}`)
+        throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: generateAgentflowv2 - ${getErrorMessage(error)}`)
     }
 }
 

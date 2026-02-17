@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
 import { IChatMessageFeedback } from '../../Interface'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { InternalChronosError } from '../../errors/internalChronosError'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
@@ -16,7 +16,7 @@ export const validateMessageExists = async (messageId: string): Promise<ChatMess
     })
 
     if (!message) {
-        throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Message with ID ${messageId} not found`)
+        throw new InternalChronosError(StatusCodes.NOT_FOUND, `Message with ID ${messageId} not found`)
     }
 
     return message
@@ -33,7 +33,7 @@ export const validateFeedbackExists = async (feedbackId: string): Promise<ChatMe
     })
 
     if (!feedbackExists) {
-        throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Feedback with ID ${feedbackId} not found`)
+        throw new InternalChronosError(StatusCodes.NOT_FOUND, `Feedback with ID ${feedbackId} not found`)
     }
 
     return feedbackExists
@@ -49,13 +49,13 @@ export const validateFeedbackForCreation = async (feedback: Partial<IChatMessage
     if (feedback.messageId) {
         message = await validateMessageExists(feedback.messageId)
     } else {
-        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Message ID is required')
+        throw new InternalChronosError(StatusCodes.BAD_REQUEST, 'Message ID is required')
     }
 
     // If chatId is provided, validate it matches the message's chatId
     if (feedback.chatId) {
         if (message.chatId !== feedback.chatId) {
-            throw new InternalFlowiseError(
+            throw new InternalChronosError(
                 StatusCodes.BAD_REQUEST,
                 `Inconsistent chat ID: message with ID ${message.id} does not belong to chat with ID ${feedback.chatId}`
             )
@@ -68,7 +68,7 @@ export const validateFeedbackForCreation = async (feedback: Partial<IChatMessage
     // If chatflowid is provided, validate it matches the message's chatflowid
     if (feedback.chatflowid) {
         if (message.chatflowid !== feedback.chatflowid) {
-            throw new InternalFlowiseError(
+            throw new InternalChronosError(
                 StatusCodes.BAD_REQUEST,
                 `Inconsistent chatflow ID: message with ID ${message.id} does not belong to chatflow with ID ${feedback.chatflowid}`
             )
@@ -106,7 +106,7 @@ export const validateFeedbackForUpdate = async (
     // If chatId is provided and we have a message, validate it matches the message's chatId
     if (feedback.chatId) {
         if (message?.chatId !== feedback.chatId) {
-            throw new InternalFlowiseError(
+            throw new InternalChronosError(
                 StatusCodes.BAD_REQUEST,
                 `Inconsistent chat ID: message with ID ${message?.id} does not belong to chat with ID ${feedback.chatId}`
             )
@@ -116,7 +116,7 @@ export const validateFeedbackForUpdate = async (
     // If chatflowid is provided and we have a message, validate it matches the message's chatflowid
     if (feedback.chatflowid && message) {
         if (message?.chatflowid !== feedback.chatflowid) {
-            throw new InternalFlowiseError(
+            throw new InternalChronosError(
                 StatusCodes.BAD_REQUEST,
                 `Inconsistent chatflow ID: message with ID ${message?.id} does not belong to chatflow with ID ${feedback.chatflowid}`
             )
