@@ -13,7 +13,6 @@
 #   - Vector Store: Qdrant, URL: http://qdrant:6333
 #   - Embeddings: Ollama, URL: http://ollama:11434, Model: nomic-embed-text
 #
-# See https://www.popularowl.com/chronos/vector-database-with-local-embedings/
 
 services:
   chronos:
@@ -28,6 +27,8 @@ services:
       DEBUG: true
     ports:
       - "3001:3000"
+    volumes:
+      - ./.chronos:/root/.chronos
     depends_on:
       postgres:
         condition: service_healthy
@@ -39,7 +40,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./.postgres_data:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: chronos
       POSTGRES_USER: chronos
@@ -58,7 +59,7 @@ services:
       - "6333:6333"  # REST API
       - "6334:6334"  # gRPC API
     volumes:
-      - qdrant_data:/qdrant/storage
+      - ./.qdrant_data:/qdrant/storage
     environment:
       QDRANT__SERVICE__GRPC_PORT: 6334
       # Uncomment to enable API key authentication:
@@ -71,7 +72,7 @@ services:
     ports:
       - "11434:11434"
     volumes:
-      - ollama_data:/root/.ollama
+      - ./.ollama_data:/root/.ollama
     # Note: After container starts, run:
     # docker compose -f docker-compose-vectordb.yml exec ollama ollama pull nomic-embed-text
 
@@ -81,10 +82,4 @@ services:
     ports:
       - "6379:6379"
     volumes:
-      - redis_data:/data
-
-volumes:
-  postgres_data:
-  qdrant_data:
-  ollama_data:
-  redis_data:
+      - ./.redis_data:/data
