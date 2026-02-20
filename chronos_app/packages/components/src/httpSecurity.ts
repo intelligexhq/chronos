@@ -4,6 +4,85 @@ import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import fetch, { RequestInit, Response } from 'node-fetch'
 
 /**
+ * HTTP Debug Logging Utilities
+ * Activated when DEBUG=true environment variable is set
+ */
+
+const isDebugEnabled = (): boolean => process.env.DEBUG === 'true'
+
+function getSensitiveBodyFields(): string[] {
+    if (!process.env.LOG_SANITIZE_BODY_FIELDS) return []
+    return process.env.LOG_SANITIZE_BODY_FIELDS.toLowerCase()
+        .split(',')
+        .map((f) => f.trim())
+}
+
+function getSensitiveHeaderFields(): string[] {
+    const defaultSensitiveHeaders = ['authorization', 'x-api-key', 'api-key']
+    const envHeaders = process.env.LOG_SANITIZE_HEADER_FIELDS
+        ? process.env.LOG_SANITIZE_HEADER_FIELDS.toLowerCase()
+              .split(',')
+              .map((f) => f.trim())
+        : []
+    return [...new Set([...defaultSensitiveHeaders, ...envHeaders])]
+}
+
+function sanitizeHeaders(headers: Record<string, any> | undefined): Record<string, any> {
+    if (!headers) return {}
+    const sensitiveFields = getSensitiveHeaderFields()
+    const sanitized = { ...headers }
+    for (const key of Object.keys(sanitized)) {
+        if (sensitiveFields.includes(key.toLowerCase())) {
+            sanitized[key] = '********'
+        }
+    }
+    return sanitized
+}
+
+function sanitizeBody(body: any): any {
+    if (!body || typeof body !== 'object') return body
+    const sensitiveFields = getSensitiveBodyFields()
+    if (sensitiveFields.length === 0) return body
+
+    const sanitized = Array.isArray(body) ? [...body] : { ...body }
+    for (const key of Object.keys(sanitized)) {
+        if (sensitiveFields.includes(key.toLowerCase())) {
+            sanitized[key] = '********'
+        } else if (typeof sanitized[key] === 'object' && sanitized[key] !== null) {
+            sanitized[key] = sanitizeBody(sanitized[key])
+        }
+    }
+    return sanitized
+}
+
+function truncateBody(body: any, maxLength: number = 2000): any {
+    if (body === undefined || body === null) return body
+    const str = typeof body === 'string' ? body : JSON.stringify(body)
+    if (str.length <= maxLength) return body
+    return str.substring(0, maxLength) + `... [truncated, total length: ${str.length}]`
+}
+
+function logHttpRequest(method: string, url: string, headers?: Record<string, any>, body?: any): void {
+    if (!isDebugEnabled()) return
+    const logData: any = { headers: sanitizeHeaders(headers) }
+    if (body !== undefined) {
+        logData.body = sanitizeBody(body)
+    }
+    // eslint-disable-next-line no-console
+    console.debug(`[HTTP OUT] ${method?.toUpperCase() || 'GET'} ${url}`, JSON.stringify(logData, null, 2))
+}
+
+function logHttpResponse(status: number, url: string, headers?: Record<string, any>, body?: any): void {
+    if (!isDebugEnabled()) return
+    const logData: any = { headers: headers || {} }
+    if (body !== undefined) {
+        logData.body = truncateBody(sanitizeBody(body))
+    }
+    // eslint-disable-next-line no-console
+    console.debug(`[HTTP IN] ${status} ${url}`, JSON.stringify(logData, null, 2))
+}
+
+/**
  * Checks if an IP address is in the deny list
  * @param ip - IP address to check
  * @param denyList - Array of denied IP addresses/CIDR ranges
@@ -75,10 +154,20 @@ export async function secureAxiosRequest(config: AxiosRequestConfig, maxRedirect
             // Update the URL in config for subsequent requests
             currentConfig.url = currentUrl
 
+            // Log outgoing request
+            logHttpRequest(
+                currentConfig.method || 'GET',
+                currentUrl || '',
+                currentConfig.headers as Record<string, any>,
+                currentConfig.data
+            )
+
             const response = await axios(currentConfig)
 
             // If it's a successful response (not a redirect), return it
             if (response.status < 300 || response.status >= 400) {
+                // Log incoming response
+                logHttpResponse(response.status, currentUrl || '', response.headers as Record<string, any>, response.data)
                 return response
             }
 
@@ -86,6 +175,7 @@ export async function secureAxiosRequest(config: AxiosRequestConfig, maxRedirect
             const location = response.headers.location
             if (!location) {
                 // No location header, but it's a redirect status - return the response
+                logHttpResponse(response.status, currentUrl || '', response.headers as Record<string, any>, response.data)
                 return response
             }
 
@@ -124,6 +214,7 @@ export async function secureAxiosRequest(config: AxiosRequestConfig, maxRedirect
                 const location = response.headers.location
 
                 if (!location) {
+                    logHttpResponse(response.status, currentUrl || '', response.headers as Record<string, any>, response.data)
                     return response
                 }
 
@@ -175,10 +266,21 @@ export async function secureFetch(url: string, init?: RequestInit, maxRedirects:
     await checkDenyList(currentUrl)
 
     while (redirectCount <= maxRedirects) {
+        // Log outgoing request
+        logHttpRequest((currentInit.method as string) || 'GET', currentUrl, currentInit.headers as Record<string, any>, currentInit.body)
+
         const response = await fetch(currentUrl, currentInit)
+
+        // Convert headers to plain object for logging
+        const responseHeaders: Record<string, string> = {}
+        response.headers.forEach((value: string, key: string) => {
+            responseHeaders[key] = value
+        })
 
         // If it's a successful response (not a redirect), return it
         if (response.status < 300 || response.status >= 400) {
+            // Log incoming response (body not logged for fetch as it's a stream)
+            logHttpResponse(response.status, currentUrl, responseHeaders)
             return response
         }
 
@@ -186,6 +288,7 @@ export async function secureFetch(url: string, init?: RequestInit, maxRedirects:
         const location = response.headers.get('location')
         if (!location) {
             // No location header, but it's a redirect status - return the response
+            logHttpResponse(response.status, currentUrl, responseHeaders)
             return response
         }
 
