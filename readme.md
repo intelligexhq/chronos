@@ -1,6 +1,6 @@
 # Chronos - Visual AI agent builder
 
-![Build Status](https://github.com/intelligexhq/chronos/actions/workflows/validate.yml/badge.svg)
+![Build Status](https://github.com/intelligexhq/chronos/actions/workflows/tests.yml/badge.svg)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE.md)
 [![Node Version](https://img.shields.io/badge/node-%3E%3D24-brightgreen)](chronos_app/.nvmrc)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
