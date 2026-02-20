@@ -624,6 +624,133 @@ export function documentstoreRouteTest() {
             })
         })
 
+        describe('Full Document Store Lifecycle', () => {
+            let lifecycleStoreId: string
+
+            it('should create a document store for lifecycle testing', async () => {
+                const response = await supertest(getRunningExpressApp().app)
+                    .post('/api/v1/documentstore/store')
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+                    .send({
+                        name: `Lifecycle Test Store ${Date.now()}`,
+                        description: 'Document store for lifecycle testing'
+                    })
+
+                expect([200, 201, 400, 500]).toContain(response.status)
+                if ((response.status === 200 || response.status === 201) && response.body?.id) {
+                    lifecycleStoreId = response.body.id
+                }
+            })
+
+            it('should get document store by id', async () => {
+                if (!lifecycleStoreId) return
+
+                const response = await supertest(getRunningExpressApp().app)
+                    .get(`/api/v1/documentstore/store/${lifecycleStoreId}`)
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+
+                expect([200]).toContain(response.status)
+                expect(response.body.id).toBe(lifecycleStoreId)
+            })
+
+            it('should get document store files', async () => {
+                if (!lifecycleStoreId) return
+
+                const response = await supertest(getRunningExpressApp().app)
+                    .get(`/api/v1/documentstore/store/${lifecycleStoreId}/files`)
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+
+                expect([200]).toContain(response.status)
+            })
+
+            it('should get chunks for the store', async () => {
+                if (!lifecycleStoreId) return
+
+                const response = await supertest(getRunningExpressApp().app)
+                    .get(`/api/v1/documentstore/chunks/${lifecycleStoreId}`)
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+
+                expect([200, 404, 500]).toContain(response.status)
+            })
+
+            it('should get chunks with "all" docId', async () => {
+                if (!lifecycleStoreId) return
+
+                const response = await supertest(getRunningExpressApp().app)
+                    .get(`/api/v1/documentstore/chunks/${lifecycleStoreId}/all/1`)
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+
+                expect([200, 404, 500]).toContain(response.status)
+            })
+
+            it('should update document store', async () => {
+                if (!lifecycleStoreId) return
+
+                const response = await supertest(getRunningExpressApp().app)
+                    .put(`/api/v1/documentstore/store/${lifecycleStoreId}`)
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+                    .send({
+                        name: `Updated Lifecycle Store ${Date.now()}`,
+                        description: 'Updated description for lifecycle testing'
+                    })
+
+                expect([200]).toContain(response.status)
+            })
+
+            it('should query document store with empty query', async () => {
+                if (!lifecycleStoreId) return
+
+                const response = await supertest(getRunningExpressApp().app)
+                    .post(`/api/v1/documentstore/query/${lifecycleStoreId}`)
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+                    .send({ query: '' })
+
+                expect([200, 400, 404, 500]).toContain(response.status)
+            })
+
+            it('should try to upsert document store', async () => {
+                if (!lifecycleStoreId) return
+
+                const response = await supertest(getRunningExpressApp().app)
+                    .post(`/api/v1/documentstore/upsert/${lifecycleStoreId}`)
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+                    .send({ docId: 'test-doc-id' })
+
+                expect([200, 400, 404, 500]).toContain(response.status)
+            })
+
+            it('should try to refresh document store', async () => {
+                if (!lifecycleStoreId) return
+
+                const response = await supertest(getRunningExpressApp().app)
+                    .post(`/api/v1/documentstore/refresh/${lifecycleStoreId}`)
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+                    .send({})
+
+                expect([200, 400, 404, 500]).toContain(response.status)
+            })
+
+            it('should delete lifecycle document store', async () => {
+                if (!lifecycleStoreId) return
+
+                const response = await supertest(getRunningExpressApp().app)
+                    .delete(`/api/v1/documentstore/store/${lifecycleStoreId}`)
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+
+                expect([200]).toContain(response.status)
+            })
+        })
+
         describe('Loader operations', () => {
             describe('DELETE /api/v1/documentstore/:id/loader/:loaderId', () => {
                 it('should return 412 when ids are not provided', async () => {

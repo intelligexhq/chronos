@@ -5,11 +5,14 @@
 // Mock repository with common TypeORM methods
 export const createMockRepository = () => ({
     find: jest.fn(),
+    findBy: jest.fn(),
     findOne: jest.fn(),
     findOneBy: jest.fn(),
+    findByIds: jest.fn(),
     save: jest.fn(),
     create: jest.fn((entity: any) => entity),
     delete: jest.fn(),
+    update: jest.fn(),
     merge: jest.fn((target: any, source: any) => ({ ...target, ...source })),
     insert: jest.fn(),
     createQueryBuilder: jest.fn(() => createMockQueryBuilder())
