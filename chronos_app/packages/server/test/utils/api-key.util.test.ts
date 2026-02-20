@@ -1,4 +1,4 @@
-import { generateAPIKey, generateSecretHash, compareKeys, getAPIKeyPath } from '../../src/utils/apiKey'
+import { generateAPIKey, generateSecretHash, compareKeys } from '../../src/utils/apiKey'
 
 /**
  * Test suite for API key utility functions
@@ -97,33 +97,6 @@ export function apiKeyTest() {
 
                 const result = compareKeys(storedKey, '')
                 expect(result).toBe(false)
-            })
-        })
-
-        describe('getAPIKeyPath', () => {
-            it('should return a string path', () => {
-                const path = getAPIKeyPath()
-                expect(typeof path).toBe('string')
-            })
-
-            it('should return path ending with api.json', () => {
-                const path = getAPIKeyPath()
-                expect(path.endsWith('api.json')).toBe(true)
-            })
-
-            it('should respect APIKEY_PATH environment variable when set', () => {
-                const originalPath = process.env.APIKEY_PATH
-                process.env.APIKEY_PATH = '/custom/path'
-
-                const path = getAPIKeyPath()
-                expect(path).toBe('/custom/path/api.json')
-
-                // Restore original
-                if (originalPath !== undefined) {
-                    process.env.APIKEY_PATH = originalPath
-                } else {
-                    delete process.env.APIKEY_PATH
-                }
             })
         })
     })

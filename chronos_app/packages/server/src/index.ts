@@ -30,7 +30,6 @@ import { QueueManager } from './queue/QueueManager'
 import { RedisEventSubscriber } from './queue/RedisEventSubscriber'
 import 'global-agent/bootstrap'
 import { UsageCacheManager } from './UsageCacheManager'
-import { migrateApiKeysFromJsonToDb } from './utils/apiKey'
 import { ExpressAdapter } from '@bull-board/express'
 import { initializeInitialUser } from './utils/initializeUser'
 
@@ -150,9 +149,6 @@ export class App {
                 await this.redisSubscriber.connect()
                 logger.info('🔗 [server]: Redis event subscriber connected successfully')
             }
-
-            // TODO: Remove this by end of 2025
-            await migrateApiKeysFromJsonToDb(this.AppDataSource, this.identityManager.getPlatformType())
 
             logger.info('🎉 [server]: All initialization steps completed successfully!')
         } catch (error) {
