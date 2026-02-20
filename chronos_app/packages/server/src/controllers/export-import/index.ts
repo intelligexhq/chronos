@@ -5,13 +5,8 @@ import exportImportService from '../../services/export-import'
 
 const exportData = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const workspaceId = req.user?.activeWorkspaceId
-        if (!workspaceId) {
-            throw new InternalChronosError(
-                StatusCodes.NOT_FOUND,
-                `Error: exportImportController.exportData - workspace ${workspaceId} not found!`
-            )
-        }
+        // workspaceId is optional - only used in enterprise for workspace scoping
+        const workspaceId = req.user?.activeWorkspaceId || ''
         const apiResponse = await exportImportService.exportData(exportImportService.convertExportInput(req.body), workspaceId)
         return res.json(apiResponse)
     } catch (error) {
@@ -21,28 +16,17 @@ const exportData = async (req: Request, res: Response, next: NextFunction) => {
 
 const importData = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const orgId = req.user?.activeOrganizationId
-        if (!orgId) {
-            throw new InternalChronosError(
-                StatusCodes.NOT_FOUND,
-                `Error: exportImportController.importData - organization ${orgId} not found!`
-            )
-        }
-        const workspaceId = req.user?.activeWorkspaceId
-        if (!workspaceId) {
-            throw new InternalChronosError(
-                StatusCodes.NOT_FOUND,
-                `Error: exportImportController.importData - workspace ${workspaceId} not found!`
-            )
-        }
+        // These are optional enterprise-only fields - quota checks will be skipped if not provided
+        const orgId = req.user?.activeOrganizationId || ''
+        const workspaceId = req.user?.activeWorkspaceId || ''
         const subscriptionId = req.user?.activeOrganizationSubscriptionId || ''
 
-        const importData = req.body
-        if (!importData) {
+        const importDataBody = req.body
+        if (!importDataBody) {
             throw new InternalChronosError(StatusCodes.BAD_REQUEST, 'Error: exportImportController.importData - importData is required!')
         }
 
-        await exportImportService.importData(importData, orgId, workspaceId, subscriptionId)
+        await exportImportService.importData(importDataBody, orgId, workspaceId, subscriptionId)
         return res.status(StatusCodes.OK).json({ message: 'success' })
     } catch (error) {
         next(error)

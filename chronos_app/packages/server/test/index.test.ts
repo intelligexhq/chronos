@@ -61,6 +61,15 @@ import { oauth2RouteTest } from './routes/v1/oauth2.route.test'
 import { openaiRealtimeRouteTest } from './routes/v1/openai-realtime.route.test'
 import { chatflowsServiceTest } from './services/chatflows.service.test'
 import { agentflowv2GeneratorServiceTest } from './services/agentflowv2-generator.service.test'
+import { toolsServiceTest } from './services/tools.service.test'
+import { credentialsServiceTest } from './services/credentials.service.test'
+import { executionsServiceTest } from './services/executions.service.test'
+import { feedbackServiceTest } from './services/feedback.service.test'
+import { nodesServiceTest } from './services/nodes.service.test'
+import { validationServiceTest } from './services/validation.service.test'
+import { feedbackValidationServiceTest } from './services/feedback-validation.service.test'
+import { chatMessagesServiceTest } from './services/chat-messages.service.test'
+import { marketplacesServiceTest } from './services/marketplaces.service.test'
 import { apiKeyTest } from './utils/api-key.util.test'
 import { sanitizeUtilTest } from './utils/sanitize.util.test'
 import { domainValidationUtilTest } from './utils/domain-validation.util.test'
@@ -158,6 +167,15 @@ describe('Routes Test', () => {
 describe('Services Test', () => {
     chatflowsServiceTest()
     agentflowv2GeneratorServiceTest()
+    toolsServiceTest()
+    credentialsServiceTest()
+    executionsServiceTest()
+    feedbackServiceTest()
+    feedbackValidationServiceTest()
+    nodesServiceTest()
+    validationServiceTest()
+    chatMessagesServiceTest()
+    marketplacesServiceTest()
 })
 
 describe('Utils Test', () => {
