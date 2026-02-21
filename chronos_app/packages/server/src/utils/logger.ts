@@ -209,11 +209,34 @@ function getSensitiveHeaderFields(): string[] {
         .map((f) => f.trim())
 }
 
+function parseJsonStrings(obj: any): any {
+    if (!obj || typeof obj !== 'object') return obj
+
+    const result = Array.isArray(obj) ? [...obj] : { ...obj }
+    Object.keys(result).forEach((key) => {
+        const value = result[key]
+        if (typeof value === 'string' && value.length > 1) {
+            const trimmed = value.trim()
+            if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+                try {
+                    result[key] = JSON.parse(value)
+                } catch {
+                    // Not valid JSON, keep as string
+                }
+            }
+        } else if (typeof value === 'object' && value !== null) {
+            result[key] = parseJsonStrings(value)
+        }
+    })
+    return result
+}
+
 function sanitizeObject(obj: any): any {
     if (!obj || typeof obj !== 'object') return obj
 
+    const parsed = parseJsonStrings(obj)
     const sensitiveFields = getSensitiveBodyFields()
-    const sanitized = Array.isArray(obj) ? [...obj] : { ...obj }
+    const sanitized = Array.isArray(parsed) ? [...parsed] : { ...parsed }
     Object.keys(sanitized).forEach((key) => {
         const lowerKey = key.toLowerCase()
         if (sensitiveFields.includes(lowerKey)) {
@@ -246,7 +269,15 @@ export function expressRequestLogger(req: Request, res: Response, next: NextFunc
         if (isDebugLevel) {
             const sanitizedBody = sanitizeObject(req.body)
             const sanitizedQuery = sanitizeObject(req.query)
-            const sanitizedHeaders = { ...req.headers }
+
+            // Only keep essential headers, exclude verbose browser headers with problematic characters
+            const essentialHeaders = ['content-type', 'content-length', 'authorization', 'x-request-from', 'x-api-key']
+            const sanitizedHeaders: Record<string, string | undefined> = {}
+            essentialHeaders.forEach((header) => {
+                if (req.headers[header]) {
+                    sanitizedHeaders[header] = req.headers[header] as string
+                }
+            })
 
             const sensitiveHeaders = getSensitiveHeaderFields()
             sensitiveHeaders.forEach((header) => {

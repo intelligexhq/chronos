@@ -38,7 +38,6 @@ import { AddErrorToEvaluationRun1744964560174 } from './1744964560174-AddErrorTo
 import { ModifyExecutionDataColumnType1747902489801 } from './1747902489801-ModifyExecutionDataColumnType'
 import { AddTextToSpeechToChatFlow1754986457485 } from './1754986457485-AddTextToSpeechToChatFlow'
 import { ModifyChatflowType1755066758601 } from './1755066758601-ModifyChatflowType'
-import { AddTextToSpeechToChatFlow1759419231100 } from './1759419231100-AddTextToSpeechToChatFlow'
 import { AddChatFlowNameIndex1759424809984 } from './1759424809984-AddChatFlowNameIndex'
 import { FixDocumentStoreFileChunkLongText1765000000000 } from './1765000000000-FixDocumentStoreFileChunkLongText'
 import { AddSimpleUser1760000000000 } from './1760000000000-AddSimpleUser'
@@ -84,7 +83,6 @@ export const mariadbMigrations = [
     ModifyExecutionDataColumnType1747902489801,
     AddTextToSpeechToChatFlow1754986457485,
     ModifyChatflowType1755066758601,
-    AddTextToSpeechToChatFlow1759419231100,
     AddChatFlowNameIndex1759424809984,
     FixDocumentStoreFileChunkLongText1765000000000,
     AddSimpleUser1760000000000

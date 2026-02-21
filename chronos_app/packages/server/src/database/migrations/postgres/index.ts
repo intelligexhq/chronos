@@ -38,7 +38,6 @@ import { AddErrorToEvaluationRun1744964560174 } from './1744964560174-AddErrorTo
 import { ModifyExecutionSessionIdFieldType1748450230238 } from './1748450230238-ModifyExecutionSessionIdFieldType'
 import { AddTextToSpeechToChatFlow1754986480347 } from './1754986480347-AddTextToSpeechToChatFlow'
 import { ModifyChatflowType1755066758601 } from './1755066758601-ModifyChatflowType'
-import { AddTextToSpeechToChatFlow1759419194331 } from './1759419194331-AddTextToSpeechToChatFlow'
 import { AddChatFlowNameIndex1759424903973 } from './1759424903973-AddChatFlowNameIndex'
 import { AddSimpleUser1760000000000 } from './1760000000000-AddSimpleUser'
 
@@ -83,7 +82,6 @@ export const postgresMigrations = [
     ModifyExecutionSessionIdFieldType1748450230238,
     AddTextToSpeechToChatFlow1754986480347,
     ModifyChatflowType1755066758601,
-    AddTextToSpeechToChatFlow1759419194331,
     AddChatFlowNameIndex1759424903973,
     AddSimpleUser1760000000000
 ]

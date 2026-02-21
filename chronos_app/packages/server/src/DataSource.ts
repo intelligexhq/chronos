@@ -89,7 +89,7 @@ export const init = async (): Promise<void> => {
                 extra: {
                     idleTimeoutMillis: 120000
                 },
-                logging: ['error', 'warn', 'info', 'log'],
+                logging: ['error', 'warn'],
                 logger: 'advanced-console',
                 logNotifications: true,
                 poolErrorHandler: (err) => {

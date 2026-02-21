@@ -39,7 +39,6 @@ import { FixErrorsColumnInEvaluationRun1746437114935 } from './1746437114935-Fix
 import { ModifyExecutionDataColumnType1747902489801 } from './1747902489801-ModifyExecutionDataColumnType'
 import { AddTextToSpeechToChatFlow1754986468397 } from './1754986468397-AddTextToSpeechToChatFlow'
 import { ModifyChatflowType1755066758601 } from './1755066758601-ModifyChatflowType'
-import { AddTextToSpeechToChatFlow1759419216034 } from './1759419216034-AddTextToSpeechToChatFlow'
 import { AddChatFlowNameIndex1759424828558 } from './1759424828558-AddChatFlowNameIndex'
 import { FixDocumentStoreFileChunkLongText1765000000000 } from './1765000000000-FixDocumentStoreFileChunkLongText'
 import { AddSimpleUser1760000000000 } from './1760000000000-AddSimpleUser'
@@ -86,7 +85,6 @@ export const mysqlMigrations = [
     ModifyExecutionDataColumnType1747902489801,
     AddTextToSpeechToChatFlow1754986468397,
     ModifyChatflowType1755066758601,
-    AddTextToSpeechToChatFlow1759419216034,
     AddChatFlowNameIndex1759424828558,
     FixDocumentStoreFileChunkLongText1765000000000,
     AddSimpleUser1760000000000

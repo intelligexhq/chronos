@@ -11,6 +11,7 @@ services:
         CHRONOS_INITIAL_USER_EMAIL: admin@admin.com
         CHRONOS_INITIAL_USER_PASSWORD: test1234
         CHRONOS_INITIAL_USER_NAME: admin
+        LOG_SANITIZE_HEADER_FIELDS: authorization,x-api-key,x-auth-token,cookie
         DEBUG: true
       ports:
         - "3001:3000"
