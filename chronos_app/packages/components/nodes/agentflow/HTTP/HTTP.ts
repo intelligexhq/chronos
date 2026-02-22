@@ -4,6 +4,43 @@ import FormData from 'form-data'
 import * as querystring from 'querystring'
 import { getCredentialData, getCredentialParam, parseJsonBody } from '../../../src/utils'
 import { secureAxiosRequest } from '../../../src/httpSecurity'
+import logger from '../../../src/logger'
+
+// Sensitive header names to redact
+const SENSITIVE_HEADERS = ['authorization', 'x-api-key', 'api-key', 'apikey', 'token', 'cookie', 'set-cookie']
+
+// Sanitize headers by redacting sensitive values
+function sanitizeHeaders(headers: Record<string, any>): Record<string, any> {
+    if (!headers) return {}
+    const sanitized: Record<string, any> = {}
+    for (const [key, value] of Object.entries(headers)) {
+        if (SENSITIVE_HEADERS.includes(key.toLowerCase())) {
+            sanitized[key] = '********'
+        } else {
+            sanitized[key] = value
+        }
+    }
+    return sanitized
+}
+
+// Sanitize body by redacting sensitive fields
+function sanitizeBody(body: any): any {
+    if (!body) return body
+    if (typeof body !== 'object') return body
+    if (body instanceof FormData) return '[FormData]'
+
+    const sensitiveFields = ['password', 'secret', 'token', 'apikey', 'api_key', 'authorization', 'credential']
+    const sanitized = Array.isArray(body) ? [...body] : { ...body }
+
+    for (const key of Object.keys(sanitized)) {
+        if (sensitiveFields.includes(key.toLowerCase())) {
+            sanitized[key] = '********'
+        } else if (typeof sanitized[key] === 'object' && sanitized[key] !== null) {
+            sanitized[key] = sanitizeBody(sanitized[key])
+        }
+    }
+    return sanitized
+}
 
 class HTTP_Agentflow implements INode {
     label: string
@@ -299,8 +336,28 @@ class HTTP_Agentflow implements INode {
                 }
             }
 
+            // Log the outgoing HTTP request with sanitized details
+            const requestLog = {
+                method,
+                url: finalUrl,
+                headers: sanitizeHeaders(requestHeaders),
+                body: requestConfig.data ? sanitizeBody(requestConfig.data) : undefined
+            }
+            // only in debug mode
+            logger.debug(`[HTTP Node] Request: ${JSON.stringify(requestLog)}`)
+
             // Make the secure HTTP request that validates all URLs in redirect chains
             const response = await secureAxiosRequest(requestConfig)
+
+            // Log the received HTTP response with sanitized details
+            const responseLog = {
+                status: response.status,
+                statusText: response.statusText,
+                headers: sanitizeHeaders(response.headers as Record<string, any>),
+                data: sanitizeBody(response.data)
+            }
+            // only in debug mode
+            logger.debug(`[HTTP Node] Response: ${JSON.stringify(responseLog)}`)
 
             // Process response based on response type
             let responseData
@@ -337,7 +394,15 @@ class HTTP_Agentflow implements INode {
 
             return returnOutput
         } catch (error) {
-            console.error('HTTP Request Error:', error)
+            // Log error with sanitized request details
+            const errorLog = {
+                method,
+                url,
+                error: error.message,
+                status: error.response?.status,
+                responseData: error.response?.data ? sanitizeBody(error.response.data) : undefined
+            }
+            console.error(`[HTTP Node] Error: ${JSON.stringify(errorLog)}`)
 
             const errorMessage =
                 error.response?.data?.message || error.response?.data?.error || error.message || 'An error occurred during the HTTP request'
