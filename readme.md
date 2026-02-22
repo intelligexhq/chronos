@@ -1,11 +1,9 @@
 # Chronos - Visual AI agent builder
 
-![Build Status](https://github.com/intelligexhq/chronos/actions/workflows/tests.yml/badge.svg)
+![Build Status](https://github.com/intelligexhq/chronos/actions/workflows/validate.yml/badge.svg)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE.md)
 [![Node Version](https://img.shields.io/badge/node-%3E%3D24-brightgreen)](chronos_app/.nvmrc)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![GitHub Issues](https://img.shields.io/github/issues/intelligexhq/chronos)](https://github.com/intelligexhq/chronos/issues)
-
 
 <div align=center style="padding-bottom: 35px;">
 <img src="./resources/chronos_main_page.gif" width="600"/>
@@ -16,12 +14,11 @@
 [Chronos](https://github.com/intelligexhq/chronos) project is a fork of [Flowise](https://github.com/FlowiseAI/Flowise) - with the goal to maintain a lean visual AI agent builder tool, focused on the local and self hosted deployments. It provides:
 
 - Self-hosting focused visual AI agent and workflow builder.
+- Significant focus on advanced logging and observability.
 - Multiple deployment modes and integrations with localy hosted LLM models.
 - Horizontal scalability through Redis-based job queues and workers.
 - 100+ of prebuilt LLM model integrations.
 - Collection of prebuilt AI agent templates.
-
-We do [provide professional services](https://intelligex.com/chronos) to deploy, customise and run Chronos visual AI agent builder within organization enviroenments.
 
 ## Quick Start
 
@@ -46,3 +43,7 @@ Chronos allows configuration via set of supported environment variables. See exa
 ## License
 
 Source code in this repository is made available under the [Apache License Version 2.0](LICENSE.md).
+
+## Need Assistance?
+
+We do [provide professional services](https://intelligex.com/chronos) to deploy, customise and run Chronos visual AI agent builder within your organization enviroenments.
