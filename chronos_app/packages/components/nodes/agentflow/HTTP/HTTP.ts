@@ -4,6 +4,7 @@ import FormData from 'form-data'
 import * as querystring from 'querystring'
 import { getCredentialData, getCredentialParam, parseJsonBody } from '../../../src/utils'
 import { secureAxiosRequest } from '../../../src/httpSecurity'
+import logger from '../../../src/logger'
 
 // Sensitive header names to redact
 const SENSITIVE_HEADERS = ['authorization', 'x-api-key', 'api-key', 'apikey', 'token', 'cookie', 'set-cookie']
@@ -342,7 +343,7 @@ class HTTP_Agentflow implements INode {
                 headers: sanitizeHeaders(requestHeaders),
                 body: requestConfig.data ? sanitizeBody(requestConfig.data) : undefined
             }
-            console.log(`[HTTP Node] Request: ${JSON.stringify(requestLog)}`)
+            logger.debug(`[HTTP Node] Request: ${JSON.stringify(requestLog)}`)
 
             // Make the secure HTTP request that validates all URLs in redirect chains
             const response = await secureAxiosRequest(requestConfig)
@@ -354,7 +355,7 @@ class HTTP_Agentflow implements INode {
                 headers: sanitizeHeaders(response.headers as Record<string, any>),
                 data: sanitizeBody(response.data)
             }
-            console.log(`[HTTP Node] Response: ${JSON.stringify(responseLog)}`)
+            logger.debug(`[HTTP Node] Response: ${JSON.stringify(responseLog)}`)
 
             // Process response based on response type
             let responseData
