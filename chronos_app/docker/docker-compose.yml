@@ -8,10 +8,10 @@ services:
         DATABASE_NAME: chronos
         DATABASE_USER: chronos
         DATABASE_PASSWORD: secret
-        CHRONOS_INITIAL_USER_EMAIL: admin@admin.com
-        CHRONOS_INITIAL_USER_PASSWORD: test1234
-        CHRONOS_INITIAL_USER_NAME: admin
-        DEBUG: true
+        CHRONOS_INITIAL_USER: admin@admin.com:test1234:admin
+        LOG_SANITIZE_HEADER_FIELDS: authorization,x-api-key,x-auth-token,cookie
+        LOG_SANITIZE_BODY_FIELDS: password,pwd,pass,secret,token,apikey,api_key,accesstoken,access_token,refreshtoken
+        #DEBUG: true
       ports:
         - "3001:3000"
       volumes:

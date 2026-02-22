@@ -1,21 +1,15 @@
-import { createLogger, transports, format } from 'winston'
+import { createLogger, transports } from 'winston'
+import { baseFormat, consoleFormat } from './logFormats'
 
-const { combine, timestamp, printf, errors } = format
+const level = process.env.DEBUG === 'true' ? 'debug' : process.env.LOG_LEVEL || 'info'
 
 const logger = createLogger({
-    format: combine(
-        timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-        format.json(),
-        printf(({ level, message, timestamp, stack }) => {
-            const text = `${timestamp} [${level.toUpperCase()}]: ${message}`
-            return stack ? text + '\n' + stack : text
-        }),
-        errors({ stack: true })
-    ),
+    level,
+    format: baseFormat,
     defaultMeta: {
         package: 'components'
     },
-    transports: [new transports.Console()]
+    transports: [new transports.Console({ format: consoleFormat })]
 })
 
 export default logger

@@ -1273,7 +1273,7 @@ export const isStartNodeDependOnInput = (startingNodes: IReactFlowNode[], nodes:
                 try {
                     promptValues = typeof promptValuesRaw === 'object' ? promptValuesRaw : JSON.parse(promptValuesRaw)
                 } catch (exception) {
-                    console.error(exception)
+                    logger.error(exception)
                 }
             }
             if (getAllValuesFromJson(promptValues).includes(`{{${QUESTION_VAR_PREFIX}}}`)) return true
@@ -1636,7 +1636,7 @@ export const decryptCredentialData = async (
                 decryptedDataStr = decryptedData.toString(enc.Utf8)
             }
         } catch (error) {
-            console.error(error)
+            logger.error(error)
             const errorMessage = error instanceof Error ? error.message : String(error)
             if (errorMessage.includes('Malformed UTF-8 data')) {
                 throw encryptionMismatchError
@@ -1650,7 +1650,7 @@ export const decryptCredentialData = async (
             const decryptedData = AES.decrypt(encryptedData, encryptKey)
             decryptedDataStr = decryptedData.toString(enc.Utf8)
         } catch (error) {
-            console.error(error)
+            logger.error(error)
             const errorMessage = error instanceof Error ? error.message : String(error)
             if (errorMessage.includes('Malformed UTF-8 data')) {
                 throw encryptionMismatchError
@@ -1667,7 +1667,7 @@ export const decryptCredentialData = async (
         }
         return JSON.parse(decryptedDataStr)
     } catch (e) {
-        console.error(e)
+        logger.error(e)
         return {}
     }
 }

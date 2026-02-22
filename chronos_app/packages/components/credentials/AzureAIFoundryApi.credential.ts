@@ -12,40 +12,14 @@ class AzureAIFoundryApi implements INodeCredential {
         this.name = 'azureAIFoundryApi'
         this.version = 1.0
         this.description =
-            'Connect to Azure AI Foundry with Managed Identity (recommended) or API Key. For private endpoint access, ensure your Managed Identity has appropriate RBAC roles (Cognitive Services User or Contributor).'
+            'Connect to Azure AI Foundry with Managed Identity. Ensure your Managed Identity has appropriate RBAC roles (Cognitive Services User or Contributor).'
         this.inputs = [
-            {
-                label: 'Authentication Method',
-                name: 'authMethod',
-                type: 'options',
-                options: [
-                    {
-                        label: 'Managed Identity (Recommended)',
-                        name: 'managedIdentity',
-                        description: 'Uses Azure DefaultAzureCredential for secure authentication'
-                    },
-                    {
-                        label: 'API Key',
-                        name: 'apiKey',
-                        description: 'Traditional API key authentication'
-                    }
-                ],
-                default: 'managedIdentity',
-                description: 'Choose authentication method for Azure AI Foundry'
-            },
             {
                 label: 'Azure AI Foundry Endpoint',
                 name: 'azureAIFoundryEndpoint',
                 type: 'string',
                 placeholder: 'https://your-project.cognitiveservices.azure.com/',
-                description: 'Your Azure AI Foundry project endpoint URL (required for both auth methods)'
-            },
-            {
-                label: 'Azure AI Foundry API Key',
-                name: 'azureAIFoundryApiKey',
-                type: 'password',
-                optional: true,
-                description: 'Required only if using API Key authentication method'
+                description: 'Your Azure AI Foundry project endpoint URL'
             },
             {
                 label: 'Azure AI Foundry Deployment Name',

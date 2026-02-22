@@ -21,6 +21,7 @@ import { NodeVM } from '@flowiseai/nodevm'
 import { Sandbox } from '@e2b/code-interpreter'
 import { secureFetch, checkDenyList, secureAxiosRequest } from './httpSecurity'
 import JSON5 from 'json5'
+import logger from './logger'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
@@ -325,23 +326,23 @@ export const getAvailableURLs = async (url: string, limit: number) => {
     try {
         const availableUrls: string[] = []
 
-        console.info(`Crawling: ${url}`)
+        logger.info(`Crawling: ${url}`)
         availableUrls.push(url)
 
         const response = await axios.get(url)
         const $ = load(response.data)
 
         const relativeLinks = $("a[href^='/']")
-        console.info(`Available Relative Links: ${relativeLinks.length}`)
+        logger.info(`Available Relative Links: ${relativeLinks.length}`)
         if (relativeLinks.length === 0) return availableUrls
 
         limit = Math.min(limit + 1, relativeLinks.length) // limit + 1 is because index start from 0 and index 0 is occupy by url
-        console.info(`True Limit: ${limit}`)
+        logger.info(`True Limit: ${limit}`)
 
         // availableUrls.length cannot exceed limit
         for (let i = 0; availableUrls.length < limit; i++) {
             if (i === limit) break // some links are repetitive so it won't added into the array which cause the length to be lesser
-            console.info(`index: ${i}`)
+            logger.info(`index: ${i}`)
             const element = relativeLinks[i]
 
             const relativeUrl = $(element).attr('href')
@@ -350,7 +351,7 @@ export const getAvailableURLs = async (url: string, limit: number) => {
             const absoluteUrl = new URL(relativeUrl, url).toString()
             if (!availableUrls.includes(absoluteUrl)) {
                 availableUrls.push(absoluteUrl)
-                console.info(`Found unique relative link: ${absoluteUrl}`)
+                logger.info(`Found unique relative link: ${absoluteUrl}`)
             }
         }
 
@@ -375,7 +376,7 @@ function getURLsFromHTML(htmlBody: string, baseURL: string): string[] {
             const urlObj = new URL(linkElement.href, baseURL)
             urls.push(urlObj.href)
         } catch (err) {
-            if (process.env.DEBUG === 'true') console.error(`error with scraped URL: ${err.message}`)
+            logger.debug(`error with scraped URL: ${err.message}`)
             continue
         }
     }
@@ -421,18 +422,18 @@ async function crawl(baseURL: string, currentURL: string, pages: string[], limit
 
     pages.push(normalizeCurrentURL)
 
-    if (process.env.DEBUG === 'true') console.info(`actively crawling ${currentURL}`)
+    logger.debug(`actively crawling ${currentURL}`)
     try {
         const resp = await secureFetch(currentURL)
 
         if (resp.status > 399) {
-            if (process.env.DEBUG === 'true') console.error(`error in fetch with status code: ${resp.status}, on page: ${currentURL}`)
+            logger.debug(`error in fetch with status code: ${resp.status}, on page: ${currentURL}`)
             return pages
         }
 
         const contentType: string | null = resp.headers.get('content-type')
         if ((contentType && !contentType.includes('text/html')) || !contentType) {
-            if (process.env.DEBUG === 'true') console.error(`non html response, content type: ${contentType}, on page: ${currentURL}`)
+            logger.debug(`non html response, content type: ${contentType}, on page: ${currentURL}`)
             return pages
         }
 
@@ -442,7 +443,7 @@ async function crawl(baseURL: string, currentURL: string, pages: string[], limit
             pages = await crawl(baseURL, nextURL, pages, limit)
         }
     } catch (err) {
-        if (process.env.DEBUG === 'true') console.error(`error in fetch url: ${err.message}, on page: ${currentURL}`)
+        logger.debug(`error in fetch url: ${err.message}, on page: ${currentURL}`)
     }
     return pages
 }
@@ -477,25 +478,25 @@ export function getURLsFromXML(xmlBody: string, limit: number): string[] {
 
 export async function xmlScrape(currentURL: string, limit: number): Promise<string[]> {
     let urls: string[] = []
-    if (process.env.DEBUG === 'true') console.info(`actively scarping ${currentURL}`)
+    logger.debug(`actively scarping ${currentURL}`)
     try {
         const resp = await secureFetch(currentURL)
 
         if (resp.status > 399) {
-            if (process.env.DEBUG === 'true') console.error(`error in fetch with status code: ${resp.status}, on page: ${currentURL}`)
+            logger.debug(`error in fetch with status code: ${resp.status}, on page: ${currentURL}`)
             return urls
         }
 
         const contentType: string | null = resp.headers.get('content-type')
         if ((contentType && !contentType.includes('application/xml') && !contentType.includes('text/xml')) || !contentType) {
-            if (process.env.DEBUG === 'true') console.error(`non xml response, content type: ${contentType}, on page: ${currentURL}`)
+            logger.debug(`non xml response, content type: ${contentType}, on page: ${currentURL}`)
             return urls
         }
 
         const xmlBody = await resp.text()
         urls = getURLsFromXML(xmlBody, limit)
     } catch (err) {
-        if (process.env.DEBUG === 'true') console.error(`error in fetch url: ${err.message}, on page: ${currentURL}`)
+        logger.debug(`error in fetch url: ${err.message}, on page: ${currentURL}`)
     }
     return urls
 }
@@ -593,7 +594,7 @@ const decryptCredentialData = async (encryptedData: string): Promise<ICommonObje
                 decryptedDataStr = decryptedData.toString(enc.Utf8)
             }
         } catch (error) {
-            console.error(error)
+            logger.error(error)
             throw new Error('Failed to decrypt credential data.')
         }
     } else {
@@ -607,7 +608,7 @@ const decryptCredentialData = async (encryptedData: string): Promise<ICommonObje
     try {
         return JSON.parse(decryptedDataStr)
     } catch (e) {
-        console.error(e)
+        logger.error(e)
         throw new Error('Credentials could not be decrypted.')
     }
 }
@@ -1398,7 +1399,7 @@ export const refreshOAuth2Token = async (
 
                 return updatedCredentialData
             } catch (error) {
-                console.error('Failed to refresh access token:', error)
+                logger.error(`Failed to refresh access token: ${error}`)
                 throw new Error(
                     `Failed to refresh access token: ${
                         error instanceof Error ? error.message : 'Unknown error'
@@ -1587,7 +1588,7 @@ export const executeJavaScriptCode = async (
                 if (validPackageNameRegex.test(library)) {
                     await sbx.commands.run(`npm install ${library}`)
                 } else {
-                    console.warn(`[Sandbox] Skipping installation of invalid module: ${library}`)
+                    logger.warn(`[Sandbox] Skipping installation of invalid module: ${library}`)
                 }
             }
 
@@ -1991,7 +1992,7 @@ export async function parseWithTypeConversion<T extends z.ZodTypeAny>(schema: T,
                             }
                         }
                     } catch (pathError) {
-                        console.error('Error processing path in Zod error', pathError)
+                        logger.error(`Error processing path in Zod error ${pathError}`)
                     }
                 }
             }
@@ -2044,7 +2045,7 @@ export const configureStructuredOutput = (llmNodeInstance: BaseChatModel, struct
                         // Create an array schema of the item schema
                         zodObj[sch.key] = z.array(itemSchema).describe(sch.description || '')
                     } catch (err) {
-                        console.error(`Error parsing JSON schema for ${sch.key}:`, err)
+                        logger.error(`Error parsing JSON schema for ${sch.key}: ${err}`)
                         // Fallback to generic array of records
                         zodObj[sch.key] = z.array(z.record(z.any())).describe(sch.description || '')
                     }
@@ -2059,7 +2060,7 @@ export const configureStructuredOutput = (llmNodeInstance: BaseChatModel, struct
         // @ts-ignore
         return llmNodeInstance.withStructuredOutput(structuredOutputSchema)
     } catch (exception) {
-        console.error(exception)
+        logger.error(exception)
         return llmNodeInstance
     }
 }

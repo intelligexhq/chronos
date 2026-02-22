@@ -24,7 +24,7 @@ class AzureAIFoundry_LLMs implements INode {
         this.type = 'AzureAIFoundry'
         this.icon = 'Azure.svg'
         this.category = 'Chat Models'
-        this.description = 'Azure AI Foundry Chat Model with private endpoint support using Managed Identity or API Key'
+        this.description = 'Azure AI Foundry Chat Model with private endpoint support using Managed Identity'
         this.baseClasses = [this.type, ...getBaseClasses(LangchainAzureChatOpenAI)]
         this.credential = {
             label: 'Connect Credential',
@@ -115,16 +115,13 @@ class AzureAIFoundry_LLMs implements INode {
         const streaming = nodeData.inputs?.streaming as boolean
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const authMethod = getCredentialParam('authMethod', credentialData, nodeData)
         const azureAIFoundryEndpoint = getCredentialParam('azureAIFoundryEndpoint', credentialData, nodeData)
-        const azureAIFoundryApiKey = getCredentialParam('azureAIFoundryApiKey', credentialData, nodeData)
         const azureAIFoundryDeploymentName = getCredentialParam('azureAIFoundryDeploymentName', credentialData, nodeData)
         const azureAIFoundryApiVersion = getCredentialParam('azureAIFoundryApiVersion', credentialData, nodeData)
         const azureClientId = getCredentialParam('azureClientId', credentialData, nodeData)
 
         const cache = nodeData.inputs?.cache as BaseCache
 
-        // Prepare configuration based on authentication method
         const obj: ChatOpenAIFields & Partial<AzureOpenAIInput> = {
             temperature: parseFloat(temperature),
             modelName,
@@ -133,29 +130,20 @@ class AzureAIFoundry_LLMs implements INode {
             streaming: streaming ?? true
         }
 
-        if (authMethod === 'managedIdentity') {
-            // For Managed Identity, we use azureADTokenProvider
-            // The @langchain/openai library will use DefaultAzureCredential automatically
-            // when azureADTokenProvider is set and no API key is provided
-            obj.azureOpenAIEndpoint = azureAIFoundryEndpoint?.replace(/\/$/, '')
+        // Use Managed Identity via DefaultAzureCredential
+        obj.azureOpenAIEndpoint = azureAIFoundryEndpoint?.replace(/\/$/, '')
 
-            // Import and configure Azure Identity for Managed Identity
-            const { DefaultAzureCredential, getBearerTokenProvider } = require('@azure/identity')
+        const { DefaultAzureCredential, getBearerTokenProvider } = require('@azure/identity')
 
-            // Configure credential options for User-Assigned Managed Identity if Client ID is provided
-            const credentialOptions: any = {}
-            if (azureClientId) {
-                credentialOptions.managedIdentityClientId = azureClientId
-            }
-
-            const credential = new DefaultAzureCredential(credentialOptions)
-            const scope = 'https://cognitiveservices.azure.com/.default'
-            obj.azureADTokenProvider = getBearerTokenProvider(credential, scope)
-        } else {
-            // For API Key authentication
-            obj.azureOpenAIApiKey = azureAIFoundryApiKey
-            obj.azureOpenAIEndpoint = azureAIFoundryEndpoint?.replace(/\/$/, '')
+        // Configure credential options for User-Assigned Managed Identity if Client ID is provided
+        const credentialOptions: any = {}
+        if (azureClientId) {
+            credentialOptions.managedIdentityClientId = azureClientId
         }
+
+        const credential = new DefaultAzureCredential(credentialOptions)
+        const scope = 'https://cognitiveservices.azure.com/.default'
+        obj.azureADTokenProvider = getBearerTokenProvider(credential, scope)
 
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseFloat(topP)

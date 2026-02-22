@@ -24,7 +24,7 @@ import { databaseEntities, clearSessionMemory, getAPIOverrideConfig } from '../u
 import { replaceInputsWithConfig, resolveVariables } from '.'
 import { InternalChronosError } from '../errors/internalChronosError'
 import { getErrorMessage } from '../errors/utils'
-import logger from './logger'
+import logger, { createNodeLogger } from './logger'
 import { Variable } from '../database/entities/Variable'
 import { getWorkspaceSearchOptions } from './openSourceStubs'
 import { DataSource } from 'typeorm'
@@ -716,7 +716,8 @@ const compileSeqAgentsGraph = async (params: SeqAgentsGraphParams) => {
             variableOverrides
         )
 
-        const seqAgentNode: ISeqAgentNode = await newNodeInstance.init(flowNodeData, question, options)
+        const nodeOptions = flowNodeData.label ? { ...options, logger: createNodeLogger(flowNodeData.label) } : options
+        const seqAgentNode: ISeqAgentNode = await newNodeInstance.init(flowNodeData, question, nodeOptions)
         return seqAgentNode
     }
 

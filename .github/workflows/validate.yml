@@ -1,5 +1,4 @@
-name: validate
-
+name: validate and build
 on:
   workflow_dispatch: # manual trigger only
   pull_request:

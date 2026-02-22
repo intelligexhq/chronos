@@ -140,7 +140,7 @@ const deleteLoaderFromDocumentStore = async (
                             const { totalSize } = await removeSpecificFileFromStorage(orgId, DOCUMENT_STORE_BASE_FOLDER, storeId, file.name)
                             await updateStorageUsage(orgId, '', totalSize, usageCacheManager)
                         } catch (error) {
-                            console.error(error)
+                            logger.error(error)
                         }
                     }
                 }
@@ -918,7 +918,7 @@ const _saveChunksToStorage = async (
                                 )
                                 await updateStorageUsage(orgId, '', totalSize, usageCacheManager)
                             } catch (error) {
-                                console.error(error)
+                                logger.error(error)
                             }
                         })
                     }

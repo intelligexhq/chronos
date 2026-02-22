@@ -2,15 +2,16 @@ import * as path from 'path'
 import * as fs from 'fs'
 import { hostname } from 'node:os'
 import config from './config' // should be replaced by node-config or similar
-import { createLogger, transports, format } from 'winston'
+import { createLogger, transports } from 'winston'
 import { NextFunction, Request, Response } from 'express'
 import DailyRotateFile from 'winston-daily-rotate-file'
 import { S3ClientConfig } from '@aws-sdk/client-s3'
 import { LoggingWinston } from '@google-cloud/logging-winston'
+import { baseFormat, consoleFormat, fileJsonFormat } from 'chronos-components'
 
 const { S3StreamLogger } = require('s3-streamlogger')
 
-const { combine, timestamp, printf, errors } = format
+const level = process.env.DEBUG === 'true' ? 'debug' : process.env.LOG_LEVEL || 'info'
 
 let s3ServerStream: any
 let s3ErrorStream: any
@@ -74,25 +75,25 @@ if (process.env.STORAGE_TYPE === 's3') {
 }
 
 if (process.env.STORAGE_TYPE === 'gcs') {
-    const config = {
+    const gcsConfig = {
         projectId: process.env.GOOGLE_CLOUD_STORAGE_PROJ_ID,
         keyFilename: process.env.GOOGLE_CLOUD_STORAGE_CREDENTIAL,
         defaultCallback: (err: any) => {
             if (err) {
-                console.error('Error logging to GCS: ' + err)
+                logger.error('Error logging to GCS: ' + err)
             }
         }
     }
     gcsServerStream = new LoggingWinston({
-        ...config,
+        ...gcsConfig,
         logName: 'server'
     })
     gcsErrorStream = new LoggingWinston({
-        ...config,
+        ...gcsConfig,
         logName: 'error'
     })
     gcsServerReqStream = new LoggingWinston({
-        ...config,
+        ...gcsConfig,
         logName: 'requests'
     })
 }
@@ -105,42 +106,37 @@ if (!fs.existsSync(logDir)) {
 }
 
 const logger = createLogger({
-    format: combine(
-        timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-        format.json(),
-        printf(({ level, message, timestamp, stack }) => {
-            const text = `${timestamp} [${level.toUpperCase()}]: ${message}`
-            return stack ? text + '\n' + stack : text
-        }),
-        errors({ stack: true })
-    ),
+    level,
+    format: baseFormat,
     defaultMeta: {
         package: 'server'
     },
     exitOnError: false,
     transports: [
-        new transports.Console(),
+        new transports.Console({ format: consoleFormat }),
         ...(!process.env.STORAGE_TYPE || process.env.STORAGE_TYPE === 'local'
             ? [
                   new DailyRotateFile({
                       filename: path.join(logDir, config.logging.server.filename ?? 'server-%DATE%.log'),
                       datePattern: 'YYYY-MM-DD-HH',
                       maxSize: '20m',
-                      level: config.logging.server.level ?? 'info'
+                      level: config.logging.server.level ?? 'info',
+                      format: fileJsonFormat
                   })
               ]
             : []),
         ...(process.env.STORAGE_TYPE === 's3'
             ? [
                   new transports.Stream({
-                      stream: s3ServerStream
+                      stream: s3ServerStream,
+                      format: fileJsonFormat
                   })
               ]
             : []),
         ...(process.env.STORAGE_TYPE === 'gcs' ? [gcsServerStream] : [])
     ],
     exceptionHandlers: [
-        ...(process.env.DEBUG && process.env.DEBUG === 'true' ? [new transports.Console()] : []),
+        ...(process.env.DEBUG === 'true' ? [new transports.Console()] : []),
         ...(process.env.STORAGE_TYPE === 's3'
             ? [
                   new transports.Stream({
@@ -151,7 +147,7 @@ const logger = createLogger({
         ...(process.env.STORAGE_TYPE === 'gcs' ? [gcsErrorStream] : [])
     ],
     rejectionHandlers: [
-        ...(process.env.DEBUG && process.env.DEBUG === 'true' ? [new transports.Console()] : []),
+        ...(process.env.DEBUG === 'true' ? [new transports.Console()] : []),
         ...(process.env.STORAGE_TYPE === 's3'
             ? [
                   new transports.Stream({
@@ -161,31 +157,34 @@ const logger = createLogger({
             : []),
         ...(process.env.STORAGE_TYPE === 'gcs' ? [gcsErrorStream] : []),
         // Always provide a fallback rejection handler when no other handlers are configured
-        ...((!process.env.DEBUG || process.env.DEBUG !== 'true') && process.env.STORAGE_TYPE !== 's3' && process.env.STORAGE_TYPE !== 'gcs'
+        ...(process.env.DEBUG !== 'true' && process.env.STORAGE_TYPE !== 's3' && process.env.STORAGE_TYPE !== 'gcs'
             ? [new transports.Console()]
             : [])
     ]
 })
 
 requestLogger = createLogger({
-    format: combine(timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }), format.json(), errors({ stack: true })),
+    level,
+    format: baseFormat,
     defaultMeta: {
         package: 'server'
     },
     transports: [
-        ...(process.env.DEBUG && process.env.DEBUG === 'true' ? [new transports.Console()] : []),
+        ...(process.env.DEBUG === 'true' ? [new transports.Console({ format: consoleFormat })] : []),
         ...(!process.env.STORAGE_TYPE || process.env.STORAGE_TYPE === 'local'
             ? [
                   new transports.File({
                       filename: path.join(logDir, config.logging.express.filename ?? 'server-requests.log.jsonl'),
-                      level: config.logging.express.level ?? 'debug'
+                      level: config.logging.express.level ?? 'debug',
+                      format: fileJsonFormat
                   })
               ]
             : []),
         ...(process.env.STORAGE_TYPE === 's3'
             ? [
                   new transports.Stream({
-                      stream: s3ServerReqStream
+                      stream: s3ServerReqStream,
+                      format: fileJsonFormat
                   })
               ]
             : []),
@@ -232,7 +231,7 @@ export function expressRequestLogger(req: Request, res: Response, next: NextFunc
     const unwantedLogURLs = ['/api/v1/node-icon/', '/api/v1/components-credentials-icon/', '/api/v1/ping']
 
     if (/\/api\/v1\//i.test(req.url) && !unwantedLogURLs.some((url) => new RegExp(url, 'i').test(req.url))) {
-        const isDebugLevel = logger.level === 'debug' || process.env.DEBUG === 'true'
+        const isDebugLevel = logger.level === 'debug'
 
         const requestMetadata: any = {
             request: {
@@ -281,6 +280,10 @@ export function expressRequestLogger(req: Request, res: Response, next: NextFunc
     }
 
     next()
+}
+
+export function createNodeLogger(nodeName: string) {
+    return logger.child({ nodeName })
 }
 
 export default logger

@@ -5,6 +5,7 @@ import { MeterProvider, PeriodicExportingMetricReader, Histogram } from '@opente
 import { diag, DiagLogLevel, DiagConsoleLogger, Attributes, Counter } from '@opentelemetry/api'
 import { getVersion } from 'chronos-components'
 import express from 'express'
+import logger from '../utils/logger'
 
 // Create a static map to track created metrics and prevent duplicates
 const createdMetrics = new Map<string, boolean>()
@@ -62,7 +63,7 @@ export class OpenTelemetry implements IMetricsProvider {
             } else if (metricProtocol === 'proto') {
                 OTLPMetricExporter = require('@opentelemetry/exporter-metrics-otlp-proto').OTLPMetricExporter
             } else {
-                console.error('Invalid METRICS_OPEN_TELEMETRY_PROTOCOL specified. Please set it to "http", "grpc", or "proto".')
+                logger.error('Invalid METRICS_OPEN_TELEMETRY_PROTOCOL specified. Please set it to "http", "grpc", or "proto".')
                 process.exit(1) // Exit if invalid protocol type is specified
             }
 
@@ -124,7 +125,7 @@ export class OpenTelemetry implements IMetricsProvider {
                     }
                 } catch (error) {
                     // Log error but continue with other metrics
-                    console.error(`Error creating metric ${value}:`, error)
+                    logger.error(`Error creating metric ${value}:`, error)
                 }
             })
 
@@ -140,7 +141,7 @@ export class OpenTelemetry implements IMetricsProvider {
                     createdMetrics.set('flowise_version', true)
                 }
             } catch (error) {
-                console.error('Error creating version gauge:', error)
+                logger.error('Error creating version gauge:', error)
             }
 
             try {
@@ -152,7 +153,7 @@ export class OpenTelemetry implements IMetricsProvider {
                     createdMetrics.set('http_requests_total', true)
                 }
             } catch (error) {
-                console.error('Error creating HTTP request counter:', error)
+                logger.error('Error creating HTTP request counter:', error)
             }
 
             try {
@@ -164,12 +165,12 @@ export class OpenTelemetry implements IMetricsProvider {
                     createdMetrics.set('http_request_duration_ms', true)
                 }
             } catch (error) {
-                console.error('Error creating HTTP request duration histogram:', error)
+                logger.error('Error creating HTTP request duration histogram:', error)
             }
 
             await this.setupMetricsEndpoint()
         } catch (error) {
-            console.error('Error initializing OpenTelemetry metrics:', error)
+            logger.error('Error initializing OpenTelemetry metrics:', error)
             // Don't throw - allow app to continue without metrics
         }
     }
@@ -186,7 +187,7 @@ export class OpenTelemetry implements IMetricsProvider {
             }
         } catch (error) {
             // Log error but don't crash the application
-            console.error('Error recording HTTP request duration:', error)
+            logger.error('Error recording HTTP request duration:', error)
         }
     }
 
@@ -202,7 +203,7 @@ export class OpenTelemetry implements IMetricsProvider {
             }
         } catch (error) {
             // Log error but don't crash the application
-            console.error('Error recording HTTP request:', error)
+            logger.error('Error recording HTTP request:', error)
         }
     }
 
@@ -214,7 +215,7 @@ export class OpenTelemetry implements IMetricsProvider {
                     if (this.metricReader) await this.metricReader.shutdown()
                     if (this.meterProvider) await this.meterProvider.shutdown()
                 } catch (error) {
-                    console.error('Error during metrics shutdown:', error)
+                    logger.error('Error during metrics shutdown:', error)
                 }
             })
 
@@ -234,13 +235,13 @@ export class OpenTelemetry implements IMetricsProvider {
                             this.recordHttpRequestDuration(responseTimeInMs, req.method, req.path, res.statusCode)
                         }
                     } catch (error) {
-                        console.error('Error in metrics middleware:', error)
+                        logger.error('Error in metrics middleware:', error)
                     }
                 })
                 next()
             })
         } catch (error) {
-            console.error('Error setting up metrics endpoint:', error)
+            logger.error('Error setting up metrics endpoint:', error)
         }
     }
 
@@ -251,7 +252,7 @@ export class OpenTelemetry implements IMetricsProvider {
                 ;(this.counters.get(counter) as Counter<Attributes>).add(1, payload)
             }
         } catch (error) {
-            console.error(`Error incrementing counter ${counter}:`, error)
+            logger.error(`Error incrementing counter ${counter}:`, error)
         }
     }
 }

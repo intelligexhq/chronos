@@ -1,5 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
 import { EvaluationRunner, ICommonObject } from 'chronos-components'
+import logger from '../../utils/logger'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { InternalChronosError } from '../../errors/internalChronosError'
 import { getErrorMessage } from '../../errors/utils'
@@ -310,7 +311,7 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
             })
             .catch((error) => {
                 // Handle errors from runEvaluations
-                console.error('Error running evaluations:', getErrorMessage(error))
+                logger.error('Error running evaluations: ' + getErrorMessage(error))
                 appServer.AppDataSource.getRepository(Evaluation)
                     .findOneBy({ id: newEvaluation.id })
                     .then((evaluation) => {
@@ -323,7 +324,7 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
                         }
                     })
                     .catch((dbError) => {
-                        console.error('Error updating evaluation status:', getErrorMessage(dbError))
+                        logger.error('Error updating evaluation status: ' + getErrorMessage(dbError))
                     })
             })
 

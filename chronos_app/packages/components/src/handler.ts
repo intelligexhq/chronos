@@ -26,6 +26,7 @@ import { AgentAction } from '@langchain/core/agents'
 import { LunaryHandler } from '@langchain/community/callbacks/handlers/lunary'
 
 import { getCredentialData, getCredentialParam, getEnvironmentVariable } from './utils'
+import logger from './logger'
 import { EvaluationRunTracer } from '../evaluation/EvaluationRunTracer'
 import { EvaluationRunTracerLlama } from '../evaluation/EvaluationRunTracerLlama'
 import { ICommonObject, IDatabaseEntity, INodeData, IServerSideEventStreamer } from './Interface'
@@ -78,7 +79,7 @@ function getArizeTracer(options: ArizeTracerOptions): Tracer | undefined {
         }
         return tracerProvider.getTracer(`arize-tracer-${uuidv4().toString()}`)
     } catch (err) {
-        if (process.env.DEBUG === 'true') console.error(`Error setting up Arize tracer: ${err.message}`)
+        logger.error(`Error setting up Arize tracer: ${err.message}`)
         return undefined
     }
 }
@@ -132,7 +133,7 @@ export function getPhoenixTracer(options: PhoenixTracerOptions): Tracer | undefi
         }
         return tracerProvider.getTracer(`phoenix-tracer-${uuidv4().toString()}`)
     } catch (err) {
-        if (process.env.DEBUG === 'true') console.error(`Error setting up Phoenix tracer: ${err.message}`)
+        logger.error(`Error setting up Phoenix tracer: ${err.message}`)
         return undefined
     }
 }
@@ -176,7 +177,7 @@ function getOpikTracer(options: OpikTracerOptions): Tracer | undefined {
         }
         return tracerProvider.getTracer(`opik-tracer-${uuidv4().toString()}`)
     } catch (err) {
-        if (process.env.DEBUG === 'true') console.error(`Error setting up Opik tracer: ${err.message}`)
+        logger.error(`Error setting up Opik tracer: ${err.message}`)
         return undefined
     }
 }

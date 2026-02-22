@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import sanitizeHtml from 'sanitize-html'
 import { isPredictionRequest, extractChatflowId, validateChatflowDomain } from './domainValidation'
+import logger from './logger'
 
 export function sanitizeMiddleware(req: Request, res: Response, next: NextFunction): void {
     // decoding is necessary as the url is encoded by the browser
@@ -62,7 +63,7 @@ export function getCorsOptions(): any {
                             chatflowAllowed = await validateChatflowDomain(chatflowId, originLc)
                         } catch (error) {
                             // Log error and deny on failure
-                            console.error('Domain validation error:', error)
+                            logger.error('Domain validation error:', error)
                             chatflowAllowed = false
                         }
                     }

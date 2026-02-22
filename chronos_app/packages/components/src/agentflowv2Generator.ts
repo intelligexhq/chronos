@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { StructuredOutputParser } from '@langchain/core/output_parsers'
 import { isEqual, get, cloneDeep } from 'lodash'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
+import logger from './logger'
 
 const ToolType = z.array(z.string()).describe('List of tools')
 
@@ -159,7 +160,7 @@ export const generateAgentflowv2 = async (config: Record<string, any>, question:
 
         return { nodes: updatedNodes, edges: updatedEdges }
     } catch (error) {
-        console.error('Error generating AgentflowV2:', error)
+        logger.error(`Error generating AgentflowV2: ${error}`)
         return { error: error.message || 'Unknown error occurred' }
     }
 }
@@ -339,15 +340,15 @@ const _generateSelectedTools = async (config: Record<string, any>, question: str
                 // Validate with our schema
                 return ToolType.parse(parsedJSON)
             } catch (parseError) {
-                console.error('Error parsing JSON from response:', parseError)
+                logger.error(`Error parsing JSON from response: ${parseError}`)
                 return { error: 'Failed to parse JSON from response', content: responseContent }
             }
         } else {
-            console.error('No JSON found in response:', responseContent)
+            logger.error(`No JSON found in response: ${responseContent}`)
             return { error: 'No JSON found in response', content: responseContent }
         }
     } catch (error) {
-        console.error('Error generating AgentflowV2:', error)
+        logger.error(`Error generating AgentflowV2: ${error}`)
         return { error: error.message || 'Unknown error occurred' }
     }
 }
@@ -395,15 +396,15 @@ const generateNodesEdges = async (config: Record<string, any>, question: string,
                 // Validate with our schema
                 return NodesEdgesType.parse(parsedJSON)
             } catch (parseError) {
-                console.error('Error parsing JSON from response:', parseError)
+                logger.error(`Error parsing JSON from response: ${parseError}`)
                 return { error: 'Failed to parse JSON from response', content: responseContent }
             }
         } else {
-            console.error('No JSON found in response:', responseContent)
+            logger.error(`No JSON found in response: ${responseContent}`)
             return { error: 'No JSON found in response', content: responseContent }
         }
     } catch (error) {
-        console.error('Error generating AgentflowV2:', error)
+        logger.error(`Error generating AgentflowV2: ${error}`)
         return { error: error.message || 'Unknown error occurred' }
     }
 }
@@ -447,7 +448,7 @@ const generateNodesData = (result: Record<string, any>, config: Record<string, a
 
         return { nodes, edges: result.edges }
     } catch (error) {
-        console.error('Error generating AgentflowV2:', error)
+        logger.error(`Error generating AgentflowV2: ${error}`)
         return { error: error.message || 'Unknown error occurred' }
     }
 }
