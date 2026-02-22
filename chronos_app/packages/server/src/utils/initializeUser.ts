@@ -18,15 +18,43 @@ interface InitialUserConfig {
 }
 
 /**
- * Get initial user configuration from environment variables.
- * @returns Configuration object or null if not configured
+ * Parse CHRONOS_INITIAL_USER environment variable.
+ * Format: email:password or email:password:name
+ * Password can contain colons - parsing uses first colon for email, last colon for name.
+ * @returns Configuration object or null if not configured or invalid
  */
 function getInitialUserConfig(): InitialUserConfig | null {
-    const email = process.env.CHRONOS_INITIAL_USER_EMAIL
-    const password = process.env.CHRONOS_INITIAL_USER_PASSWORD
-    const name = process.env.CHRONOS_INITIAL_USER_NAME
+    const initialUser = process.env.CHRONOS_INITIAL_USER
+
+    if (!initialUser) {
+        return null
+    }
+
+    const firstColonIndex = initialUser.indexOf(':')
+    if (firstColonIndex === -1) {
+        logger.error('❌ [server]: Invalid CHRONOS_INITIAL_USER format. Expected email:password or email:password:name')
+        return null
+    }
+
+    const email = initialUser.substring(0, firstColonIndex)
+    const remainder = initialUser.substring(firstColonIndex + 1)
+
+    const lastColonIndex = remainder.lastIndexOf(':')
+
+    let password: string
+    let name: string | undefined
+
+    if (lastColonIndex === -1) {
+        // Format: email:password (no name)
+        password = remainder
+    } else {
+        // Format: email:password:name (password may contain colons)
+        password = remainder.substring(0, lastColonIndex)
+        name = remainder.substring(lastColonIndex + 1)
+    }
 
     if (!email || !password) {
+        logger.error('❌ [server]: Invalid CHRONOS_INITIAL_USER format. Email and password are required.')
         return null
     }
 
@@ -47,7 +75,7 @@ async function hasExistingUsers(): Promise<boolean> {
  * Initialize the initial user from environment variables.
  *
  * This function:
- * 1. Checks if CHRONOS_INITIAL_USER_EMAIL and CHRONOS_INITIAL_USER_PASSWORD are set
+ * 1. Checks if CHRONOS_INITIAL_USER is set (format: email:password:name)
  * 2. Checks if the user table is empty (first run)
  * 3. Creates the initial user if both conditions are met
  *
@@ -59,7 +87,7 @@ export async function initializeInitialUser(): Promise<void> {
 
     // If env vars not set, skip silently
     if (!config) {
-        logger.debug('👤 [server]: No initial user configuration provided (CHRONOS_INITIAL_USER_EMAIL/PASSWORD not set)')
+        logger.debug('👤 [server]: No initial user configuration provided (CHRONOS_INITIAL_USER not set)')
         return
     }
 

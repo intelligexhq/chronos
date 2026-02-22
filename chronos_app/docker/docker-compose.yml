@@ -8,9 +8,7 @@ services:
         DATABASE_NAME: chronos
         DATABASE_USER: chronos
         DATABASE_PASSWORD: secret
-        CHRONOS_INITIAL_USER_EMAIL: admin@admin.com
-        CHRONOS_INITIAL_USER_PASSWORD: test1234
-        CHRONOS_INITIAL_USER_NAME: admin
+        CHRONOS_INITIAL_USER: admin@admin.com:test1234:admin
         DEBUG: true
       ports:
         - "3001:3000"
