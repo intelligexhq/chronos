@@ -2,6 +2,21 @@
 
 Collection of Chronos deployment options.
 
+Simple build and run within local nodejs runtime.
+
+```bash
+# nodejs runtime v24 is requirenment. use nvm is necesary
+node -v
+pnpm install
+# if complete reinstall is needed
+# pnpm -r exec rm -rf node_modules
+# pnpm install
+pnpm build
+pnpm run
+# chronos is accessible on localhost:3000
+```
+
+
 *Build and run a local Docker container image:*
 
 ```bash
