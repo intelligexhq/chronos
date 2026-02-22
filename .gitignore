@@ -1,6 +1,7 @@
 # editor
 .idea
 .vscode
+.claude
 
 # dependencies
 **/node_modules
@@ -8,9 +9,12 @@
 **/yarn.lock
 
 # docker compose
-.ollama_data/
-.qdrant_data/
-.redis_data/
+.ollama_data
+.qdrant_data
+.redis_data
+.loki
+.grafana
+.alloy
 
 ## logs
 **/logs
@@ -111,12 +115,9 @@
 *.vsix
 
 ## local
-.DS_Store
 local_data
 Dockerfile
-.claude
-docs
 AGENTS.md
 CLAUDE.md
 GEMINI.md
-backlog.md
+docs
