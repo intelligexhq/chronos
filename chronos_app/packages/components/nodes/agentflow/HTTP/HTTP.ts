@@ -402,7 +402,7 @@ class HTTP_Agentflow implements INode {
                 status: error.response?.status,
                 responseData: error.response?.data ? sanitizeBody(error.response.data) : undefined
             }
-            console.error(`[HTTP Node] Error: ${JSON.stringify(errorLog)}`)
+            logger.error(`[HTTP Node] Error: ${JSON.stringify(errorLog)}`)
 
             const errorMessage =
                 error.response?.data?.message || error.response?.data?.error || error.message || 'An error occurred during the HTTP request'

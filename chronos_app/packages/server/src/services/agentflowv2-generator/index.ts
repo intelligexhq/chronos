@@ -133,7 +133,7 @@ const getAllAgentflowv2Marketplaces = async () => {
                 title: title
             })
         } catch (error) {
-            console.error(`Error processing template file ${file}:`, error)
+            logger.error(`Error processing template file ${file}:`, error)
             // Continue with next file instead of failing completely
         }
     })
@@ -236,7 +236,7 @@ const generateAgentflowv2 = async (question: string, selectedChatModel: Record<s
                 throw new Error(`Unexpected response type: ${typeof response}`)
             }
         } catch (parseError) {
-            console.error('Failed to parse or validate response:', parseError)
+            logger.error('Failed to parse or validate response:', parseError)
             // If parsing fails, return an error object
             return {
                 error: 'Failed to validate response format',

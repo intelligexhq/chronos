@@ -61,7 +61,7 @@ import {
 } from '../utils'
 import { validateFileMimeTypeAndExtensionMatch } from './fileValidation'
 import { validateFlowAPIKey } from './validateKey'
-import logger from './logger'
+import logger, { createNodeLogger } from './logger'
 import { utilAddChatMessage } from './addChatMesage'
 import { checkStorage, updatePredictionsUsage, updateStorageUsage } from './quotaUsage'
 import { buildAgentGraph } from './buildAgentGraph'
@@ -758,6 +758,7 @@ export const executeFlow = async ({
         const finalQuestion = uploadedFilesContent ? `${uploadedFilesContent}\n\n${incomingInput.question}` : incomingInput.question
 
         /*** Prepare run params ***/
+        const nodeLogger = endingNodeData.label ? createNodeLogger(endingNodeData.label) : logger
         const runParams = {
             orgId,
             workspaceId,
@@ -765,7 +766,7 @@ export const executeFlow = async ({
             chatId,
             chatflowid,
             apiMessageId,
-            logger,
+            logger: nodeLogger,
             appDataSource,
             databaseEntities,
             usageCacheManager,

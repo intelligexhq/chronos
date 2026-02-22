@@ -2,13 +2,12 @@ import * as ipaddr from 'ipaddr.js'
 import dns from 'dns/promises'
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import fetch, { RequestInit, Response } from 'node-fetch'
+import logger from './logger'
 
 /**
  * HTTP Debug Logging Utilities
  * Activated when DEBUG=true environment variable is set
  */
-
-const isDebugEnabled = (): boolean => process.env.DEBUG === 'true'
 
 function getSensitiveBodyFields(): string[] {
     if (!process.env.LOG_SANITIZE_BODY_FIELDS) return []
@@ -63,23 +62,19 @@ function truncateBody(body: any, maxLength: number = 2000): any {
 }
 
 function logHttpRequest(method: string, url: string, headers?: Record<string, any>, body?: any): void {
-    if (!isDebugEnabled()) return
     const logData: any = { headers: sanitizeHeaders(headers) }
     if (body !== undefined) {
         logData.body = sanitizeBody(body)
     }
-    // eslint-disable-next-line no-console
-    console.debug(`[HTTP OUT] ${method?.toUpperCase() || 'GET'} ${url}`, JSON.stringify(logData, null, 2))
+    logger.debug(`[HTTP OUT] ${method?.toUpperCase() || 'GET'} ${url} ${JSON.stringify(logData, null, 2)}`)
 }
 
 function logHttpResponse(status: number, url: string, headers?: Record<string, any>, body?: any): void {
-    if (!isDebugEnabled()) return
     const logData: any = { headers: headers || {} }
     if (body !== undefined) {
         logData.body = truncateBody(sanitizeBody(body))
     }
-    // eslint-disable-next-line no-console
-    console.debug(`[HTTP IN] ${status} ${url}`, JSON.stringify(logData, null, 2))
+    logger.debug(`[HTTP IN] ${status} ${url} ${JSON.stringify(logData, null, 2)}`)
 }
 
 /**

@@ -25,6 +25,7 @@ import {
 import { formatLogToString } from 'langchain/agents/format_scratchpad/log'
 import { IUsedTool } from './Interface'
 import { getErrorMessage } from './error'
+import logger from './logger'
 
 export const SOURCE_DOCUMENTS_PREFIX = '\n\n----FLOWISE_SOURCE_DOCUMENTS----\n\n'
 export const ARTIFACTS_PREFIX = '\n\n----FLOWISE_ARTIFACTS----\n\n'
@@ -462,7 +463,7 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                                 try {
                                     toolInput = JSON.parse(splitArray[1])
                                 } catch (e) {
-                                    console.error('Error parsing tool input from tool')
+                                    logger.error('Error parsing tool input from tool')
                                 }
                             }
                             usedTools.push({
@@ -510,7 +511,7 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                             const parsedDocs = JSON.parse(docs)
                             sourceDocuments.push(parsedDocs)
                         } catch (e) {
-                            console.error('Error parsing source documents from tool')
+                            logger.error('Error parsing source documents from tool')
                         }
                     }
                     if (typeof observation === 'string' && observation.includes(ARTIFACTS_PREFIX)) {
@@ -520,7 +521,7 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                             const artifact = JSON.parse(observationArray[1])
                             artifacts.push(artifact)
                         } catch (e) {
-                            console.error('Error parsing source documents from tool')
+                            logger.error('Error parsing source documents from tool')
                         }
                     }
                     if (typeof observation === 'string' && observation.includes(TOOL_ARGS_PREFIX)) {

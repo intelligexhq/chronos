@@ -91,7 +91,7 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
                 })
             )
         } catch (error) {
-            console.error('Error streaming custom event:', error)
+            logger.error('Error streaming custom event:', error)
         }
     }
 
@@ -106,7 +106,7 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
                 })
             )
         } catch (error) {
-            console.error('Error streaming start event:', error)
+            logger.error('Error streaming start event:', error)
         }
     }
 
@@ -121,7 +121,7 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
                 })
             )
         } catch (error) {
-            console.error('Error streaming token event:', error)
+            logger.error('Error streaming token event:', error)
         }
     }
 
@@ -136,7 +136,7 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
                 })
             )
         } catch (error) {
-            console.error('Error streaming sourceDocuments event:', error)
+            logger.error('Error streaming sourceDocuments event:', error)
         }
     }
 
@@ -151,7 +151,7 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
                 })
             )
         } catch (error) {
-            console.error('Error streaming artifacts event:', error)
+            logger.error('Error streaming artifacts event:', error)
         }
     }
 
@@ -166,7 +166,7 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
                 })
             )
         } catch (error) {
-            console.error('Error streaming usedTools event:', error)
+            logger.error('Error streaming usedTools event:', error)
         }
     }
 
@@ -181,7 +181,7 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
                 })
             )
         } catch (error) {
-            console.error('Error streaming calledTools event:', error)
+            logger.error('Error streaming calledTools event:', error)
         }
     }
 
@@ -196,7 +196,7 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
                 })
             )
         } catch (error) {
-            console.error('Error streaming fileAnnotations event:', error)
+            logger.error('Error streaming fileAnnotations event:', error)
         }
     }
 
@@ -211,7 +211,7 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
                 })
             )
         } catch (error) {
-            console.error('Error streaming tool event:', error)
+            logger.error('Error streaming tool event:', error)
         }
     }
 
@@ -226,7 +226,7 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
                 })
             )
         } catch (error) {
-            console.error('Error streaming agentReasoning event:', error)
+            logger.error('Error streaming agentReasoning event:', error)
         }
     }
 
@@ -241,7 +241,7 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
                 })
             )
         } catch (error) {
-            console.error('Error streaming agentFlow event:', error)
+            logger.error('Error streaming agentFlow event:', error)
         }
     }
 
@@ -256,7 +256,7 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
                 })
             )
         } catch (error) {
-            console.error('Error streaming agentFlowExecutedData event:', error)
+            logger.error('Error streaming agentFlowExecutedData event:', error)
         }
     }
 
@@ -271,7 +271,7 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
                 })
             )
         } catch (error) {
-            console.error('Error streaming nextAgent event:', error)
+            logger.error('Error streaming nextAgent event:', error)
         }
     }
 
@@ -286,7 +286,7 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
                 })
             )
         } catch (error) {
-            console.error('Error streaming nextAgentFlow event:', error)
+            logger.error('Error streaming nextAgentFlow event:', error)
         }
     }
 
@@ -301,7 +301,7 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
                 })
             )
         } catch (error) {
-            console.error('Error streaming action event:', error)
+            logger.error('Error streaming action event:', error)
         }
     }
 
@@ -316,7 +316,7 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
                 })
             )
         } catch (error) {
-            console.error('Error streaming abort event:', error)
+            logger.error('Error streaming abort event:', error)
         }
     }
 
@@ -335,7 +335,7 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
                 })
             )
         } catch (error) {
-            console.error('Error streaming error event:', error)
+            logger.error('Error streaming error event:', error)
         }
     }
 
@@ -361,7 +361,7 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
                 this.streamCustomEvent(chatId, 'metadata', metadataJson)
             }
         } catch (error) {
-            console.error('Error streaming metadata event:', error)
+            logger.error('Error streaming metadata event:', error)
         }
     }
 
@@ -376,7 +376,7 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
                 })
             )
         } catch (error) {
-            console.error('Error streaming usage metadata event:', error)
+            logger.error('Error streaming usage metadata event:', error)
         }
     }
 
@@ -392,7 +392,7 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
                 })
             )
         } catch (error) {
-            console.error('Error streaming TTS start event:', error)
+            logger.error('Error streaming TTS start event:', error)
         }
     }
 
@@ -408,7 +408,7 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
                 })
             )
         } catch (error) {
-            console.error('Error streaming TTS data event:', error)
+            logger.error('Error streaming TTS data event:', error)
         }
     }
 
@@ -424,7 +424,7 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
                 })
             )
         } catch (error) {
-            console.error('Error streaming TTS end event:', error)
+            logger.error('Error streaming TTS end event:', error)
         }
     }
 
@@ -440,7 +440,7 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
                 })
             )
         } catch (error) {
-            console.error('Error streaming TTS abort event:', error)
+            logger.error('Error streaming TTS abort event:', error)
         }
     }
 

@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
+import logger from '../../utils/logger'
 import { ChatMessageRatingType, ChatType, IReactFlowObject } from '../../Interface'
 import chatflowsService from '../../services/chatflows'
 import chatMessagesService from '../../services/chat-messages'
@@ -229,7 +230,7 @@ const removeAllChatMessages = async (req: Request, res: Response, next: NextFunc
                             isClearFromViewMessageDialog
                         )
                     } catch (e) {
-                        console.error('Error clearing chat messages')
+                        logger.error('Error clearing chat messages')
                     }
                 }
             }
@@ -324,7 +325,7 @@ const parseAPIResponse = (apiResponse: ChatMessage | ChatMessage[]): ChatMessage
                 parsedResponse.artifacts = JSON.parse(parsedResponse.artifacts)
             }
         } catch (e) {
-            console.error('Error parsing chat message response', e)
+            logger.error('Error parsing chat message response: ' + e)
         }
 
         return parsedResponse

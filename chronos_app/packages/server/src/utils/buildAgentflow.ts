@@ -975,7 +975,7 @@ export function combineNodeInputs(receivedInputs: Map<string, any>): any {
             }
         } catch (error) {
             // Log error but continue processing other inputs
-            console.error(`Error combining input from node ${sourceNodeId}:`, error)
+            logger.error(`Error combining input from node ${sourceNodeId}:`, error)
             result.error = error as Error
         }
     }
@@ -1290,7 +1290,7 @@ const executeNode = async ({
                                         executionData: JSON.stringify(agentFlowExecutedData)
                                     })
                                 } catch (error) {
-                                    console.error(`  ❌ Error updating parent execution: ${getErrorMessage(error)}`)
+                                    logger.error(`Error updating parent execution: ${getErrorMessage(error)}`)
                                 }
                             }
                         }
@@ -1315,7 +1315,7 @@ const executeNode = async ({
                             results.state = updatedState
                         }
                     } catch (error) {
-                        console.error(`  ❌ Error in iteration ${i + 1}: ${getErrorMessage(error)}`)
+                        logger.error(`Error in iteration ${i + 1}: ${getErrorMessage(error)}`)
                         iterationResults.push(`Error in iteration ${i + 1}: ${getErrorMessage(error)}`)
                     }
                 }
@@ -1764,7 +1764,7 @@ export const executeAgentFlow = async ({
             logger.debug(`   📝 Using parent execution ID: ${parentExecutionId} for recursive call (iteration: ${!!iterationContext})`)
             newExecution = parentExecution
         } else {
-            console.warn(`   ⚠️ Parent execution ID ${parentExecutionId} not found, will create new execution`)
+            logger.warn(`Parent execution ID ${parentExecutionId} not found, will create new execution`)
             newExecution = await addExecution(appDataSource, chatflowid, agentFlowExecutedData, sessionId)
             parentExecutionId = newExecution.id
         }

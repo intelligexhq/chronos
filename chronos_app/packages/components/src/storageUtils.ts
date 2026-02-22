@@ -14,6 +14,7 @@ import path from 'path'
 import sanitize from 'sanitize-filename'
 import { getUserHome } from './utils'
 import { isPathTraversal, isValidUUID } from './validator'
+import logger from './logger'
 
 const dirSize = async (directoryPath: string) => {
     let totalSize = 0
@@ -499,7 +500,7 @@ function getFilePaths(dir: string): FileInfo[] {
     function readDirectory(directory: string) {
         try {
             if (!fs.existsSync(directory)) {
-                console.warn(`Directory does not exist: ${directory}`)
+                logger.warn(`Directory does not exist: ${directory}`)
                 return
             }
 
@@ -515,11 +516,11 @@ function getFilePaths(dir: string): FileInfo[] {
                         results.push({ name: file, path: filePath, size: sizeInMB })
                     }
                 } catch (error) {
-                    console.error(`Error processing file ${filePath}:`, error)
+                    logger.error(`Error processing file ${filePath}: ${error}`)
                 }
             })
         } catch (error) {
-            console.error(`Error reading directory ${directory}:`, error)
+            logger.error(`Error reading directory ${directory}: ${error}`)
         }
     }
 
@@ -726,7 +727,7 @@ const _deleteS3Folder = async (location: string) => {
             count += deleted.Deleted.length
 
             if (deleted.Errors) {
-                deleted.Errors.map((error: any) => console.error(`${error.Key} could not be deleted - ${error.Code}`))
+                deleted.Errors.map((error: any) => logger.error(`${error.Key} could not be deleted - ${error.Code}`))
             }
         }
         // repeat if more files to delete
@@ -928,7 +929,7 @@ const _cleanEmptyLocalFolders = (dirPath: string) => {
         }
     } catch (error) {
         // Ignore errors during cleanup
-        console.error('Error cleaning empty folders:', error)
+        logger.error(`Error cleaning empty folders: ${error}`)
     }
 }
 
@@ -973,7 +974,7 @@ const _cleanEmptyS3Folders = async (s3Client: S3Client, Bucket: string, prefix: 
         }
     } catch (error) {
         // Ignore errors during cleanup
-        console.error('Error cleaning empty S3 folders:', error)
+        logger.error(`Error cleaning empty S3 folders: ${error}`)
     }
 }
 
@@ -1008,7 +1009,7 @@ const _cleanEmptyGCSFolders = async (bucket: any, prefix: string) => {
         }
     } catch (error) {
         // Ignore errors during cleanup
-        console.error('Error cleaning empty GCS folders:', error)
+        logger.error(`Error cleaning empty GCS folders: ${error}`)
     }
 }
 
