@@ -1,8 +1,14 @@
-import { extractChatflowId, isPredictionRequest } from '../../src/utils/domainValidation'
+import {
+    extractChatflowId,
+    isPredictionRequest,
+    validateChatflowDomain,
+    getUnauthorizedOriginError
+} from '../../src/utils/domainValidation'
+import chatflowsService from '../../src/services/chatflows'
 
 /**
  * Test suite for domain validation utility functions
- * Tests URL parsing and chatflow ID extraction
+ * Tests URL parsing, chatflow ID extraction, and async domain validation
  */
 export function domainValidationUtilTest() {
     describe('Domain Validation Utilities', () => {
@@ -90,6 +96,125 @@ export function domainValidationUtilTest() {
             it('should handle URLs with encoded characters', () => {
                 const result = extractChatflowId('/api/v1/prediction/abc%20123')
                 expect(result).toBe('abc%20123')
+            })
+        })
+
+        describe('validateChatflowDomain', () => {
+            let getChatflowByIdSpy: jest.SpyInstance
+
+            beforeEach(() => {
+                getChatflowByIdSpy = jest.spyOn(chatflowsService, 'getChatflowById')
+            })
+
+            afterEach(() => {
+                getChatflowByIdSpy.mockRestore()
+            })
+
+            it('should return false for empty chatflowId', async () => {
+                const result = await validateChatflowDomain('', 'https://example.com')
+                expect(result).toBe(false)
+            })
+
+            it('should return false for invalid UUID chatflowId', async () => {
+                const result = await validateChatflowDomain('not-a-uuid', 'https://example.com')
+                expect(result).toBe(false)
+            })
+
+            it('should return true when chatflow has no chatbotConfig', async () => {
+                getChatflowByIdSpy.mockResolvedValue({ id: '550e8400-e29b-41d4-a716-446655440000' })
+                const result = await validateChatflowDomain('550e8400-e29b-41d4-a716-446655440000', 'https://example.com')
+                expect(result).toBe(true)
+            })
+
+            it('should return true when allowedOrigins is empty array', async () => {
+                getChatflowByIdSpy.mockResolvedValue({
+                    id: '550e8400-e29b-41d4-a716-446655440000',
+                    chatbotConfig: JSON.stringify({ allowedOrigins: [] })
+                })
+                const result = await validateChatflowDomain('550e8400-e29b-41d4-a716-446655440000', 'https://example.com')
+                expect(result).toBe(true)
+            })
+
+            it('should return true when first allowedOrigin entry is empty string', async () => {
+                getChatflowByIdSpy.mockResolvedValue({
+                    id: '550e8400-e29b-41d4-a716-446655440000',
+                    chatbotConfig: JSON.stringify({ allowedOrigins: [''] })
+                })
+                const result = await validateChatflowDomain('550e8400-e29b-41d4-a716-446655440000', 'https://example.com')
+                expect(result).toBe(true)
+            })
+
+            it('should return true when origin matches allowed domain', async () => {
+                getChatflowByIdSpy.mockResolvedValue({
+                    id: '550e8400-e29b-41d4-a716-446655440000',
+                    chatbotConfig: JSON.stringify({ allowedOrigins: ['https://example.com'] })
+                })
+                const result = await validateChatflowDomain('550e8400-e29b-41d4-a716-446655440000', 'https://example.com')
+                expect(result).toBe(true)
+            })
+
+            it('should return false when origin does not match allowed domain', async () => {
+                getChatflowByIdSpy.mockResolvedValue({
+                    id: '550e8400-e29b-41d4-a716-446655440000',
+                    chatbotConfig: JSON.stringify({ allowedOrigins: ['https://allowed.com'] })
+                })
+                const result = await validateChatflowDomain('550e8400-e29b-41d4-a716-446655440000', 'https://notallowed.com')
+                expect(result).toBe(false)
+            })
+
+            it('should handle invalid domain format in allowedOrigins gracefully', async () => {
+                getChatflowByIdSpy.mockResolvedValue({
+                    id: '550e8400-e29b-41d4-a716-446655440000',
+                    chatbotConfig: JSON.stringify({ allowedOrigins: ['not-a-valid-url'] })
+                })
+                const result = await validateChatflowDomain('550e8400-e29b-41d4-a716-446655440000', 'https://example.com')
+                expect(result).toBe(false)
+            })
+
+            it('should return false when getChatflowById throws', async () => {
+                getChatflowByIdSpy.mockRejectedValue(new Error('DB error'))
+                const result = await validateChatflowDomain('550e8400-e29b-41d4-a716-446655440000', 'https://example.com')
+                expect(result).toBe(false)
+            })
+        })
+
+        describe('getUnauthorizedOriginError', () => {
+            let getChatflowByIdSpy: jest.SpyInstance
+
+            beforeEach(() => {
+                getChatflowByIdSpy = jest.spyOn(chatflowsService, 'getChatflowById')
+            })
+
+            afterEach(() => {
+                getChatflowByIdSpy.mockRestore()
+            })
+
+            it('should return custom error message from chatbot config', async () => {
+                getChatflowByIdSpy.mockResolvedValue({
+                    chatbotConfig: JSON.stringify({ allowedOriginsError: 'Custom forbidden message' })
+                })
+                const result = await getUnauthorizedOriginError('some-id')
+                expect(result).toBe('Custom forbidden message')
+            })
+
+            it('should return default error message when no custom error configured', async () => {
+                getChatflowByIdSpy.mockResolvedValue({
+                    chatbotConfig: JSON.stringify({})
+                })
+                const result = await getUnauthorizedOriginError('some-id')
+                expect(result).toBe('This site is not allowed to access this chatbot')
+            })
+
+            it('should return default error message when chatflow has no chatbotConfig', async () => {
+                getChatflowByIdSpy.mockResolvedValue({ id: 'some-id' })
+                const result = await getUnauthorizedOriginError('some-id')
+                expect(result).toBe('This site is not allowed to access this chatbot')
+            })
+
+            it('should return default error message when getChatflowById throws', async () => {
+                getChatflowByIdSpy.mockRejectedValue(new Error('DB error'))
+                const result = await getUnauthorizedOriginError('some-id')
+                expect(result).toBe('This site is not allowed to access this chatbot')
             })
         })
     })

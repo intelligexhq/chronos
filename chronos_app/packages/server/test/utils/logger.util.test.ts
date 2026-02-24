@@ -1,4 +1,4 @@
-import logger, { expressRequestLogger } from '../../src/utils/logger'
+import logger, { expressRequestLogger, createNodeLogger } from '../../src/utils/logger'
 
 /**
  * Test suite for logger utility
@@ -76,6 +76,28 @@ export function loggerUtilTest() {
                         }
                     })
                 ).not.toThrow()
+            })
+        })
+
+        describe('createNodeLogger', () => {
+            it('should return a child logger with nodeName context', () => {
+                const nodeLogger = createNodeLogger('TestNode')
+                expect(nodeLogger).toBeDefined()
+                expect(typeof nodeLogger.info).toBe('function')
+                expect(typeof nodeLogger.error).toBe('function')
+                expect(typeof nodeLogger.warn).toBe('function')
+                expect(typeof nodeLogger.debug).toBe('function')
+            })
+
+            it('should log without throwing', () => {
+                const nodeLogger = createNodeLogger('MyNode')
+                expect(() => nodeLogger.info('Node log message')).not.toThrow()
+            })
+
+            it('should create distinct child loggers for different node names', () => {
+                const logger1 = createNodeLogger('Node1')
+                const logger2 = createNodeLogger('Node2')
+                expect(logger1).not.toBe(logger2)
             })
         })
 
@@ -330,6 +352,80 @@ export function loggerUtilTest() {
                     method: 'GET',
                     params: { id: 'abc-123' },
                     body: {},
+                    query: {},
+                    headers: {}
+                } as any
+                const res = {} as any
+                const next = jest.fn()
+
+                expressRequestLogger(req, res, next)
+
+                expect(next).toHaveBeenCalled()
+            })
+
+            it('should handle debug mode GET request with query and headers', () => {
+                process.env.DEBUG = 'true'
+                process.env.LOG_SANITIZE_HEADER_FIELDS = 'authorization'
+                const req = {
+                    url: '/api/v1/chatflows',
+                    method: 'GET',
+                    params: {},
+                    body: {},
+                    query: { page: '1', limit: '10' },
+                    headers: { authorization: 'Bearer token123', 'content-type': 'application/json' }
+                } as any
+                const res = {} as any
+                const next = jest.fn()
+
+                expressRequestLogger(req, res, next)
+
+                expect(next).toHaveBeenCalled()
+            })
+
+            it('should handle body with non-string non-email fields in debug mode', () => {
+                process.env.DEBUG = 'true'
+                const req = {
+                    url: '/api/v1/chatflows',
+                    method: 'POST',
+                    params: {},
+                    body: { count: 42, active: true, tags: ['tag1', 'tag2'] },
+                    query: {},
+                    headers: {}
+                } as any
+                const res = {} as any
+                const next = jest.fn()
+
+                expressRequestLogger(req, res, next)
+
+                expect(next).toHaveBeenCalled()
+            })
+
+            it('should handle body with strings that have @ but no dot', () => {
+                process.env.DEBUG = 'true'
+                const req = {
+                    url: '/api/v1/chatflows',
+                    method: 'POST',
+                    params: {},
+                    body: { note: 'contact @ office' },
+                    query: {},
+                    headers: {}
+                } as any
+                const res = {} as any
+                const next = jest.fn()
+
+                expressRequestLogger(req, res, next)
+
+                expect(next).toHaveBeenCalled()
+            })
+
+            it('should not sanitize body when not in debug mode', () => {
+                delete process.env.DEBUG
+                process.env.LOG_SANITIZE_BODY_FIELDS = 'password'
+                const req = {
+                    url: '/api/v1/users',
+                    method: 'POST',
+                    params: {},
+                    body: { password: 'secret' },
                     query: {},
                     headers: {}
                 } as any

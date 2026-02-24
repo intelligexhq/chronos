@@ -35,6 +35,13 @@ class AzureAIFoundryEmbedding_Embeddings implements INode {
         }
         this.inputs = [
             {
+                label: 'Deployment Name',
+                name: 'deploymentName',
+                type: 'string',
+                placeholder: 'text-embedding-ada-002',
+                description: 'Embeddings deployment name. Overrides the deployment name from the credential.'
+            },
+            {
                 label: 'Batch Size',
                 name: 'batchSize',
                 type: 'number',
@@ -57,13 +64,15 @@ class AzureAIFoundryEmbedding_Embeddings implements INode {
      * using DefaultAzureCredential and getBearerTokenProvider from @azure/identity.
      */
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+        const deploymentNameInput = nodeData.inputs?.deploymentName as string
         const batchSize = nodeData.inputs?.batchSize as string
         const timeout = nodeData.inputs?.timeout as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const endpoint = getCredentialParam('azureAIFoundryEndpoint', credentialData, nodeData)
-        const deploymentName = getCredentialParam('azureAIFoundryDeploymentName', credentialData, nodeData)
+        const credentialDeploymentName = getCredentialParam('azureAIFoundryDeploymentName', credentialData, nodeData)
         const apiVersion = getCredentialParam('azureAIFoundryApiVersion', credentialData, nodeData)
+        const deploymentName = deploymentNameInput || credentialDeploymentName
         const azureClientId = getCredentialParam('azureClientId', credentialData, nodeData)
 
         // Use Managed Identity via DefaultAzureCredential
@@ -77,8 +86,10 @@ class AzureAIFoundryEmbedding_Embeddings implements INode {
         const credential = new DefaultAzureCredential(credentialOptions)
         const scope = 'https://cognitiveservices.azure.com/.default'
 
+        const cleanEndpoint = endpoint?.replace(/\/$/, '')
+
         const obj: Partial<OpenAIEmbeddingsParams> & Partial<AzureOpenAIInput> = {
-            azureOpenAIEndpoint: endpoint?.replace(/\/$/, ''),
+            azureOpenAIBasePath: `${cleanEndpoint}/openai/deployments`,
             azureOpenAIApiDeploymentName: deploymentName,
             azureOpenAIApiVersion: apiVersion,
             azureADTokenProvider: getBearerTokenProvider(credential, scope)

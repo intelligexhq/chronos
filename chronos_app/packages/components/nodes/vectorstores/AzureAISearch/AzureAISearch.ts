@@ -8,7 +8,7 @@ import { index } from '../../../src/indexing'
 
 /**
  * Azure AI Search vector store node.
- * Supports Managed Identity (default) and API key authentication.
+ * Authenticates via Managed Identity using DefaultAzureCredential.
  */
 class AzureAISearch_VectorStores implements INode {
     label: string
@@ -244,8 +244,8 @@ class AzureAISearch_VectorStores implements INode {
 }
 
 /**
- * Builds the AzureAISearchConfig based on credential settings.
- * Uses Managed Identity (DefaultAzureCredential) by default, or API key when enabled.
+ * Builds the AzureAISearchConfig using Managed Identity via DefaultAzureCredential.
+ * Set the AZURE_CLIENT_ID environment variable for user-assigned Managed Identity.
  * @param nodeData - Node configuration data.
  * @param options - Common options including credentials.
  * @param indexName - The search index name.
@@ -262,24 +262,13 @@ async function buildSearchConfig(
 ): Promise<AzureAISearchConfig> {
     const credentialData = await getCredentialData(nodeData.credential ?? '', options)
     const endpoint = getCredentialParam('azureAISearchEndpoint', credentialData, nodeData)
-    const useApiKey = getCredentialParam('useApiKey', credentialData, nodeData)
-    const azureClientId = getCredentialParam('azureClientId', credentialData, nodeData)
+
+    const { DefaultAzureCredential } = require('@azure/identity')
 
     const config: Record<string, any> = {
         endpoint,
-        indexName
-    }
-
-    if (useApiKey === true || useApiKey === 'true') {
-        const adminKey = getCredentialParam('azureAISearchAdminKey', credentialData, nodeData)
-        config.key = adminKey
-    } else {
-        const { DefaultAzureCredential } = require('@azure/identity')
-        const credentialOptions: any = {}
-        if (azureClientId) {
-            credentialOptions.managedIdentityClientId = azureClientId
-        }
-        config.credentials = new DefaultAzureCredential(credentialOptions)
+        indexName,
+        credentials: new DefaultAzureCredential()
     }
 
     if (searchType) {

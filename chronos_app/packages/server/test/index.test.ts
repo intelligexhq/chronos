@@ -82,6 +82,10 @@ import { fileValidationUtilTest } from './utils/fileValidation.util.test'
 import { loggerUtilTest } from './utils/logger.util.test'
 import { validateKeyUtilTest } from './utils/validateKey.util.test'
 import { rateLimitUtilTest } from './utils/rateLimit.util.test'
+import { sseStreamerUtilTest } from './utils/SSEStreamer.util.test'
+import { quotaUsageUtilTest } from './utils/quotaUsage.util.test'
+import { hubUtilTest } from './utils/hub.util.test'
+import { fileRepositoryUtilTest } from './utils/fileRepository.util.test'
 import { errorUtilsTest } from './errors/utils.test'
 import { internalChronosErrorTest } from './errors/internalChronosError.test'
 import { cachePoolTest } from './CachePool.test'
@@ -191,6 +195,10 @@ describe('Utils Test', () => {
     loggerUtilTest()
     validateKeyUtilTest()
     rateLimitUtilTest()
+    sseStreamerUtilTest()
+    quotaUsageUtilTest()
+    hubUtilTest()
+    fileRepositoryUtilTest()
 })
 
 describe('Errors Test', () => {
