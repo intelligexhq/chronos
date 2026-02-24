@@ -12,7 +12,21 @@ import {
     getMemorySessionId,
     findMemoryNode,
     getAllValuesFromJson,
-    getTelemetryFlowObj
+    getTelemetryFlowObj,
+    convertToValidFilename,
+    aMonthAgo,
+    generateId,
+    getUploadPath,
+    getAppVersion,
+    getAPIOverrideConfig,
+    calculateNodesDepth,
+    getAllNodesInPath,
+    _removeCredentialId,
+    validateHistorySchema,
+    getNodeModulesPackagePath,
+    generateEncryptKey,
+    replaceInputsWithConfig,
+    isStartNodeDependOnInput
 } from '../../src/utils'
 import { IReactFlowNode, IReactFlowEdge, INodeData } from '../../src/Interface'
 
@@ -703,6 +717,561 @@ export function indexUtilTest() {
                 const result = getTelemetryFlowObj([], edges)
                 expect(result.edges[0]).toEqual({ source: 'a', target: 'b' })
                 expect((result.edges[0] as any).extraData).toBeUndefined()
+            })
+        })
+
+        describe('convertToValidFilename', () => {
+            it('should replace special characters with empty string', () => {
+                const result = convertToValidFilename('test/file:name')
+                expect(result).not.toContain('/')
+                expect(result).not.toContain(':')
+            })
+
+            it('should convert to lowercase', () => {
+                expect(convertToValidFilename('TestFile')).toBe('testfile')
+            })
+
+            it('should handle empty string', () => {
+                expect(convertToValidFilename('')).toBe('')
+            })
+
+            it('should handle string with no special characters', () => {
+                expect(convertToValidFilename('normalfile')).toBe('normalfile')
+            })
+
+            it('should remove pipe characters', () => {
+                const result = convertToValidFilename('file|name')
+                expect(result).not.toContain('|')
+            })
+
+            it('should remove backslash characters', () => {
+                const result = convertToValidFilename('file\\name')
+                expect(result).not.toContain('\\')
+            })
+
+            it('should remove asterisk characters', () => {
+                const result = convertToValidFilename('file*name')
+                expect(result).not.toContain('*')
+            })
+
+            it('should remove question mark characters', () => {
+                const result = convertToValidFilename('file?name')
+                expect(result).not.toContain('?')
+            })
+
+            it('should remove quote characters', () => {
+                const result = convertToValidFilename('file"name')
+                expect(result).not.toContain('"')
+            })
+
+            it('should remove angle brackets', () => {
+                const result = convertToValidFilename('file<name>')
+                expect(result).not.toContain('<')
+                expect(result).not.toContain('>')
+            })
+        })
+
+        describe('aMonthAgo', () => {
+            it('should return a Date object', () => {
+                const result = aMonthAgo()
+                expect(result).toBeInstanceOf(Date)
+            })
+
+            it('should return a date approximately one month in the past', () => {
+                const result = aMonthAgo()
+                const now = new Date()
+                const diff = now.getTime() - result.getTime()
+                // Should be roughly 28-31 days ago in milliseconds
+                const twentyEightDays = 28 * 24 * 60 * 60 * 1000
+                const thirtyTwoDays = 32 * 24 * 60 * 60 * 1000
+                expect(diff).toBeGreaterThan(twentyEightDays)
+                expect(diff).toBeLessThan(thirtyTwoDays)
+            })
+        })
+
+        describe('generateId', () => {
+            it('should return a string', () => {
+                expect(typeof generateId()).toBe('string')
+            })
+
+            it('should return unique IDs on consecutive calls', () => {
+                const id1 = generateId()
+                const id2 = generateId()
+                expect(id1).not.toBe(id2)
+            })
+
+            it('should return UUID format', () => {
+                const id = generateId()
+                expect(id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+            })
+        })
+
+        describe('getUploadPath', () => {
+            let originalEnv: NodeJS.ProcessEnv
+
+            beforeEach(() => {
+                originalEnv = { ...process.env }
+            })
+
+            afterEach(() => {
+                process.env = originalEnv
+            })
+
+            it('should use BLOB_STORAGE_PATH when set', () => {
+                process.env.BLOB_STORAGE_PATH = '/custom/storage'
+                const result = getUploadPath()
+                expect(result).toContain('/custom/storage')
+                expect(result).toContain('uploads')
+            })
+
+            it('should use home directory when BLOB_STORAGE_PATH is not set', () => {
+                delete process.env.BLOB_STORAGE_PATH
+                const result = getUploadPath()
+                expect(result).toContain('uploads')
+                expect(result).toContain('.chronos')
+            })
+        })
+
+        describe('getAppVersion', () => {
+            it('should return a version string', async () => {
+                const result = await getAppVersion()
+                expect(typeof result).toBe('string')
+            })
+
+            it('should return a non-empty version', async () => {
+                const result = await getAppVersion()
+                expect(result.length).toBeGreaterThan(0)
+            })
+        })
+
+        describe('getAPIOverrideConfig', () => {
+            it('should return defaults when chatflow has no apiConfig', () => {
+                const chatflow = {} as any
+                const result = getAPIOverrideConfig(chatflow)
+                expect(result.nodeOverrides).toEqual({})
+                expect(result.variableOverrides).toEqual([])
+                expect(result.apiOverrideStatus).toBe(false)
+            })
+
+            it('should parse apiConfig JSON', () => {
+                const chatflow = {
+                    apiConfig: JSON.stringify({
+                        overrideConfig: {
+                            status: true,
+                            nodes: { TestNode: [{ name: 'param1', enabled: true }] },
+                            variables: [{ name: 'var1', enabled: true }]
+                        }
+                    })
+                } as any
+                const result = getAPIOverrideConfig(chatflow)
+                expect(result.apiOverrideStatus).toBe(true)
+                expect(result.nodeOverrides).toHaveProperty('TestNode')
+                expect(result.variableOverrides).toHaveLength(1)
+            })
+
+            it('should return defaults when apiConfig has no overrideConfig', () => {
+                const chatflow = { apiConfig: JSON.stringify({}) } as any
+                const result = getAPIOverrideConfig(chatflow)
+                expect(result.nodeOverrides).toEqual({})
+                expect(result.variableOverrides).toEqual([])
+                expect(result.apiOverrideStatus).toBe(false)
+            })
+
+            it('should return defaults on invalid JSON', () => {
+                const chatflow = { apiConfig: 'not-json' } as any
+                const result = getAPIOverrideConfig(chatflow)
+                expect(result.nodeOverrides).toEqual({})
+                expect(result.variableOverrides).toEqual([])
+                expect(result.apiOverrideStatus).toBe(false)
+            })
+        })
+
+        describe('calculateNodesDepth', () => {
+            it('should calculate depth for linear graph', () => {
+                const graph = {
+                    a: ['b'],
+                    b: ['c'],
+                    c: []
+                }
+                const result = calculateNodesDepth(graph, ['a'])
+                expect(result['a']).toBe(0)
+                expect(result['b']).toBe(1)
+                expect(result['c']).toBe(2)
+            })
+
+            it('should handle branching graph', () => {
+                const graph = {
+                    a: ['b', 'c'],
+                    b: ['d'],
+                    c: ['d'],
+                    d: []
+                }
+                const result = calculateNodesDepth(graph, ['a'])
+                expect(result['a']).toBe(0)
+                expect(result['b']).toBe(1)
+                expect(result['c']).toBe(1)
+                expect(result['d']).toBe(2)
+            })
+
+            it('should handle multiple starting nodes', () => {
+                const graph = {
+                    a: ['c'],
+                    b: ['c'],
+                    c: []
+                }
+                const result = calculateNodesDepth(graph, ['a', 'b'])
+                expect(result['a']).toBe(0)
+                expect(result['b']).toBe(0)
+                expect(result['c']).toBe(1)
+            })
+
+            it('should handle single node', () => {
+                const graph = { a: [] }
+                const result = calculateNodesDepth(graph, ['a'])
+                expect(result['a']).toBe(0)
+            })
+
+            it('should handle empty graph', () => {
+                const result = calculateNodesDepth({}, [])
+                expect(result).toEqual({})
+            })
+        })
+
+        describe('getAllNodesInPath', () => {
+            it('should return all reachable nodes', () => {
+                const graph = {
+                    a: ['b'],
+                    b: ['c'],
+                    c: []
+                }
+                const result = getAllNodesInPath('a', graph)
+                expect(result).toContain('a')
+                expect(result).toContain('b')
+                expect(result).toContain('c')
+                expect(result).toHaveLength(3)
+            })
+
+            it('should handle branching paths', () => {
+                const graph = {
+                    a: ['b', 'c'],
+                    b: [],
+                    c: []
+                }
+                const result = getAllNodesInPath('a', graph)
+                expect(result).toHaveLength(3)
+            })
+
+            it('should handle single node', () => {
+                const graph = { a: [] }
+                const result = getAllNodesInPath('a', graph)
+                expect(result).toEqual(['a'])
+            })
+
+            it('should handle cycles without infinite loop', () => {
+                const graph = {
+                    a: ['b'],
+                    b: ['a']
+                }
+                const result = getAllNodesInPath('a', graph)
+                expect(result).toContain('a')
+                expect(result).toContain('b')
+                expect(result).toHaveLength(2)
+            })
+
+            it('should handle node not in graph', () => {
+                const graph = { a: ['b'], b: [] }
+                const result = getAllNodesInPath('c', graph)
+                expect(result).toEqual(['c'])
+            })
+        })
+
+        describe('_removeCredentialId', () => {
+            it('should remove CHRONOS_CREDENTIAL_ID from flat object', () => {
+                const obj = { name: 'test', CHRONOS_CREDENTIAL_ID: 'secret', value: 42 }
+                const result = _removeCredentialId(obj)
+                expect(result).toEqual({ name: 'test', value: 42 })
+                expect(result.CHRONOS_CREDENTIAL_ID).toBeUndefined()
+            })
+
+            it('should remove CHRONOS_CREDENTIAL_ID from nested objects', () => {
+                const obj = {
+                    level1: {
+                        CHRONOS_CREDENTIAL_ID: 'secret',
+                        keep: 'this'
+                    }
+                }
+                const result = _removeCredentialId(obj)
+                expect(result.level1.CHRONOS_CREDENTIAL_ID).toBeUndefined()
+                expect(result.level1.keep).toBe('this')
+            })
+
+            it('should handle arrays', () => {
+                const obj = [{ CHRONOS_CREDENTIAL_ID: 'secret', name: 'a' }, { name: 'b' }]
+                const result = _removeCredentialId(obj)
+                expect(result).toHaveLength(2)
+                expect(result[0].CHRONOS_CREDENTIAL_ID).toBeUndefined()
+                expect(result[0].name).toBe('a')
+            })
+
+            it('should return primitive values as-is', () => {
+                expect(_removeCredentialId('string')).toBe('string')
+                expect(_removeCredentialId(42)).toBe(42)
+                expect(_removeCredentialId(null)).toBeNull()
+                expect(_removeCredentialId(undefined)).toBeUndefined()
+            })
+
+            it('should handle empty object', () => {
+                expect(_removeCredentialId({})).toEqual({})
+            })
+
+            it('should handle deeply nested structure', () => {
+                const obj = {
+                    a: {
+                        b: {
+                            c: {
+                                CHRONOS_CREDENTIAL_ID: 'deep-secret',
+                                data: 'keep'
+                            }
+                        }
+                    }
+                }
+                const result = _removeCredentialId(obj)
+                expect(result.a.b.c.CHRONOS_CREDENTIAL_ID).toBeUndefined()
+                expect(result.a.b.c.data).toBe('keep')
+            })
+        })
+
+        describe('validateHistorySchema', () => {
+            it('should return true for valid history', () => {
+                const history = [
+                    { role: 'userMessage', content: 'Hello' },
+                    { role: 'apiMessage', content: 'Hi there' }
+                ]
+                expect(validateHistorySchema(history)).toBe(true)
+            })
+
+            it('should return false for non-array input', () => {
+                expect(validateHistorySchema('not an array' as any)).toBe(false)
+            })
+
+            it('should return false for items without role', () => {
+                const history = [{ content: 'Hello' }]
+                expect(validateHistorySchema(history)).toBe(false)
+            })
+
+            it('should return false for items with invalid role', () => {
+                const history = [{ role: 'invalidRole', content: 'Hello' }]
+                expect(validateHistorySchema(history)).toBe(false)
+            })
+
+            it('should return false for items without content', () => {
+                const history = [{ role: 'userMessage' }]
+                expect(validateHistorySchema(history)).toBe(false)
+            })
+
+            it('should return false for items with non-string content', () => {
+                const history = [{ role: 'userMessage', content: 123 }]
+                expect(validateHistorySchema(history)).toBe(false)
+            })
+
+            it('should return true for empty array', () => {
+                expect(validateHistorySchema([])).toBe(true)
+            })
+
+            it('should return false for null items in array', () => {
+                const history = [null]
+                expect(validateHistorySchema(history)).toBe(false)
+            })
+
+            it('should return false for primitive items in array', () => {
+                const history = ['string']
+                expect(validateHistorySchema(history)).toBe(false)
+            })
+        })
+
+        describe('getNodeModulesPackagePath', () => {
+            it('should return empty string for non-existent package', () => {
+                const result = getNodeModulesPackagePath('definitely-not-a-real-package-xyz-123')
+                expect(result).toBe('')
+            })
+
+            it('should return a path for an existing package', () => {
+                const result = getNodeModulesPackagePath('express')
+                expect(result).not.toBe('')
+                expect(result).toContain('express')
+            })
+        })
+
+        describe('generateEncryptKey', () => {
+            it('should return a string', () => {
+                const key = generateEncryptKey()
+                expect(typeof key).toBe('string')
+            })
+
+            it('should return a base64 encoded string', () => {
+                const key = generateEncryptKey()
+                expect(() => Buffer.from(key, 'base64')).not.toThrow()
+            })
+
+            it('should return unique keys on consecutive calls', () => {
+                const key1 = generateEncryptKey()
+                const key2 = generateEncryptKey()
+                expect(key1).not.toBe(key2)
+            })
+        })
+
+        describe('replaceInputsWithConfig', () => {
+            it('should return flowNodeData unchanged when overrideConfig is empty', () => {
+                const flowNodeData = {
+                    id: 'node1',
+                    label: 'TestNode',
+                    name: 'testNode',
+                    inputs: { param1: 'original' }
+                } as any
+                const result = replaceInputsWithConfig(flowNodeData, {}, {} as any, [])
+                expect((result as any).inputs.param1).toBe('original')
+            })
+
+            it('should handle analytics config passthrough', () => {
+                const flowNodeData = {
+                    id: 'node1',
+                    label: 'TestNode',
+                    name: 'testNode',
+                    inputs: { analytics: 'original' }
+                } as any
+                const overrideConfig = { analytics: { provider: 'test' } }
+                const result = replaceInputsWithConfig(flowNodeData, overrideConfig, {} as any, [])
+                expect(result).toBeDefined()
+            })
+
+            it('should replace simple string values when parameter is enabled', () => {
+                const flowNodeData = {
+                    id: 'node1',
+                    label: 'TestNode',
+                    name: 'testNode',
+                    inputs: { temperature: '0.5' }
+                } as any
+                const overrideConfig = { temperature: '0.9' }
+                const nodeOverrides = { TestNode: [{ name: 'temperature', enabled: true }] } as any
+                const result = replaceInputsWithConfig(flowNodeData, overrideConfig, nodeOverrides, [])
+                expect((result as any).inputs.temperature).toBe('0.9')
+            })
+
+            it('should not replace values when parameter is not enabled', () => {
+                const flowNodeData = {
+                    id: 'node1',
+                    label: 'TestNode',
+                    name: 'testNode',
+                    inputs: { temperature: '0.5' }
+                } as any
+                const overrideConfig = { temperature: '0.9' }
+                const nodeOverrides = { TestNode: [{ name: 'temperature', enabled: false }] } as any
+                const result = replaceInputsWithConfig(flowNodeData, overrideConfig, nodeOverrides, [])
+                expect((result as any).inputs.temperature).toBe('0.5')
+            })
+
+            it('should convert "true" string to boolean true', () => {
+                const flowNodeData = {
+                    id: 'node1',
+                    label: 'TestNode',
+                    name: 'testNode',
+                    inputs: { streaming: 'false' }
+                } as any
+                const overrideConfig = { streaming: 'true' }
+                const nodeOverrides = { TestNode: [{ name: 'streaming', enabled: true }] } as any
+                const result = replaceInputsWithConfig(flowNodeData, overrideConfig, nodeOverrides, [])
+                expect((result as any).inputs.streaming).toBe(true)
+            })
+
+            it('should convert "false" string to boolean false', () => {
+                const flowNodeData = {
+                    id: 'node1',
+                    label: 'TestNode',
+                    name: 'testNode',
+                    inputs: { streaming: 'true' }
+                } as any
+                const overrideConfig = { streaming: 'false' }
+                const nodeOverrides = { TestNode: [{ name: 'streaming', enabled: true }] } as any
+                const result = replaceInputsWithConfig(flowNodeData, overrideConfig, nodeOverrides, [])
+                expect((result as any).inputs.streaming).toBe(false)
+            })
+
+            it('should handle vars config with variable overrides', () => {
+                const flowNodeData = {
+                    id: 'node1',
+                    label: 'TestNode',
+                    name: 'testNode',
+                    inputs: {}
+                } as any
+                const overrideConfig = { vars: { var1: 'value1', var2: 'value2' } }
+                const variableOverrides = [{ name: 'var1', enabled: true } as any]
+                const result = replaceInputsWithConfig(flowNodeData, overrideConfig, {} as any, variableOverrides)
+                expect(result).toBeDefined()
+            })
+
+            it('should handle FILE-STORAGE string override', () => {
+                const flowNodeData = {
+                    id: 'node1',
+                    label: 'TestNode',
+                    name: 'testNode',
+                    inputs: { file: '' }
+                } as any
+                const overrideConfig = { file: 'FILE-STORAGE::document.pdf' }
+                const result = replaceInputsWithConfig(flowNodeData, overrideConfig, {} as any, [])
+                expect((result as any).inputs.file).toBe('FILE-STORAGE::document.pdf')
+            })
+
+            it('should handle object override config with node id matching', () => {
+                const flowNodeData = {
+                    id: 'node1',
+                    label: 'TestNode',
+                    name: 'testNode',
+                    inputs: { systemMessagePrompt: 'original prompt' }
+                } as any
+                const overrideConfig = { systemMessagePrompt: { node1: 'new prompt' } }
+                const nodeOverrides = { TestNode: [{ name: 'systemMessagePrompt', enabled: true }] } as any
+                const result = replaceInputsWithConfig(flowNodeData, overrideConfig, nodeOverrides, [])
+                expect((result as any).inputs.systemMessagePrompt).toBe('new prompt')
+            })
+
+            it('should handle null inputs gracefully', () => {
+                const flowNodeData = {
+                    id: 'node1',
+                    label: 'TestNode',
+                    name: 'testNode'
+                } as any
+                const result = replaceInputsWithConfig(flowNodeData, {}, {} as any, [])
+                expect(result).toBeDefined()
+            })
+        })
+
+        describe('isStartNodeDependOnInput', () => {
+            it('should return true when starting node has Cache category', () => {
+                const startingNodes = [createMockNode('cache1', { category: 'Cache', inputs: {} })]
+                const nodes = [createMockNode('cache1', { category: 'Cache', inputs: {} })]
+                expect(isStartNodeDependOnInput(startingNodes, nodes)).toBe(true)
+            })
+
+            it('should return false for nodes without input dependencies', () => {
+                const startingNodes = [createMockNode('llm1', { category: 'LLM', inputs: { model: 'gpt-4' } })]
+                const nodes = [createMockNode('llm1', { category: 'LLM', inputs: { model: 'gpt-4' } })]
+                expect(isStartNodeDependOnInput(startingNodes, nodes)).toBe(false)
+            })
+
+            it('should return true when starting node has input variables', () => {
+                const startingNodes = [
+                    createMockNode('prompt1', {
+                        category: 'Prompts',
+                        inputs: { template: 'Hello {{question}}' }
+                    })
+                ]
+                const nodes = [
+                    createMockNode('prompt1', {
+                        category: 'Prompts',
+                        inputs: { template: 'Hello {{question}}' }
+                    })
+                ]
+                expect(isStartNodeDependOnInput(startingNodes, nodes)).toBe(true)
             })
         })
     })
