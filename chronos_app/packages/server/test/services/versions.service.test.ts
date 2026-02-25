@@ -6,11 +6,13 @@ export function versionsServiceTest() {
         const origReadFile = fs.promises.readFile
 
         beforeEach(() => {
+            // eslint-disable-next-line no-import-assign
             Object.defineProperty(fs, 'existsSync', { value: jest.fn(), writable: true, configurable: true })
             Object.defineProperty(fs.promises, 'readFile', { value: jest.fn(), writable: true, configurable: true })
         })
 
         afterEach(() => {
+            // eslint-disable-next-line no-import-assign
             Object.defineProperty(fs, 'existsSync', { value: origExistsSync, writable: true, configurable: true })
             Object.defineProperty(fs.promises, 'readFile', { value: origReadFile, writable: true, configurable: true })
         })

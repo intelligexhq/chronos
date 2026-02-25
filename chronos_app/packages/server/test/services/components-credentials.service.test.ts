@@ -44,9 +44,7 @@ export function componentsCredentialsServiceTest() {
             })
 
             it('should throw when one of multiple credentials not found', async () => {
-                await expect(service.getComponentByName('openai-cred&amp;nonexistent')).rejects.toThrow(
-                    'Credential nonexistent not found'
-                )
+                await expect(service.getComponentByName('openai-cred&amp;nonexistent')).rejects.toThrow('Credential nonexistent not found')
             })
         })
 

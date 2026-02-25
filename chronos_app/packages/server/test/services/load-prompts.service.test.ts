@@ -16,9 +16,7 @@ export function loadPromptsServiceTest() {
 
         describe('createPrompt', () => {
             it('should throw error when langchain hub pull fails', async () => {
-                await expect(service.createPrompt('nonexistent-prompt')).rejects.toThrow(
-                    'Error: loadPromptsService.createPrompt'
-                )
+                await expect(service.createPrompt('nonexistent-prompt')).rejects.toThrow('Error: loadPromptsService.createPrompt')
             })
         })
     })

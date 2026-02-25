@@ -1,4 +1,4 @@
-import { createMockRepository, createMockQueryBuilder } from '../mocks/appServer.mock'
+import { createMockRepository } from '../mocks/appServer.mock'
 
 const getRunningExpressAppExports = require('../../src/utils/getRunningExpressApp')
 

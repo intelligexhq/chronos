@@ -206,7 +206,9 @@ export function variablesServiceTest() {
                     { id: '550e8400-e29b-41d4-a716-446655440011', name: 'VAR2', value: 'val2', type: 'static' }
                 ]
                 mockQueryBuilder.getMany.mockResolvedValue([])
-                mockRepository.insert.mockResolvedValue({ identifiers: [{ id: '550e8400-e29b-41d4-a716-446655440010' }, { id: '550e8400-e29b-41d4-a716-446655440011' }] })
+                mockRepository.insert.mockResolvedValue({
+                    identifiers: [{ id: '550e8400-e29b-41d4-a716-446655440010' }, { id: '550e8400-e29b-41d4-a716-446655440011' }]
+                })
 
                 await variablesService.importVariables(newVariables as Partial<Variable>[])
 

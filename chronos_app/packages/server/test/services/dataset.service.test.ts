@@ -35,10 +35,7 @@ export function datasetServiceTest() {
             it('should return all datasets without pagination', async () => {
                 const mockQb = createMockQueryBuilder()
                 mockDatasetRepo.createQueryBuilder.mockReturnValue(mockQb)
-                mockQb.getManyAndCount.mockResolvedValue([
-                    [{ id: 'ds-1', name: 'Test Dataset' }],
-                    1
-                ])
+                mockQb.getManyAndCount.mockResolvedValue([[{ id: 'ds-1', name: 'Test Dataset' }], 1])
                 mockDatasetRowRepo.count.mockResolvedValue(5)
 
                 const result = await service.getAllDatasets()
@@ -50,10 +47,7 @@ export function datasetServiceTest() {
             it('should return paginated datasets', async () => {
                 const mockQb = createMockQueryBuilder()
                 mockDatasetRepo.createQueryBuilder.mockReturnValue(mockQb)
-                mockQb.getManyAndCount.mockResolvedValue([
-                    [{ id: 'ds-1', name: 'Test' }],
-                    10
-                ])
+                mockQb.getManyAndCount.mockResolvedValue([[{ id: 'ds-1', name: 'Test' }], 10])
                 mockDatasetRowRepo.count.mockResolvedValue(3)
 
                 const result = await service.getAllDatasets(1, 5)
@@ -77,10 +71,7 @@ export function datasetServiceTest() {
                 mockDatasetRepo.findOneBy.mockResolvedValue({ id: 'ds-1', name: 'Test' })
                 const mockQb = createMockQueryBuilder()
                 mockDatasetRowRepo.createQueryBuilder.mockReturnValue(mockQb)
-                mockQb.getManyAndCount.mockResolvedValue([
-                    [{ id: 'row-1', sequenceNo: 1, input: 'a', output: 'b' }],
-                    1
-                ])
+                mockQb.getManyAndCount.mockResolvedValue([[{ id: 'row-1', sequenceNo: 1, input: 'a', output: 'b' }], 1])
 
                 const result = await service.getDataset('ds-1')
 
@@ -213,7 +204,13 @@ export function datasetServiceTest() {
             it('should add a new row with correct sequence number', async () => {
                 mockDatasetRowRepo.find.mockResolvedValue([{ sequenceNo: 5 }])
                 mockDatasetRowRepo.create.mockReturnValue({ datasetId: 'ds-1', input: 'hello', output: 'world', sequenceNo: 6 })
-                mockDatasetRowRepo.save.mockResolvedValue({ id: 'row-new', datasetId: 'ds-1', input: 'hello', output: 'world', sequenceNo: 6 })
+                mockDatasetRowRepo.save.mockResolvedValue({
+                    id: 'row-new',
+                    datasetId: 'ds-1',
+                    input: 'hello',
+                    output: 'world',
+                    sequenceNo: 6
+                })
                 // Mock changeUpdateOnDataset dependencies
                 mockDatasetRepo.findOneBy.mockResolvedValue({ id: 'ds-1', updatedDate: new Date() })
                 mockDatasetRepo.save.mockResolvedValue({})
@@ -238,9 +235,7 @@ export function datasetServiceTest() {
             it('should throw on error', async () => {
                 mockDatasetRowRepo.find.mockRejectedValue(new Error('DB error'))
 
-                await expect(service.addDatasetRow({ datasetId: 'ds-1' })).rejects.toThrow(
-                    'Error: datasetService.createDatasetRow'
-                )
+                await expect(service.addDatasetRow({ datasetId: 'ds-1' })).rejects.toThrow('Error: datasetService.createDatasetRow')
             })
         })
 
@@ -389,9 +384,7 @@ export function datasetServiceTest() {
             it('should throw on error', async () => {
                 mockAppServer.AppDataSource.transaction.mockRejectedValue(new Error('Transaction error'))
 
-                await expect(service.reorderDatasetRow('ds-1', [])).rejects.toThrow(
-                    'Error: datasetService.reorderDatasetRow'
-                )
+                await expect(service.reorderDatasetRow('ds-1', [])).rejects.toThrow('Error: datasetService.reorderDatasetRow')
             })
         })
     })

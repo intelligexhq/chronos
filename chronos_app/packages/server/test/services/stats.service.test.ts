@@ -49,9 +49,7 @@ export function statsServiceTest() {
             it('should throw InternalChronosError on error', async () => {
                 getChatMessageExports.utilGetChatMessage.mockRejectedValue(new Error('DB error'))
 
-                await expect(statsService.getChatflowStats('flow-1', undefined)).rejects.toThrow(
-                    'Error: statsService.getChatflowStats'
-                )
+                await expect(statsService.getChatflowStats('flow-1', undefined)).rejects.toThrow('Error: statsService.getChatflowStats')
             })
 
             it('should pass date range and feedback params', async () => {

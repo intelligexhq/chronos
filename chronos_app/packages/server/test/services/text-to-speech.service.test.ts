@@ -23,9 +23,7 @@ export function textToSpeechServiceTest() {
             })
 
             it('should throw when getVoices fails', async () => {
-                await expect(service.getVoices('invalid-provider', 'cred-123')).rejects.toThrow(
-                    'Error: textToSpeechService.getVoices'
-                )
+                await expect(service.getVoices('invalid-provider', 'cred-123')).rejects.toThrow('Error: textToSpeechService.getVoices')
             })
         })
     })

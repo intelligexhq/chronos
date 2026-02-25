@@ -1,5 +1,4 @@
 const getDataSourceExports = require('../../src/DataSource')
-const getRunningExpressAppExports = require('../../src/utils/getRunningExpressApp')
 
 export function initializeUserUtilTest() {
     describe('initializeUser util', () => {

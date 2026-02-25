@@ -28,9 +28,7 @@ export function addChatflowsCountUtilTest() {
 
         it('should return keys with chatFlows count', async () => {
             const keys = [{ id: 'key-1', keyName: 'Test' }]
-            mockQueryBuilder.getMany.mockResolvedValue([
-                { name: 'Flow 1', category: 'chatflow', updatedDate: new Date() }
-            ])
+            mockQueryBuilder.getMany.mockResolvedValue([{ name: 'Flow 1', category: 'chatflow', updatedDate: new Date() }])
 
             const result = await addChatflowsCount(keys)
 
