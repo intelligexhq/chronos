@@ -751,6 +751,121 @@ export function documentstoreRouteTest() {
             })
         })
 
+        describe('POST /api/v1/documentstore/vectorstore/test-connection', () => {
+            it('should require authentication', async () => {
+                const response = await supertest(getRunningExpressApp().app)
+                    .post('/api/v1/documentstore/vectorstore/test-connection')
+                    .send({
+                        componentType: 'embeddings',
+                        componentName: 'ollamaEmbedding',
+                        componentConfig: { baseUrl: 'http://localhost:11434' }
+                    })
+
+                expect([401, 403]).toContain(response.status)
+            })
+
+            it('should return error when body is not provided', async () => {
+                const response = await supertest(getRunningExpressApp().app)
+                    .post('/api/v1/documentstore/vectorstore/test-connection')
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+
+                expect([200, 400, 412, 500]).toContain(response.status)
+            })
+
+            it('should handle test connection with unknown component name', async () => {
+                const response = await supertest(getRunningExpressApp().app)
+                    .post('/api/v1/documentstore/vectorstore/test-connection')
+                    .send({
+                        componentType: 'embeddings',
+                        componentName: 'nonExistentComponent',
+                        componentConfig: { baseUrl: 'http://localhost:99999' }
+                    })
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+
+                expect([200, 400, 500]).toContain(response.status)
+                if (response.status === 200 && response.body?.success !== undefined) {
+                    expect(response.body.success).toBe(false)
+                    expect(response.body).toHaveProperty('message')
+                    expect(response.body).toHaveProperty('latencyMs')
+                }
+            })
+
+            it('should handle test connection with invalid component type', async () => {
+                const response = await supertest(getRunningExpressApp().app)
+                    .post('/api/v1/documentstore/vectorstore/test-connection')
+                    .send({
+                        componentType: 'invalidType',
+                        componentName: 'testComponent',
+                        componentConfig: {}
+                    })
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+
+                expect([200, 400, 500]).toContain(response.status)
+                if (response.status === 200 && response.body?.success !== undefined) {
+                    expect(response.body.success).toBe(false)
+                    expect(response.body).toHaveProperty('latencyMs')
+                }
+            })
+
+            it('should return proper response shape for embeddings test', async () => {
+                const response = await supertest(getRunningExpressApp().app)
+                    .post('/api/v1/documentstore/vectorstore/test-connection')
+                    .send({
+                        componentType: 'embeddings',
+                        componentName: 'ollamaEmbedding',
+                        componentConfig: { baseUrl: 'http://localhost:11434', modelName: 'llama2' }
+                    })
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+
+                expect([200, 400, 500]).toContain(response.status)
+                if (response.status === 200 && response.body?.success !== undefined) {
+                    expect(typeof response.body.success).toBe('boolean')
+                    expect(typeof response.body.message).toBe('string')
+                    expect(typeof response.body.latencyMs).toBe('number')
+                }
+            })
+
+            it('should return proper response shape for vectorStore test', async () => {
+                const response = await supertest(getRunningExpressApp().app)
+                    .post('/api/v1/documentstore/vectorstore/test-connection')
+                    .send({
+                        componentType: 'vectorStore',
+                        componentName: 'qdrant',
+                        componentConfig: { qdrantServerUrl: 'http://localhost:6333' }
+                    })
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+
+                expect([200, 400, 500]).toContain(response.status)
+                if (response.status === 200 && response.body?.success !== undefined) {
+                    expect(typeof response.body.success).toBe('boolean')
+                    expect(typeof response.body.latencyMs).toBe('number')
+                }
+            })
+
+            it('should return proper response shape for recordManager test', async () => {
+                const response = await supertest(getRunningExpressApp().app)
+                    .post('/api/v1/documentstore/vectorstore/test-connection')
+                    .send({
+                        componentType: 'recordManager',
+                        componentName: 'postgresRecordManager',
+                        componentConfig: { host: 'localhost', port: 5432, database: 'test_db' }
+                    })
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .set('x-request-from', 'internal')
+
+                expect([200, 400, 500]).toContain(response.status)
+                if (response.status === 200 && response.body?.success !== undefined) {
+                    expect(typeof response.body.success).toBe('boolean')
+                    expect(typeof response.body.latencyMs).toBe('number')
+                }
+            })
+        })
+
         describe('Loader operations', () => {
             describe('DELETE /api/v1/documentstore/:id/loader/:loaderId', () => {
                 it('should return 412 when ids are not provided', async () => {

@@ -60,6 +60,8 @@ router.put(
 // Get all file chunks from the store
 router.get('/chunks/:storeId/:fileId/:pageNo', checkPermission('documentStores:view'), documentStoreController.getDocumentStoreFileChunks)
 
+// test connection for embedding, vector store, or record manager
+router.post('/vectorstore/test-connection', checkPermission('documentStores:upsert-config'), documentStoreController.testConnection)
 // add chunks to the selected vector store
 router.post('/vectorstore/insert', checkPermission('documentStores:upsert-config'), documentStoreController.insertIntoVectorStore)
 // save the selected vector store

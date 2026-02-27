@@ -536,6 +536,24 @@ const getDocStoreConfigs = async (req: Request, res: Response, next: NextFunctio
     }
 }
 
+/**
+ * Tests connectivity to an external service (embeddings, vector store, or record manager).
+ */
+const testConnection = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.body === 'undefined') {
+            throw new InternalChronosError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: documentStoreController.testConnection - body not provided!`
+            )
+        }
+        const apiResponse = await documentStoreService.testConnection(req.body)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     deleteDocumentStore,
     createDocumentStore,
@@ -561,5 +579,6 @@ export default {
     refreshDocStoreMiddleware,
     saveProcessingLoader,
     generateDocStoreToolDesc,
-    getDocStoreConfigs
+    getDocStoreConfigs,
+    testConnection
 }
