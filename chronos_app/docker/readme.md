@@ -50,6 +50,9 @@ docker compose -f docker-compose-workers.yml up --scale chronos-worker=3
 docker compose -f docker-compose-vectordb.yml up
 # use ollama container and pull the embedding model after startup
 docker compose -f docker-compose-vectordb.yml exec ollama ollama pull nomic-embed-text
+# after startup, pull the embedding model:
+docker compose -f docker-compose-vectordb.yml exec ollama ollama pull nomic-embed-text
+
 # chronos is now accessible on http://localhost:3001
 # configure vector store in UI: qdrant running at http://qdrant:6333
 # configure embeddings in UI: ollama running at http://ollama:11434

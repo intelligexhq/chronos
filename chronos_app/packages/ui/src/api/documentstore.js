@@ -33,6 +33,8 @@ const getRecordManagerProviders = () => client.get('/document-store/components/r
 
 const generateDocStoreToolDesc = (storeId, body) => client.post('/document-store/generate-tool-desc/' + storeId, body)
 
+const testConnection = (body) => client.post('/document-store/vectorstore/test-connection', body)
+
 export default {
     getAllDocumentStores,
     getSpecificDocumentStore,
@@ -57,5 +59,6 @@ export default {
     saveProcessingLoader,
     refreshLoader,
     generateDocStoreToolDesc,
-    getDocumentStoreConfig
+    getDocumentStoreConfig,
+    testConnection
 }

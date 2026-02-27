@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid'
 import moment from 'moment/moment'
 
 // material-ui
-import { Button, Stack, Grid, Box, Typography, IconButton, Stepper, Step, StepLabel } from '@mui/material'
+import { Button, Stack, Grid, Box, Typography, IconButton, Stepper, Step, StepLabel, CircularProgress, Backdrop } from '@mui/material'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -34,7 +34,16 @@ import { baseURL } from '@/store/constant'
 import { useError } from '@/store/context/ErrorContext'
 
 // icons
-import { IconX, IconEditCircle, IconRowInsertTop, IconDeviceFloppy, IconRefresh, IconClock } from '@tabler/icons-react'
+import {
+    IconX,
+    IconCircleX,
+    IconEditCircle,
+    IconRowInsertTop,
+    IconDeviceFloppy,
+    IconRefresh,
+    IconClock,
+    IconPlugConnected
+} from '@tabler/icons-react'
 import Embeddings from '@mui/icons-material/DynamicFeed'
 import Storage from '@mui/icons-material/Storage'
 import DynamicFeed from '@mui/icons-material/Filter1'
@@ -67,6 +76,7 @@ const VectorStoreConfigure = () => {
     const getRecordManagerNodeDetailsApi = useApi(nodesApi.getSpecificNode)
 
     const [loading, setLoading] = useState(true)
+    const [upsertStage, setUpsertStage] = useState(null)
     const [documentStore, setDocumentStore] = useState({})
     const [dialogProps, setDialogProps] = useState({})
     const [currentLoader, setCurrentLoader] = useState(null)
@@ -89,6 +99,10 @@ const VectorStoreConfigure = () => {
 
     const [showUpsertHistoryDetailsDialog, setShowUpsertHistoryDetailsDialog] = useState(false)
     const [upsertDetailsDialogProps, setUpsertDetailsDialogProps] = useState({})
+
+    const testConnectionApi = useApi(documentsApi.testConnection)
+    const [testingComponent, setTestingComponent] = useState(null)
+    const [connectionResults, setConnectionResults] = useState({})
 
     const handleEmbeddingsProviderDataChange = ({ inputParam, newValue }) => {
         setSelectedEmbeddingsProvider((prevData) => {
@@ -303,6 +317,7 @@ const VectorStoreConfigure = () => {
     const tryAndInsertIntoStore = () => {
         if (checkMandatoryFields()) {
             setLoading(true)
+            setUpsertStage('Preparing documents...')
             const data = prepareConfigData()
             insertIntoVectorStoreApi.request(data)
         }
@@ -318,6 +333,55 @@ const VectorStoreConfigure = () => {
         setSelectedEmbeddingsProvider({})
         setSelectedVectorStoreProvider({})
         setSelectedRecordManagerProvider({})
+    }
+
+    const removeEmbeddingsProvider = () => {
+        setSelectedEmbeddingsProvider({})
+        setConnectionResults((prev) => {
+            const next = { ...prev }
+            delete next.embeddings
+            return next
+        })
+    }
+
+    const removeVectorStoreProvider = () => {
+        setSelectedVectorStoreProvider({})
+        setSelectedRecordManagerProvider({})
+        setRecordManagerUnavailable(false)
+        setConnectionResults((prev) => {
+            const next = { ...prev }
+            delete next.vectorStore
+            delete next.recordManager
+            return next
+        })
+    }
+
+    const removeRecordManagerProvider = () => {
+        setSelectedRecordManagerProvider({})
+        setConnectionResults((prev) => {
+            const next = { ...prev }
+            delete next.recordManager
+            return next
+        })
+    }
+
+    /**
+     * Initiates a connection test for the specified component type.
+     * @param {'embeddings' | 'vectorStore' | 'recordManager'} componentType
+     */
+    const handleTestConnection = (componentType) => {
+        const data = prepareConfigData()
+        let body = {}
+        if (componentType === 'embeddings') {
+            body = { componentType: 'embeddings', componentName: data.embeddingName, componentConfig: data.embeddingConfig }
+        } else if (componentType === 'vectorStore') {
+            body = { componentType: 'vectorStore', componentName: data.vectorStoreName, componentConfig: data.vectorStoreConfig }
+        } else if (componentType === 'recordManager') {
+            body = { componentType: 'recordManager', componentName: data.recordManagerName, componentConfig: data.recordManagerConfig }
+        }
+        setTestingComponent(componentType)
+        setConnectionResults((prev) => ({ ...prev, [componentType]: undefined }))
+        testConnectionApi.request(body)
     }
 
     const getActiveStep = () => {
@@ -410,6 +474,7 @@ const VectorStoreConfigure = () => {
     useEffect(() => {
         if (insertIntoVectorStoreApi.data) {
             setLoading(false)
+            setUpsertStage(null)
             setShowUpsertHistoryDialog(true)
             setUpsertResultDialogProps({ ...insertIntoVectorStoreApi.data, goToRetrievalQuery: true })
         }
@@ -419,10 +484,27 @@ const VectorStoreConfigure = () => {
     useEffect(() => {
         if (insertIntoVectorStoreApi.error) {
             setLoading(false)
+            setUpsertStage(null)
             setError(insertIntoVectorStoreApi.error)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [insertIntoVectorStoreApi.error])
+
+    useEffect(() => {
+        if (!upsertStage) return
+        const stages = [
+            { message: 'Preparing documents...', delay: 3000 },
+            { message: 'Generating embeddings...', delay: 6000 },
+            { message: 'Upserting to vector store...', delay: 10000 },
+            { message: 'This may take a while for large documents...', delay: 20000 }
+        ]
+        const timers = stages.map((stage) =>
+            setTimeout(() => {
+                setUpsertStage(stage.message)
+            }, stage.delay)
+        )
+        return () => timers.forEach((t) => clearTimeout(t))
+    }, [upsertStage !== null]) // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         if (saveVectorStoreConfigApi.error) {
@@ -431,6 +513,25 @@ const VectorStoreConfigure = () => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [saveVectorStoreConfigApi.error])
+
+    useEffect(() => {
+        if (testConnectionApi.data && testingComponent) {
+            setConnectionResults((prev) => ({ ...prev, [testingComponent]: testConnectionApi.data }))
+            setTestingComponent(null)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [testConnectionApi.data])
+
+    useEffect(() => {
+        if (testConnectionApi.error && testingComponent) {
+            setConnectionResults((prev) => ({
+                ...prev,
+                [testingComponent]: { success: false, message: `Connection failed: ${testConnectionApi.error?.message || 'Unknown error'}` }
+            }))
+            setTestingComponent(null)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [testConnectionApi.error])
 
     useEffect(() => {
         getSpecificDocumentStoreApi.request(storeId)
@@ -528,7 +629,8 @@ const VectorStoreConfigure = () => {
                                             color='error'
                                             sx={{
                                                 borderRadius: 2,
-                                                height: '100%'
+                                                height: '100%',
+                                                whiteSpace: 'nowrap'
                                             }}
                                             startIcon={<IconRefresh />}
                                             onClick={() => resetVectorStoreConfig()}
@@ -543,12 +645,13 @@ const VectorStoreConfigure = () => {
                                             color='secondary'
                                             sx={{
                                                 borderRadius: 2,
-                                                height: '100%'
+                                                height: '100%',
+                                                whiteSpace: 'nowrap'
                                             }}
                                             startIcon={<IconDeviceFloppy />}
                                             onClick={() => saveVectorStoreConfig()}
                                         >
-                                            Save Config
+                                            Save
                                         </Button>
                                     )}
                                     {Object.keys(selectedEmbeddingsProvider).length > 0 &&
@@ -558,6 +661,7 @@ const VectorStoreConfigure = () => {
                                                 sx={{
                                                     borderRadius: 2,
                                                     height: '100%',
+                                                    whiteSpace: 'nowrap',
                                                     backgroundImage: `linear-gradient(to right, #13547a, #2f9e91)`,
                                                     '&:hover': {
                                                         backgroundImage: `linear-gradient(to right, #0b3d5b, #1a8377)`
@@ -664,9 +768,77 @@ const VectorStoreConfigure = () => {
                                                                             >
                                                                                 <IconEditCircle />
                                                                             </IconButton>
+                                                                            <IconButton
+                                                                                variant='outlined'
+                                                                                sx={{ ml: '1px' }}
+                                                                                color='error'
+                                                                                onClick={removeEmbeddingsProvider}
+                                                                            >
+                                                                                <IconCircleX />
+                                                                            </IconButton>
                                                                         </>
                                                                     )}
                                                                 </div>
+                                                            </Box>
+                                                            <Box sx={{ px: 1, mt: 2, mb: 2 }}>
+                                                                <Button
+                                                                    variant='outlined'
+                                                                    size='small'
+                                                                    startIcon={
+                                                                        testingComponent === 'embeddings' ? (
+                                                                            <CircularProgress size={16} />
+                                                                        ) : (
+                                                                            <IconPlugConnected size={16} />
+                                                                        )
+                                                                    }
+                                                                    disabled={testingComponent !== null}
+                                                                    onClick={() => handleTestConnection('embeddings')}
+                                                                >
+                                                                    {testingComponent === 'embeddings' ? 'Testing...' : 'Test Connection'}
+                                                                </Button>
+                                                                {connectionResults.embeddings && (
+                                                                    <Box
+                                                                        sx={{
+                                                                            mt: 1,
+                                                                            p: 1,
+                                                                            borderRadius: 1,
+                                                                            bgcolor: connectionResults.embeddings.success
+                                                                                ? 'success.light'
+                                                                                : 'error.light'
+                                                                        }}
+                                                                    >
+                                                                        <Typography
+                                                                            variant='body2'
+                                                                            color={
+                                                                                connectionResults.embeddings.success
+                                                                                    ? 'success.dark'
+                                                                                    : 'error.dark'
+                                                                            }
+                                                                        >
+                                                                            {connectionResults.embeddings.success ? '\u2713' : '\u2717'}{' '}
+                                                                            {connectionResults.embeddings.message}
+                                                                        </Typography>
+                                                                        {connectionResults.embeddings.details && (
+                                                                            <Box
+                                                                                component='pre'
+                                                                                sx={{
+                                                                                    mt: 0.5,
+                                                                                    p: 1,
+                                                                                    fontSize: '0.75rem',
+                                                                                    borderRadius: 1,
+                                                                                    bgcolor: 'background.paper',
+                                                                                    overflow: 'auto',
+                                                                                    maxHeight: 200,
+                                                                                    whiteSpace: 'pre-wrap',
+                                                                                    wordBreak: 'break-word',
+                                                                                    m: 0
+                                                                                }}
+                                                                            >
+                                                                                {connectionResults.embeddings.details}
+                                                                            </Box>
+                                                                        )}
+                                                                    </Box>
+                                                                )}
                                                             </Box>
                                                             {selectedEmbeddingsProvider &&
                                                                 Object.keys(selectedEmbeddingsProvider).length > 0 &&
@@ -782,9 +954,77 @@ const VectorStoreConfigure = () => {
                                                                             >
                                                                                 <IconEditCircle />
                                                                             </IconButton>
+                                                                            <IconButton
+                                                                                variant='outlined'
+                                                                                sx={{ ml: '1px' }}
+                                                                                color='error'
+                                                                                onClick={removeVectorStoreProvider}
+                                                                            >
+                                                                                <IconCircleX />
+                                                                            </IconButton>
                                                                         </>
                                                                     )}
                                                                 </div>
+                                                            </Box>
+                                                            <Box sx={{ px: 1, mt: 2, mb: 2 }}>
+                                                                <Button
+                                                                    variant='outlined'
+                                                                    size='small'
+                                                                    startIcon={
+                                                                        testingComponent === 'vectorStore' ? (
+                                                                            <CircularProgress size={16} />
+                                                                        ) : (
+                                                                            <IconPlugConnected size={16} />
+                                                                        )
+                                                                    }
+                                                                    disabled={testingComponent !== null}
+                                                                    onClick={() => handleTestConnection('vectorStore')}
+                                                                >
+                                                                    {testingComponent === 'vectorStore' ? 'Testing...' : 'Test Connection'}
+                                                                </Button>
+                                                                {connectionResults.vectorStore && (
+                                                                    <Box
+                                                                        sx={{
+                                                                            mt: 1,
+                                                                            p: 1,
+                                                                            borderRadius: 1,
+                                                                            bgcolor: connectionResults.vectorStore.success
+                                                                                ? 'success.light'
+                                                                                : 'error.light'
+                                                                        }}
+                                                                    >
+                                                                        <Typography
+                                                                            variant='body2'
+                                                                            color={
+                                                                                connectionResults.vectorStore.success
+                                                                                    ? 'success.dark'
+                                                                                    : 'error.dark'
+                                                                            }
+                                                                        >
+                                                                            {connectionResults.vectorStore.success ? '\u2713' : '\u2717'}{' '}
+                                                                            {connectionResults.vectorStore.message}
+                                                                        </Typography>
+                                                                        {connectionResults.vectorStore.details && (
+                                                                            <Box
+                                                                                component='pre'
+                                                                                sx={{
+                                                                                    mt: 0.5,
+                                                                                    p: 1,
+                                                                                    fontSize: '0.75rem',
+                                                                                    borderRadius: 1,
+                                                                                    bgcolor: 'background.paper',
+                                                                                    overflow: 'auto',
+                                                                                    maxHeight: 200,
+                                                                                    whiteSpace: 'pre-wrap',
+                                                                                    wordBreak: 'break-word',
+                                                                                    m: 0
+                                                                                }}
+                                                                            >
+                                                                                {connectionResults.vectorStore.details}
+                                                                            </Box>
+                                                                        )}
+                                                                    </Box>
+                                                                )}
                                                             </Box>
                                                             {selectedVectorStoreProvider &&
                                                                 Object.keys(selectedVectorStoreProvider).length > 0 &&
@@ -908,9 +1148,79 @@ const VectorStoreConfigure = () => {
                                                                             >
                                                                                 <IconEditCircle />
                                                                             </IconButton>
+                                                                            <IconButton
+                                                                                variant='outlined'
+                                                                                sx={{ ml: '1px' }}
+                                                                                color='error'
+                                                                                onClick={removeRecordManagerProvider}
+                                                                            >
+                                                                                <IconCircleX />
+                                                                            </IconButton>
                                                                         </>
                                                                     )}
                                                                 </div>
+                                                            </Box>
+                                                            <Box sx={{ px: 1, mt: 2, mb: 2 }}>
+                                                                <Button
+                                                                    variant='outlined'
+                                                                    size='small'
+                                                                    startIcon={
+                                                                        testingComponent === 'recordManager' ? (
+                                                                            <CircularProgress size={16} />
+                                                                        ) : (
+                                                                            <IconPlugConnected size={16} />
+                                                                        )
+                                                                    }
+                                                                    disabled={testingComponent !== null}
+                                                                    onClick={() => handleTestConnection('recordManager')}
+                                                                >
+                                                                    {testingComponent === 'recordManager'
+                                                                        ? 'Testing...'
+                                                                        : 'Test Connection'}
+                                                                </Button>
+                                                                {connectionResults.recordManager && (
+                                                                    <Box
+                                                                        sx={{
+                                                                            mt: 1,
+                                                                            p: 1,
+                                                                            borderRadius: 1,
+                                                                            bgcolor: connectionResults.recordManager.success
+                                                                                ? 'success.light'
+                                                                                : 'error.light'
+                                                                        }}
+                                                                    >
+                                                                        <Typography
+                                                                            variant='body2'
+                                                                            color={
+                                                                                connectionResults.recordManager.success
+                                                                                    ? 'success.dark'
+                                                                                    : 'error.dark'
+                                                                            }
+                                                                        >
+                                                                            {connectionResults.recordManager.success ? '\u2713' : '\u2717'}{' '}
+                                                                            {connectionResults.recordManager.message}
+                                                                        </Typography>
+                                                                        {connectionResults.recordManager.details && (
+                                                                            <Box
+                                                                                component='pre'
+                                                                                sx={{
+                                                                                    mt: 0.5,
+                                                                                    p: 1,
+                                                                                    fontSize: '0.75rem',
+                                                                                    borderRadius: 1,
+                                                                                    bgcolor: 'background.paper',
+                                                                                    overflow: 'auto',
+                                                                                    maxHeight: 200,
+                                                                                    whiteSpace: 'pre-wrap',
+                                                                                    wordBreak: 'break-word',
+                                                                                    m: 0
+                                                                                }}
+                                                                            >
+                                                                                {connectionResults.recordManager.details}
+                                                                            </Box>
+                                                                        )}
+                                                                    </Box>
+                                                                )}
                                                             </Box>
                                                             {selectedRecordManagerProvider &&
                                                                 Object.keys(selectedRecordManagerProvider).length > 0 &&
@@ -993,7 +1303,23 @@ const VectorStoreConfigure = () => {
                 />
             )}
             <ConfirmDialog />
-            {loading && <BackdropLoader open={loading} />}
+            {loading && !upsertStage && <BackdropLoader open={loading} />}
+            {upsertStage && (
+                <Backdrop
+                    sx={{
+                        color: '#fff',
+                        zIndex: (theme) => theme.zIndex.drawer + 1,
+                        flexDirection: 'column',
+                        gap: 2
+                    }}
+                    open={true}
+                >
+                    <CircularProgress color='inherit' />
+                    <Typography variant='h4' color='inherit'>
+                        {upsertStage}
+                    </Typography>
+                </Backdrop>
+            )}
         </>
     )
 }

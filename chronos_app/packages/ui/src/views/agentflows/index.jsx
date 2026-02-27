@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 
 // material-ui
-import { Chip, Box, Stack, ToggleButton, ToggleButtonGroup, IconButton } from '@mui/material'
+import { Box, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -29,7 +29,7 @@ import { baseURL, AGENTFLOW_ICONS } from '@/store/constant'
 import { useError } from '@/store/context/ErrorContext'
 
 // icons
-import { IconPlus, IconLayoutGrid, IconList, IconX, IconAlertTriangle } from '@tabler/icons-react'
+import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons-react'
 
 // ==============================|| AGENTS ||============================== //
 
@@ -46,8 +46,6 @@ const Agentflows = () => {
 
     const getAllAgentflows = useApi(chatflowsApi.getAllAgentflows)
     const [view, setView] = useState(localStorage.getItem('flowDisplayStyle') || 'card')
-    const [agentflowVersion, setAgentflowVersion] = useState(localStorage.getItem('agentFlowVersion') || 'v2')
-    const [showDeprecationNotice, setShowDeprecationNotice] = useState(true)
 
     /* Table Pagination */
     const [currentPage, setCurrentPage] = useState(1)
@@ -57,28 +55,21 @@ const Agentflows = () => {
     const onChange = (page, pageLimit) => {
         setCurrentPage(page)
         setPageLimit(pageLimit)
-        refresh(page, pageLimit, agentflowVersion)
+        refresh(page, pageLimit)
     }
 
-    const refresh = (page, limit, nextView) => {
+    const refresh = (page, limit) => {
         const params = {
             page: page || currentPage,
             limit: limit || pageLimit
         }
-        getAllAgentflows.request(nextView === 'v2' ? 'AGENTFLOW' : 'MULTIAGENT', params)
+        getAllAgentflows.request('AGENTFLOW', params)
     }
 
     const handleChange = (event, nextView) => {
         if (nextView === null) return
         localStorage.setItem('flowDisplayStyle', nextView)
         setView(nextView)
-    }
-
-    const handleVersionChange = (event, nextView) => {
-        if (nextView === null) return
-        localStorage.setItem('agentFlowVersion', nextView)
-        setAgentflowVersion(nextView)
-        refresh(1, pageLimit, nextView)
     }
 
     const onSearchChange = (event) => {
@@ -94,11 +85,7 @@ const Agentflows = () => {
     }
 
     const addNew = () => {
-        if (agentflowVersion === 'v2') {
-            navigate('/v2/agentcanvas')
-        } else {
-            navigate('/agentcanvas')
-        }
+        navigate('/v2/agentcanvas')
     }
 
     const goToCanvas = (selectedAgentflow) => {
@@ -109,12 +96,8 @@ const Agentflows = () => {
         }
     }
 
-    const handleDismissDeprecationNotice = () => {
-        setShowDeprecationNotice(false)
-    }
-
     useEffect(() => {
-        refresh(currentPage, pageLimit, agentflowVersion)
+        refresh(currentPage, pageLimit)
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
@@ -183,39 +166,6 @@ const Agentflows = () => {
                     >
                         <ToggleButtonGroup
                             sx={{ borderRadius: 2, maxHeight: 40 }}
-                            value={agentflowVersion}
-                            color='primary'
-                            exclusive
-                            onChange={handleVersionChange}
-                        >
-                            <ToggleButton
-                                sx={{
-                                    borderColor: theme.palette.grey[900] + 25,
-                                    borderRadius: 2,
-                                    color: customization.isDarkMode ? 'white' : 'inherit'
-                                }}
-                                variant='contained'
-                                value='v2'
-                                title='V2'
-                            >
-                                <Chip sx={{ mr: 1 }} label='NEW' size='small' color='primary' />
-                                V2
-                            </ToggleButton>
-                            <ToggleButton
-                                sx={{
-                                    borderColor: theme.palette.grey[900] + 25,
-                                    borderRadius: 2,
-                                    color: customization.isDarkMode ? 'white' : 'inherit'
-                                }}
-                                variant='contained'
-                                value='v1'
-                                title='V1'
-                            >
-                                V1
-                            </ToggleButton>
-                        </ToggleButtonGroup>
-                        <ToggleButtonGroup
-                            sx={{ borderRadius: 2, maxHeight: 40 }}
                             value={view}
                             disabled={total === 0}
                             color='primary'
@@ -258,48 +208,6 @@ const Agentflows = () => {
                         </StyledPermissionButton>
                     </ViewHeader>
 
-                    {/* Deprecation Notice For V1 */}
-                    {agentflowVersion === 'v1' && showDeprecationNotice && (
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                padding: 2,
-                                background: customization.isDarkMode
-                                    ? 'linear-gradient(135deg,rgba(165, 128, 6, 0.31) 0%, #ffcc802f 100%)'
-                                    : 'linear-gradient(135deg, #fff8e17a 0%, #ffcc804a 100%)',
-                                color: customization.isDarkMode ? 'white' : '#333333',
-                                fontWeight: 400,
-                                borderRadius: 2,
-                                gap: 1.5
-                            }}
-                        >
-                            <IconAlertTriangle
-                                size={20}
-                                style={{
-                                    color: customization.isDarkMode ? '#ffcc80' : '#f57c00',
-                                    flexShrink: 0
-                                }}
-                            />
-                            <Box sx={{ flex: 1 }}>
-                                <strong>V1 Agentflows are deprecated.</strong> We recommend migrating to V2 for improved performance and
-                                continued support.
-                            </Box>
-                            <IconButton
-                                aria-label='dismiss'
-                                size='small'
-                                onClick={handleDismissDeprecationNotice}
-                                sx={{
-                                    color: customization.isDarkMode ? '#ffcc80' : '#f57c00',
-                                    '&:hover': {
-                                        backgroundColor: 'rgba(255, 204, 128, 0.1)'
-                                    }
-                                }}
-                            >
-                                <IconX size={16} />
-                            </IconButton>
-                        </Box>
-                    )}
                     {!isLoading && total > 0 && (
                         <>
                             {!view || view === 'card' ? (
@@ -317,7 +225,7 @@ const Agentflows = () => {
                             ) : (
                                 <FlowListTable
                                     isAgentCanvas={true}
-                                    isAgentflowV2={agentflowVersion === 'v2'}
+                                    isAgentflowV2={true}
                                     data={getAllAgentflows.data?.data}
                                     images={images}
                                     icons={icons}

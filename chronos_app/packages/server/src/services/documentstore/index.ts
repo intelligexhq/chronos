@@ -2249,6 +2249,208 @@ export const findDocStoreAvailableConfigs = async (storeId: string, docId: strin
     return configs
 }
 
+/**
+ * Tests vector store connectivity and retrieves available collections/indexes.
+ * Uses provider-specific client APIs for known vector stores, with a generic HTTP fallback.
+ * @param componentName - The registered name of the vector store component
+ * @param componentConfig - The user-provided configuration values
+ * @param nodeData - The built node data for credential resolution
+ * @param options - Common options (appDataSource, databaseEntities, logger)
+ * @returns A string describing available collections/indexes, or null
+ */
+const _testVectorStoreConnection = async (
+    componentName: string,
+    componentConfig: ICommonObject,
+    nodeData: ICommonObject,
+    options: ICommonObject
+): Promise<string | null> => {
+    const { getCredentialData, getCredentialParam } = await import('chronos-components')
+
+    const credentialData = nodeData.credential ? await getCredentialData(nodeData.credential, options) : {}
+
+    // Qdrant
+    if (componentName === 'qdrant') {
+        const { QdrantClient } = await import('@qdrant/js-client-rest')
+        const url = componentConfig.qdrantServerUrl
+        const apiKey = getCredentialParam('qdrantApiKey', credentialData, nodeData as any)
+        const port = url ? (url.includes('localhost') || url.includes('127.0.0.1') ? undefined : 443) : undefined
+        const client = new QdrantClient({ url, apiKey, port })
+        const response = await client.getCollections()
+        const names = response.collections.map((c: ICommonObject) => c.name)
+        return JSON.stringify({ collections: names }, null, 2)
+    }
+
+    // Chroma
+    if (componentName === 'chroma') {
+        const { ChromaClient } = await import('chromadb')
+        const url = componentConfig.chromaURL || 'http://localhost:8000'
+        const chromaClient = new ChromaClient({ path: url })
+        const collections = await chromaClient.listCollections()
+        const names = Array.isArray(collections) ? collections.map((c: any) => (typeof c === 'string' ? c : c.name)) : []
+        return JSON.stringify({ collections: names }, null, 2)
+    }
+
+    // Elasticsearch
+    if (componentName === 'elasticsearch') {
+        const { Client: ElasticClient } = await import('@elastic/elasticsearch')
+        const url = componentConfig.elasticSearchURL || componentConfig.url
+        const cloudId = componentConfig.cloudId
+        const clientOptions: ICommonObject = {}
+        if (cloudId) {
+            clientOptions.cloud = { id: cloudId }
+        } else if (url) {
+            clientOptions.node = url
+        }
+        const apiKey = getCredentialParam('apiKey', credentialData, nodeData as any)
+        if (apiKey) clientOptions.auth = { apiKey }
+        const client = new ElasticClient(clientOptions)
+        const indices = await client.cat.indices({ format: 'json' })
+        const names = Array.isArray(indices) ? indices.map((idx: ICommonObject) => idx.index).filter(Boolean) : []
+        await client.close()
+        return JSON.stringify({ indexes: names }, null, 2)
+    }
+
+    // Azure AI Search
+    if (componentName === 'azureAISearch') {
+        const { SearchIndexClient } = await import('@azure/search-documents')
+        const { DefaultAzureCredential } = await import('@azure/identity')
+        const endpoint = getCredentialParam('azureAISearchEndpoint', credentialData, nodeData as any)
+        if (!endpoint) throw new Error('Azure AI Search endpoint is required')
+        const client = new SearchIndexClient(endpoint, new DefaultAzureCredential())
+        const names: string[] = []
+        for await (const name of client.listIndexesNames()) {
+            names.push(name)
+        }
+        return JSON.stringify({ indexes: names }, null, 2)
+    }
+
+    // Generic fallback: try to reach the URL
+    const url = componentConfig.qdrantServerUrl || componentConfig.url || componentConfig.baseUrl || componentConfig.chromaURL
+    if (url) {
+        const controller = new AbortController()
+        const timeout = setTimeout(() => controller.abort(), 10000)
+        try {
+            const response = await fetch(url, { method: 'GET', signal: controller.signal })
+            if (!response.ok && response.status !== 404) {
+                throw new Error(`Server responded with status ${response.status}`)
+            }
+        } finally {
+            clearTimeout(timeout)
+        }
+    }
+    return null
+}
+
+/**
+ * Tests connectivity to an external service (embeddings, vector store, or record manager).
+ * @param data - Object containing componentType, componentName, and componentConfig
+ * @returns Connection test result with success status, message, optional details, and latency
+ */
+const testConnection = async (data: {
+    componentType: 'embeddings' | 'vectorStore' | 'recordManager'
+    componentName: string
+    componentConfig: ICommonObject
+}): Promise<{ success: boolean; message: string; details?: string; latencyMs: number }> => {
+    const { componentType, componentName, componentConfig } = data
+    const startTime = Date.now()
+
+    try {
+        const appServer = getRunningExpressApp()
+        const componentNodes = appServer.nodesPool.componentNodes
+
+        const options: ICommonObject = {
+            appDataSource: appServer.AppDataSource,
+            databaseEntities,
+            logger
+        }
+
+        if (componentType === 'embeddings') {
+            const embeddingObj = await _createEmbeddingsObject(
+                componentNodes,
+                { embeddingName: componentName, embeddingConfig: componentConfig },
+                options
+            )
+            const testVector = await embeddingObj.embedQuery('test')
+            const latencyMs = Date.now() - startTime
+            return {
+                success: true,
+                message: `Successfully connected to embeddings provider`,
+                details: `Embedding dimension: ${testVector.length}`,
+                latencyMs
+            }
+        } else if (componentType === 'vectorStore') {
+            const component = componentNodes[componentName]
+            if (!component) {
+                throw new Error(`Vector store component "${componentName}" not found`)
+            }
+
+            // Build node data for credential resolution
+            const vStoreNodeData: any = {
+                id: `${component.name}_0`,
+                inputs: { ...componentConfig },
+                outputs: { output: 'retriever' },
+                label: component.label,
+                name: component.name,
+                category: component.category
+            }
+            if (componentConfig.credential) {
+                vStoreNodeData.credential = componentConfig.credential
+            }
+            const filterInputParams = ['document', 'embeddings', 'recordManager']
+            vStoreNodeData.inputParams = component.inputs?.filter((input: ICommonObject) => !filterInputParams.includes(input.name))
+
+            const collectionInfo = await _testVectorStoreConnection(componentName, componentConfig, vStoreNodeData, options)
+
+            const latencyMs = Date.now() - startTime
+            return {
+                success: true,
+                message: `Successfully connected to vector store`,
+                details: collectionInfo || undefined,
+                latencyMs
+            }
+        } else if (componentType === 'recordManager') {
+            const recordManagerObj = await _createRecordManagerObject(
+                componentNodes,
+                { recordManagerName: componentName, recordManagerConfig: componentConfig },
+                options
+            )
+
+            // Clean up the connection if possible
+            if (recordManagerObj?.end) {
+                await recordManagerObj.end()
+            } else if (recordManagerObj?.datasource?.destroy) {
+                await recordManagerObj.datasource.destroy()
+            }
+
+            const latencyMs = Date.now() - startTime
+            return {
+                success: true,
+                message: `Successfully connected to record manager`,
+                latencyMs
+            }
+        } else {
+            throw new Error(`Unknown component type: ${componentType}`)
+        }
+    } catch (error: any) {
+        const latencyMs = Date.now() - startTime
+        const errorDetails: ICommonObject = {
+            error: getErrorMessage(error)
+        }
+        if (error?.code) errorDetails.code = error.code
+        if (error?.cause) errorDetails.cause = getErrorMessage(error.cause)
+        if (error?.status) errorDetails.status = error.status
+        if (error?.response?.status) errorDetails.httpStatus = error.response.status
+        if (error?.response?.statusText) errorDetails.httpStatusText = error.response.statusText
+
+        return {
+            success: false,
+            message: `Connection failed: ${getErrorMessage(error)}`,
+            details: JSON.stringify(errorDetails, null, 2),
+            latencyMs
+        }
+    }
+}
+
 export default {
     updateDocumentStoreUsage,
     deleteDocumentStore,
@@ -2277,5 +2479,6 @@ export default {
     upsertDocStoreMiddleware,
     refreshDocStoreMiddleware,
     generateDocStoreToolDesc,
-    findDocStoreAvailableConfigs
+    findDocStoreAvailableConfigs,
+    testConnection
 }

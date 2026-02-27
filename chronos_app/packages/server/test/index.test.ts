@@ -91,6 +91,7 @@ import { datasetServiceTest } from './services/dataset.service.test'
 import { logServiceTest } from './services/log.service.test'
 import { predictionsServiceTest } from './services/predictions.service.test'
 import { evaluatorServiceTest } from './services/evaluator.service.test'
+import { documentstoreServiceTest } from './services/documentstore.service.test'
 import { apiKeyTest } from './utils/api-key.util.test'
 import { sanitizeUtilTest } from './utils/sanitize.util.test'
 import { domainValidationUtilTest } from './utils/domain-validation.util.test'
@@ -229,6 +230,7 @@ describe('Services Test', () => {
     logServiceTest()
     predictionsServiceTest()
     evaluatorServiceTest()
+    documentstoreServiceTest()
 })
 
 describe('Utils Test', () => {

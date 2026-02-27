@@ -45,13 +45,20 @@ const ViewHeader = ({
                     width: '100%'
                 }}
             >
-                <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'row' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'row', minWidth: 0 }}>
                     {isBackButton && (
-                        <StyledFab sx={{ mr: 3 }} size='small' color='secondary' aria-label='back' title='Back' onClick={onBack}>
+                        <StyledFab
+                            sx={{ mr: 3, flexShrink: 0 }}
+                            size='small'
+                            color='secondary'
+                            aria-label='back'
+                            title='Back'
+                            onClick={onBack}
+                        >
                             <IconArrowLeft />
                         </StyledFab>
                     )}
-                    <Box sx={{ display: 'flex', alignItems: 'start', flexDirection: 'column' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'start', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
                         <Typography
                             sx={{
                                 fontSize: '1.8rem',
@@ -93,7 +100,7 @@ const ViewHeader = ({
                         </IconButton>
                     )}
                 </Box>
-                <Box sx={{ height: 40, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ height: 40, display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
                     {search && (
                         <OutlinedInput
                             inputRef={searchInputRef}
