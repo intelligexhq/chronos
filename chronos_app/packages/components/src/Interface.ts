@@ -1,6 +1,8 @@
 import { BaseMessage } from '@langchain/core/messages'
 import { BufferMemory, BufferWindowMemory, ConversationSummaryMemory, ConversationSummaryBufferMemory } from 'langchain/memory'
-import { Moderation } from '../nodes/moderation/Moderation'
+export abstract class Moderation {
+    abstract checkForViolations(input: string): Promise<string>
+}
 
 /**
  * Types

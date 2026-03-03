@@ -13,7 +13,6 @@ pnpm run
 # chronos is accessible on localhost:3000
 ```
 
-
 *Build and run a local Docker container image:*
 
 ```bash
