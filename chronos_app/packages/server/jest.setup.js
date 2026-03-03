@@ -65,7 +65,5 @@ if (typeof global.Response === 'undefined') {
 }
 
 if (typeof global.fetch === 'undefined') {
-    global.fetch = jest.fn(() =>
-        Promise.resolve(new global.Response('{}', { status: 200 }))
-    )
+    global.fetch = jest.fn(() => Promise.resolve(new global.Response('{}', { status: 200 })))
 }
