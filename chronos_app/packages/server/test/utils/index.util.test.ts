@@ -26,8 +26,13 @@ import {
     getNodeModulesPackagePath,
     generateEncryptKey,
     replaceInputsWithConfig,
-    isStartNodeDependOnInput
+    isStartNodeDependOnInput,
+    findAvailableConfigs,
+    isFlowValidForStream,
+    redactCredentialWithPasswordType,
+    REDACTED_CREDENTIAL_VALUE
 } from '../../src/utils'
+import { IComponentCredentials } from '../../src/Interface'
 import { IReactFlowNode, IReactFlowEdge, INodeData } from '../../src/Interface'
 
 // Helper to create mock node with minimal required fields
@@ -1272,6 +1277,507 @@ export function indexUtilTest() {
                     })
                 ]
                 expect(isStartNodeDependOnInput(startingNodes, nodes)).toBe(true)
+            })
+        })
+
+        describe('findAvailableConfigs', () => {
+            const createFlowNode = (id: string, inputParams: any[], inputs: Record<string, any> = {}) =>
+                createMockNode(id, { inputParams, inputs } as any)
+
+            it('should return empty array for nodes with no input params', () => {
+                const nodes = [createFlowNode('n1', [])]
+                const result = findAvailableConfigs(nodes, {})
+                expect(result).toEqual([])
+            })
+
+            it('should extract string type params', () => {
+                const nodes = [createFlowNode('n1', [{ label: 'Model Name', name: 'modelName', type: 'string' }])]
+                const result = findAvailableConfigs(nodes, {})
+                expect(result).toHaveLength(1)
+                expect(result[0]).toEqual({
+                    node: 'n1',
+                    nodeId: 'n1',
+                    label: 'Model Name',
+                    name: 'modelName',
+                    type: 'string'
+                })
+            })
+
+            it('should extract file type params with fileType', () => {
+                const nodes = [createFlowNode('n1', [{ label: 'Upload File', name: 'file', type: 'file', fileType: '.pdf,.txt' }])]
+                const result = findAvailableConfigs(nodes, {})
+                expect(result).toHaveLength(1)
+                expect(result[0].name).toBe('files')
+                expect(result[0].type).toBe('.pdf,.txt')
+            })
+
+            it('should extract file type params without fileType', () => {
+                const nodes = [createFlowNode('n1', [{ label: 'Upload File', name: 'file', type: 'file' }])]
+                const result = findAvailableConfigs(nodes, {})
+                expect(result[0].type).toBe('file')
+            })
+
+            it('should extract options type params with option names', () => {
+                const nodes = [
+                    createFlowNode('n1', [
+                        {
+                            label: 'Language',
+                            name: 'language',
+                            type: 'options',
+                            options: [{ name: 'English' }, { name: 'Spanish' }, { name: 'French' }]
+                        }
+                    ])
+                ]
+                const result = findAvailableConfigs(nodes, {})
+                expect(result).toHaveLength(1)
+                expect(result[0].type).toBe('English, Spanish, French')
+            })
+
+            it('should handle options type with no options array', () => {
+                const nodes = [createFlowNode('n1', [{ label: 'Language', name: 'language', type: 'options' }])]
+                const result = findAvailableConfigs(nodes, {})
+                expect(result[0].type).toBe('string')
+            })
+
+            it('should extract credential type params from componentCredentials', () => {
+                const nodes = [
+                    createFlowNode('n1', [{ label: 'Credential', name: 'credential', type: 'credential', credentialNames: ['openAIApi'] }])
+                ]
+                const componentCredentials: Record<string, any> = {
+                    openAIApi: {
+                        inputs: [
+                            { label: 'API Key', name: 'openAIApiKey', type: 'password' },
+                            { label: 'Base Path', name: 'basePath', type: 'string' }
+                        ]
+                    }
+                }
+                const result = findAvailableConfigs(nodes, componentCredentials as IComponentCredentials)
+                expect(result).toHaveLength(2)
+                expect(result[0]).toEqual({
+                    node: 'n1',
+                    nodeId: 'n1',
+                    label: 'API Key',
+                    name: 'openAIApiKey',
+                    type: 'string'
+                })
+                expect(result[1].type).toBe('string')
+            })
+
+            it('should skip credential type when credentialName not found in componentCredentials', () => {
+                const nodes = [
+                    createFlowNode('n1', [
+                        { label: 'Credential', name: 'credential', type: 'credential', credentialNames: ['unknownCred'] }
+                    ])
+                ]
+                const result = findAvailableConfigs(nodes, {})
+                expect(result).toEqual([])
+            })
+
+            it('should extract array type params with schema', () => {
+                const nodes = [
+                    createFlowNode('n1', [
+                        {
+                            label: 'Headers',
+                            name: 'headers',
+                            type: 'array',
+                            array: [
+                                { name: 'key', type: 'string' },
+                                { name: 'value', type: 'string' }
+                            ]
+                        }
+                    ])
+                ]
+                const result = findAvailableConfigs(nodes, {})
+                expect(result).toHaveLength(1)
+                expect(result[0].type).toBe('array')
+                expect(result[0].schema).toEqual({ key: 'string', value: 'string' })
+            })
+
+            it('should handle array type with options inside array items', () => {
+                const nodes = [
+                    createFlowNode('n1', [
+                        {
+                            label: 'Config',
+                            name: 'config',
+                            type: 'array',
+                            array: [{ name: 'method', type: 'options', options: [{ name: 'GET' }, { name: 'POST' }] }]
+                        }
+                    ])
+                ]
+                const result = findAvailableConfigs(nodes, {})
+                expect(result[0].schema).toEqual({ method: '(GET, POST)' })
+            })
+
+            it('should handle array type with file inside array items', () => {
+                const nodes = [
+                    createFlowNode('n1', [
+                        {
+                            label: 'Files',
+                            name: 'files',
+                            type: 'array',
+                            array: [{ name: 'upload', type: 'file', fileType: '.csv' }]
+                        }
+                    ])
+                ]
+                const result = findAvailableConfigs(nodes, {})
+                expect(result[0].schema).toEqual({ upload: '.csv' })
+            })
+
+            it('should handle array type with file item without fileType', () => {
+                const nodes = [
+                    createFlowNode('n1', [
+                        {
+                            label: 'Files',
+                            name: 'files',
+                            type: 'array',
+                            array: [{ name: 'upload', type: 'file' }]
+                        }
+                    ])
+                ]
+                const result = findAvailableConfigs(nodes, {})
+                expect(result[0].schema).toEqual({ upload: 'file' })
+            })
+
+            it('should handle loadConfig type params with JSON config data', () => {
+                const configData = JSON.stringify({
+                    modelName: 'gpt-4',
+                    temperature: 0.7,
+                    streaming: true,
+                    tags: ['a', 'b'],
+                    metadata: { key: 'value' }
+                })
+                const nodes = [
+                    createFlowNode('n1', [{ label: 'Model Config', name: 'model', type: 'string', loadConfig: true }], {
+                        modelConfig: configData
+                    })
+                ]
+                const result = findAvailableConfigs(nodes, {})
+                expect(result).toHaveLength(1)
+                expect(result[0].label).toBe('Model Config Config')
+                expect(result[0].name).toBe('modelConfig')
+                expect(result[0].type).toBe('json')
+                expect(result[0].schema).toEqual({
+                    modelName: 'string',
+                    temperature: 'number',
+                    streaming: 'boolean',
+                    tags: 'array',
+                    metadata: 'object'
+                })
+            })
+
+            it('should handle loadConfig with invalid JSON gracefully', () => {
+                const nodes = [
+                    createFlowNode('n1', [{ label: 'Model Config', name: 'model', type: 'string', loadConfig: true }], {
+                        modelConfig: 'not-valid-json{'
+                    })
+                ]
+                const result = findAvailableConfigs(nodes, {})
+                expect(result).toHaveLength(1)
+                expect(result[0].schema).toEqual({})
+            })
+
+            it('should handle loadConfig with object (non-string) config data', () => {
+                const configData = { modelName: 'gpt-4', temperature: 0.7 }
+                const nodes = [
+                    createFlowNode('n1', [{ label: 'Model Config', name: 'model', type: 'string', loadConfig: true }], {
+                        modelConfig: configData
+                    })
+                ]
+                const result = findAvailableConfigs(nodes, {})
+                expect(result).toHaveLength(1)
+                expect(result[0].schema).toEqual({ modelName: 'string', temperature: 'number' })
+            })
+
+            it('should skip loadConfig when no config data exists in inputs', () => {
+                const nodes = [createFlowNode('n1', [{ label: 'Model Config', name: 'model', type: 'string', loadConfig: true }])]
+                const result = findAvailableConfigs(nodes, {})
+                // loadConfig branch matched but configData is falsy, so no obj is created
+                expect(result).toHaveLength(0)
+            })
+
+            it('should strip CHRONOS_CREDENTIAL_ID from loadConfig schema', () => {
+                const configData = JSON.stringify({
+                    modelName: 'gpt-4',
+                    CHRONOS_CREDENTIAL_ID: 'cred-123'
+                })
+                const nodes = [
+                    createFlowNode('n1', [{ label: 'Config', name: 'model', type: 'string', loadConfig: true }], {
+                        modelConfig: configData
+                    })
+                ]
+                const result = findAvailableConfigs(nodes, {})
+                expect(result[0].schema).toEqual({ modelName: 'string' })
+                expect(result[0].schema).not.toHaveProperty('CHRONOS_CREDENTIAL_ID')
+            })
+
+            it('should skip the self-referencing key in loadConfig', () => {
+                const configData = JSON.stringify({ model: 'gpt-4', temperature: 0.7 })
+                const nodes = [
+                    createFlowNode('n1', [{ label: 'Config', name: 'model', type: 'string', loadConfig: true }], {
+                        modelConfig: configData
+                    })
+                ]
+                const result = findAvailableConfigs(nodes, {})
+                // 'model' key should be skipped because it matches inputParam.name
+                expect(result[0].schema).toEqual({ temperature: 'number' })
+            })
+
+            it('should convert password type to string', () => {
+                const nodes = [createFlowNode('n1', [{ label: 'API Key', name: 'apiKey', type: 'password' }])]
+                const result = findAvailableConfigs(nodes, {})
+                expect(result[0].type).toBe('string')
+            })
+
+            it('should deduplicate identical configs', () => {
+                const nodes = [
+                    createFlowNode('n1', [
+                        { label: 'Model', name: 'model', type: 'string' },
+                        { label: 'Model', name: 'model', type: 'string' }
+                    ])
+                ]
+                const result = findAvailableConfigs(nodes, {})
+                expect(result).toHaveLength(1)
+            })
+
+            it('should handle multiple nodes with different params', () => {
+                const nodes = [
+                    createFlowNode('n1', [{ label: 'Model', name: 'model', type: 'string' }]),
+                    createFlowNode('n2', [{ label: 'Temperature', name: 'temperature', type: 'number' }])
+                ]
+                const result = findAvailableConfigs(nodes, {})
+                expect(result).toHaveLength(2)
+            })
+
+            it('should handle credential with no inputs', () => {
+                const nodes = [
+                    createFlowNode('n1', [{ label: 'Credential', name: 'credential', type: 'credential', credentialNames: ['emptyCred'] }])
+                ]
+                const componentCredentials: Record<string, any> = {
+                    emptyCred: {}
+                }
+                const result = findAvailableConfigs(nodes, componentCredentials as IComponentCredentials)
+                expect(result).toEqual([])
+            })
+
+            it('should handle array type without array property', () => {
+                const nodes = [createFlowNode('n1', [{ label: 'Items', name: 'items', type: 'array' }])]
+                const result = findAvailableConfigs(nodes, {})
+                // No obj created because array property is undefined (not an array)
+                expect(result).toEqual([])
+            })
+        })
+
+        describe('isFlowValidForStream', () => {
+            const createStreamNode = (id: string, category: string, name: string, inputs: Record<string, any> = {}) =>
+                createMockNode(id, { category, name, inputs } as any)
+
+            const createEndingNodeData = (category: string, name: string) => ({ category, name } as any)
+
+            it('should return true for valid streaming flow with Chat Model and Chain ending', () => {
+                const nodes = [createStreamNode('llm1', 'Chat Models', 'chatOpenAI', { streaming: true })]
+                const endingData = createEndingNodeData('Chains', 'conversationalRetrievalQAChain')
+                expect(isFlowValidForStream(nodes, endingData)).toBe(true)
+            })
+
+            it('should return false when streaming is explicitly disabled (boolean false)', () => {
+                const nodes = [createStreamNode('llm1', 'Chat Models', 'chatOpenAI', { streaming: false })]
+                const endingData = createEndingNodeData('Chains', 'conversationalRetrievalQAChain')
+                expect(isFlowValidForStream(nodes, endingData)).toBe(false)
+            })
+
+            it('should return false when streaming is explicitly disabled (string false)', () => {
+                const nodes = [createStreamNode('llm1', 'Chat Models', 'chatOpenAI', { streaming: 'false' })]
+                const endingData = createEndingNodeData('Chains', 'conversationalRetrievalQAChain')
+                expect(isFlowValidForStream(nodes, endingData)).toBe(false)
+            })
+
+            it('should return true when streaming is enabled via string true', () => {
+                const nodes = [createStreamNode('llm1', 'Chat Models', 'chatOpenAI', { streaming: 'true' })]
+                const endingData = createEndingNodeData('Chains', 'conversationalRetrievalQAChain')
+                expect(isFlowValidForStream(nodes, endingData)).toBe(true)
+            })
+
+            it('should return false for blacklisted chain (openApiChain)', () => {
+                const nodes = [createStreamNode('llm1', 'Chat Models', 'chatOpenAI', { streaming: true })]
+                const endingData = createEndingNodeData('Chains', 'openApiChain')
+                expect(isFlowValidForStream(nodes, endingData)).toBe(false)
+            })
+
+            it('should return false for blacklisted chain (vectaraQAChain)', () => {
+                const nodes = [createStreamNode('llm1', 'Chat Models', 'chatOpenAI', { streaming: true })]
+                const endingData = createEndingNodeData('Chains', 'vectaraQAChain')
+                expect(isFlowValidForStream(nodes, endingData)).toBe(false)
+            })
+
+            it('should return true for whitelisted agent (toolAgent)', () => {
+                const nodes = [createStreamNode('llm1', 'Chat Models', 'chatOpenAI', { streaming: true })]
+                const endingData = createEndingNodeData('Agents', 'toolAgent')
+                expect(isFlowValidForStream(nodes, endingData)).toBe(true)
+            })
+
+            it('should return false for non-whitelisted agent', () => {
+                const nodes = [createStreamNode('llm1', 'Chat Models', 'chatOpenAI', { streaming: true })]
+                const endingData = createEndingNodeData('Agents', 'unknownAgent')
+                expect(isFlowValidForStream(nodes, endingData)).toBe(false)
+            })
+
+            it('should return true for openAIAssistant agent regardless of other conditions', () => {
+                const nodes = [createStreamNode('llm1', 'Chat Models', 'chatOpenAI', { streaming: true })]
+                const endingData = createEndingNodeData('Agents', 'openAIAssistant')
+                expect(isFlowValidForStream(nodes, endingData)).toBe(true)
+            })
+
+            it('should return true for whitelisted engine (contextChatEngine)', () => {
+                const nodes = [createStreamNode('llm1', 'Chat Models', 'chatOpenAI', { streaming: true })]
+                const endingData = createEndingNodeData('Engine', 'contextChatEngine')
+                expect(isFlowValidForStream(nodes, endingData)).toBe(true)
+            })
+
+            it('should return true for whitelisted engine (simpleChatEngine)', () => {
+                const nodes = [createStreamNode('llm1', 'Chat Models', 'chatOpenAI', { streaming: true })]
+                const endingData = createEndingNodeData('Engine', 'simpleChatEngine')
+                expect(isFlowValidForStream(nodes, endingData)).toBe(true)
+            })
+
+            it('should return false for non-whitelisted engine', () => {
+                const nodes = [createStreamNode('llm1', 'Chat Models', 'chatOpenAI', { streaming: true })]
+                const endingData = createEndingNodeData('Engine', 'unknownEngine')
+                expect(isFlowValidForStream(nodes, endingData)).toBe(false)
+            })
+
+            it('should return false when Output Parser exists', () => {
+                const nodes = [
+                    createStreamNode('llm1', 'Chat Models', 'chatOpenAI', { streaming: true }),
+                    createStreamNode('parser1', 'Output Parser', 'structuredOutputParser', {})
+                ]
+                const endingData = createEndingNodeData('Chains', 'conversationalRetrievalQAChain')
+                expect(isFlowValidForStream(nodes, endingData)).toBe(false)
+            })
+
+            it('should return false when no Chat Model or LLM exists', () => {
+                const nodes = [createStreamNode('tool1', 'Tools', 'calculator', {})]
+                const endingData = createEndingNodeData('Chains', 'conversationalRetrievalQAChain')
+                expect(isFlowValidForStream(nodes, endingData)).toBe(false)
+            })
+
+            it('should handle deprecated LLM category with valid LLM name', () => {
+                const nodes = [createStreamNode('llm1', 'LLMs', 'openAI', {})]
+                const endingData = createEndingNodeData('Chains', 'conversationalRetrievalQAChain')
+                expect(isFlowValidForStream(nodes, endingData)).toBe(true)
+            })
+
+            it('should return false for deprecated LLM category with invalid LLM name', () => {
+                const nodes = [createStreamNode('llm1', 'LLMs', 'unknownLLM', {})]
+                const endingData = createEndingNodeData('Chains', 'conversationalRetrievalQAChain')
+                expect(isFlowValidForStream(nodes, endingData)).toBe(false)
+            })
+
+            it('should handle deprecated Chat Models category with valid model name', () => {
+                const nodes = [createStreamNode('llm1', 'Chat Models', 'chatAnthropic', {})]
+                const endingData = createEndingNodeData('Chains', 'conversationalRetrievalQAChain')
+                expect(isFlowValidForStream(nodes, endingData)).toBe(true)
+            })
+
+            it('should return false for deprecated Chat Models category with invalid model name', () => {
+                const nodes = [createStreamNode('llm1', 'Chat Models', 'unknownModel', {})]
+                const endingData = createEndingNodeData('Chains', 'conversationalRetrievalQAChain')
+                expect(isFlowValidForStream(nodes, endingData)).toBe(false)
+            })
+
+            it('should return false for unknown ending category', () => {
+                const nodes = [createStreamNode('llm1', 'Chat Models', 'chatOpenAI', { streaming: true })]
+                const endingData = createEndingNodeData('Unknown', 'someNode')
+                expect(isFlowValidForStream(nodes, endingData)).toBe(false)
+            })
+
+            it('should return true for all whitelisted agents', () => {
+                const whitelistAgents = [
+                    'csvAgent',
+                    'airtableAgent',
+                    'toolAgent',
+                    'conversationalRetrievalToolAgent',
+                    'openAIToolAgentLlamaIndex'
+                ]
+                const nodes = [createStreamNode('llm1', 'Chat Models', 'chatOpenAI', { streaming: true })]
+                for (const agent of whitelistAgents) {
+                    const endingData = createEndingNodeData('Agents', agent)
+                    expect(isFlowValidForStream(nodes, endingData)).toBe(true)
+                }
+            })
+
+            it('should return true for all whitelisted engines', () => {
+                const whitelistEngines = ['contextChatEngine', 'simpleChatEngine', 'queryEngine', 'subQuestionQueryEngine']
+                const nodes = [createStreamNode('llm1', 'Chat Models', 'chatOpenAI', { streaming: true })]
+                for (const engine of whitelistEngines) {
+                    const endingData = createEndingNodeData('Engine', engine)
+                    expect(isFlowValidForStream(nodes, endingData)).toBe(true)
+                }
+            })
+        })
+
+        describe('redactCredentialWithPasswordType', () => {
+            it('should redact password type fields', () => {
+                const decryptedObj = { openAIApiKey: 'sk-abc123', basePath: 'https://api.openai.com' }
+                const componentCredentials: Record<string, any> = {
+                    openAIApi: {
+                        inputs: [
+                            { label: 'API Key', name: 'openAIApiKey', type: 'password' },
+                            { label: 'Base Path', name: 'basePath', type: 'string' }
+                        ]
+                    }
+                }
+                const result = redactCredentialWithPasswordType('openAIApi', decryptedObj, componentCredentials as IComponentCredentials)
+                expect(result.openAIApiKey).toBe(REDACTED_CREDENTIAL_VALUE)
+                expect(result.basePath).toBe('https://api.openai.com')
+            })
+
+            it('should not modify original object', () => {
+                const decryptedObj = { apiKey: 'secret123' }
+                const componentCredentials: Record<string, any> = {
+                    cred: { inputs: [{ label: 'Key', name: 'apiKey', type: 'password' }] }
+                }
+                redactCredentialWithPasswordType('cred', decryptedObj, componentCredentials as IComponentCredentials)
+                expect(decryptedObj.apiKey).toBe('secret123')
+            })
+
+            it('should handle no password fields', () => {
+                const decryptedObj = { basePath: 'https://api.openai.com', model: 'gpt-4' }
+                const componentCredentials: Record<string, any> = {
+                    openAIApi: {
+                        inputs: [
+                            { label: 'Base Path', name: 'basePath', type: 'string' },
+                            { label: 'Model', name: 'model', type: 'string' }
+                        ]
+                    }
+                }
+                const result = redactCredentialWithPasswordType('openAIApi', decryptedObj, componentCredentials as IComponentCredentials)
+                expect(result.basePath).toBe('https://api.openai.com')
+                expect(result.model).toBe('gpt-4')
+            })
+
+            it('should handle multiple password fields', () => {
+                const decryptedObj = { apiKey: 'key1', secretKey: 'key2', region: 'us-east-1' }
+                const componentCredentials: Record<string, any> = {
+                    awsCred: {
+                        inputs: [
+                            { label: 'API Key', name: 'apiKey', type: 'password' },
+                            { label: 'Secret Key', name: 'secretKey', type: 'password' },
+                            { label: 'Region', name: 'region', type: 'string' }
+                        ]
+                    }
+                }
+                const result = redactCredentialWithPasswordType('awsCred', decryptedObj, componentCredentials as IComponentCredentials)
+                expect(result.apiKey).toBe(REDACTED_CREDENTIAL_VALUE)
+                expect(result.secretKey).toBe(REDACTED_CREDENTIAL_VALUE)
+                expect(result.region).toBe('us-east-1')
+            })
+
+            it('should handle empty decrypted object', () => {
+                const componentCredentials: Record<string, any> = {
+                    cred: { inputs: [{ label: 'Key', name: 'apiKey', type: 'password' }] }
+                }
+                const result = redactCredentialWithPasswordType('cred', {}, componentCredentials as IComponentCredentials)
+                expect(result).toEqual({})
             })
         })
     })

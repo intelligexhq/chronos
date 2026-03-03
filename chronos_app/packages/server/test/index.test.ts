@@ -122,6 +122,7 @@ import { getChatMessageUtilTest } from './utils/getChatMessage.util.test'
 import { addChatflowsCountUtilTest } from './utils/addChatflowsCount.util.test'
 import { validateKeyExtraUtilTest } from './utils/validateKeyExtra.util.test'
 import { addChatMessageFeedbackUtilTest } from './utils/addChatMessageFeedback.util.test'
+import { interfaceDocumentStoreUtilTest } from './utils/interfaceDocumentStore.util.test'
 import { errorUtilsTest } from './errors/utils.test'
 import { internalChronosErrorTest } from './errors/internalChronosError.test'
 import { cachePoolTest } from './CachePool.test'
@@ -263,6 +264,7 @@ describe('Utils Test', () => {
     addChatflowsCountUtilTest()
     validateKeyExtraUtilTest()
     addChatMessageFeedbackUtilTest()
+    interfaceDocumentStoreUtilTest()
 })
 
 describe('Errors Test', () => {
