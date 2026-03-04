@@ -210,10 +210,7 @@ describe('AzureAIFoundry', () => {
             await nodeClass.init(nodeData, '', mockOptions)
 
             expect(mockDefaultAzureCredential).toHaveBeenCalledWith({})
-            expect(mockGetBearerTokenProvider).toHaveBeenCalledWith(
-                expect.any(Object),
-                'https://cognitiveservices.azure.com/.default'
-            )
+            expect(mockGetBearerTokenProvider).toHaveBeenCalledWith(expect.any(Object), 'https://cognitiveservices.azure.com/.default')
         })
 
         it('should pass managedIdentityClientId when azureClientId is provided', async () => {
