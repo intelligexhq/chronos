@@ -10,19 +10,19 @@
 </div>
 <div style="page-break-after: always;">&nbsp;</div>
 
-[Chronos](https://intelligex.com/chronos) is a lean visual AI agent workflow builder, focused on the self-hosted enviroenments, observability and local datastores. It started as a fork of [Flowise](https://github.com/FlowiseAI/Flowise) project - with the focus on significant optimisation for self-hosting.
+[Chronos](https://intelligex.com/chronos) is a visual AI agent workflow builder. Focused on the self-hosted enviroenments, support for local data models and self hosted tool integrations. With detailed observability metrics.
+
+This project started as a fork of [Flowise](https://github.com/FlowiseAI/Flowise) - with focus on improvements for self-hosting and observability.
 
 - Self-hosting focused visual AI agent workflow builder.
 - 100+ of prebuilt LLM model integrations and templates.
-- Significant focus on observability, logging and local datastores.
-- Optimised container images, for local development and hosting.
+- Observability, logging and tracing support.
 - Number of [Docker compose examples](./chronos_app/docker/) to get you started.
-- Set of [tutorials and how to guides](https://intelligex.com/).
-
+- Set of [tutorials and how to guides](https://intelligex.com/chronos).
 
 ## Quick Start
 
-Chronos is tailored for the deployments on local and self hosted enviroenments. Simpliest way to get started quickly is to run all in one Chronos container image (see steps below). For the more complex hosting examples see the [docker compose files](./chronos_app/docker/).
+Chronos is tailored for the deployments on local enviroenment and self hosted production enviroenments. Simpliest way to get started quickly is to run all in one Chronos container image (see steps below). For the more advanced hosting examples see the [docker compose examples](./chronos_app/docker/).
 
 *Build and run a local Docker container image:*
 
