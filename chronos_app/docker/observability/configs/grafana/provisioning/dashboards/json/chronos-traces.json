@@ -830,36 +830,14 @@
             "uid": "tempo"
           },
           "limit": 20,
-          "queryType": "traceqlSearch",
+          "queryType": "traceql",
           "refId": "A",
-          "filters": [
-            {
-              "id": "service-name",
-              "tag": "resource.service.name",
-              "operator": "=~",
-              "value": ["$service"],
-              "scope": "resource"
-            },
-            {
-              "id": "span-name",
-              "tag": "name",
-              "operator": "=~",
-              "value": ["workflow.*"],
-              "scope": "span"
-            },
-            {
-              "id": "min-duration",
-              "tag": "duration",
-              "operator": ">",
-              "value": ["$min_duration"],
-              "scope": "span",
-              "valueType": "duration"
-            }
-          ]
+          "query": "{name =~ \"workflow.*\"}",
+          "tableType": "traces"
         }
       ],
       "title": "Recent Workflow Traces",
-      "type": "traces"
+      "type": "table"
     }
   ],
   "refresh": "30s",

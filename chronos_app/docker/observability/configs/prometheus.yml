@@ -5,7 +5,7 @@ global:
 scrape_configs:
   # Scrape Chronos server Prometheus metrics endpoint
   # Active when ENABLE_METRICS=true and METRICS_PROVIDER=prometheus
-  - job_name: "chronos-server"
+  - job_name: "chronos-service"
     metrics_path: "/api/v1/metrics"
     static_configs:
       - targets: ["chronos:3000"]

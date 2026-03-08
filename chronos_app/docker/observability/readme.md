@@ -12,23 +12,6 @@ Self-hosted observability stack for Chronos providing unified logs, traces, and 
 | **Prometheus** | `prom/prometheus:v3.2.1` | Metrics storage and scraping | 9090 |
 | **Grafana** | `grafana/grafana:latest` | Visualization and dashboards | 3000 |
 
-## Quick Start
-
-From the `chronos_app/docker` directory:
-
-```bash
-cd chronos_app/docker
-
-# Start the observability stack
-docker compose -f observability/observability-stack.yml up -d
-
-# Verify all services are healthy
-docker compose -f observability/observability-stack.yml ps
-
-# Start Chronos containers (if not already running)
-# The observability stack auto-detects Chronos containers and collects logs
-docker compose -f docker-compose.yml up -d
-```
 
 ### Service URLs
 
@@ -71,7 +54,11 @@ docker compose -f docker-compose.yml up -d
   │  Loki  │ │ Tempo  │ │ Prometheus │
   │ (logs) │ │(traces)│ │ (metrics)  │
   └───┬────┘ └───┬────┘ └─────┬──────┘
-      │          │             │
+      │          │    span     │
+      │          │   metrics   │
+      │          ├────────────►│
+      │          │ (remote     │
+      │          │  write)     │
       └──────────┼─────────────┘
                  │
                  ▼
@@ -88,7 +75,8 @@ docker compose -f docker-compose.yml up -d
 2. **Traces (OTLP)**: Chronos app exports traces via OTLP to Alloy (ports 4317/4318), Alloy batches and forwards to Tempo
 3. **Metrics (OTLP)**: When `METRICS_PROVIDER=open_telemetry`, Chronos exports metrics via OTLP to Alloy, which remote-writes to Prometheus
 4. **Metrics (Prometheus scrape)**: When `METRICS_PROVIDER=prometheus`, Prometheus scrapes the `/api/v1/metrics` endpoint directly from Chronos
-5. **Grafana** queries all three backends with cross-linking (click from a log line to its trace, from a trace to related metrics)
+5. **Span Metrics (Tempo → Prometheus)**: Tempo's metrics-generator derives `traces_spanmetrics_*` metrics (call counts, latency histograms) from ingested traces and remote-writes them to Prometheus. These power the traces dashboard panels.
+6. **Grafana** queries all three backends with cross-linking (click from a log line to its trace, from a trace to related metrics)
 
 ## Configuration Files
 
@@ -104,23 +92,38 @@ docker compose -f docker-compose.yml up -d
 
 ## Chronos Environment Variables
 
-### Metrics (existing)
+These variables are set on the Chronos app containers (in `docker-compose.yml` or `docker-compose-workers.yml`). When running inside Docker with the observability stack, use `alloy` as the hostname (Docker DNS). When running locally outside Docker, use `localhost`.
+
+### Telemetry Collector
 
 ```bash
-ENABLE_METRICS=true
-METRICS_PROVIDER=prometheus                              # prometheus | open_telemetry
-METRICS_OPEN_TELEMETRY_METRIC_ENDPOINT=http://localhost:4318/v1/metrics  # if open_telemetry
+TELEMETRY_COLLECTOR_ENDPOINT=http://alloy:4318                          # OTLP base URL (use alloy:4318 in Docker, localhost:4318 outside)
 ```
 
-### Tracing (new)
+The app appends `/v1/traces` and `/v1/metrics` automatically. One endpoint for all signals.
+
+### Metrics
 
 ```bash
-ENABLE_TRACING=true
-TRACING_EXPORTER_ENDPOINT=http://localhost:4318/v1/traces   # OTLP HTTP endpoint (Alloy)
-TRACING_PROTOCOL=http                                        # http | grpc | proto
-TRACING_SAMPLE_RATE=1.0                                      # 0.0 to 1.0
-TRACING_DEBUG=false                                          # Log spans to console
-ENABLE_LOG_CORRELATION=true                                  # Inject traceId/spanId into logs
+ENABLE_METRICS=true                                                     # Enable Prometheus metrics endpoint
+METRICS_PROVIDER=prometheus                                             # prometheus | open_telemetry
+METRICS_SERVICE_NAME=Chronos                                            # Service name in metrics
+METRICS_OPEN_TELEMETRY_PROTOCOL=http                                    # http | grpc | proto
+```
+
+### Tracing
+
+```bash
+ENABLE_TRACING=true                                                     # Enable distributed tracing
+TRACING_PROTOCOL=http                                                   # http | grpc | proto
+TRACING_SAMPLE_RATE=1.0                                                 # 0.0 to 1.0 (1.0 = trace everything)
+TRACING_DEBUG=false                                                     # Log spans to console
+```
+
+### Log-Trace Correlation
+
+```bash
+ENABLE_LOG_CORRELATION=true                                             # Inject traceId/spanId into log lines
 ```
 
 ## Grafana Datasource Cross-Linking
@@ -233,7 +236,7 @@ Alloy automatically extracts the following labels from Docker containers:
 
 1. Verify Tempo is ready: `curl http://localhost:3200/ready`
 2. Check Alloy UI at http://localhost:12345 — the `otelcol.receiver.otlp` component should show as healthy
-3. Confirm the app has `ENABLE_TRACING=true` and `TRACING_EXPORTER_ENDPOINT` points to Alloy (port 4318)
+3. Confirm the app has `ENABLE_TRACING=true` and `TELEMETRY_COLLECTOR_ENDPOINT` points to Alloy (e.g. `http://alloy:4318`)
 4. Check Alloy logs for export errors: `docker compose -f observability/observability-stack.yml logs alloy | grep -i error`
 
 ### No metrics in Prometheus

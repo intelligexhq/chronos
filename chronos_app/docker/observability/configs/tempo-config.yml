@@ -22,13 +22,16 @@ storage:
 metrics_generator:
   storage:
     path: /var/tempo/metrics
+    remote_write:
+      - url: http://prometheus:9090/api/v1/write
+        send_exemplars: true
   traces_storage:
     path: /var/tempo/traces
 
 overrides:
   defaults:
     metrics_generator:
-      processors: [service-graphs, span-metrics]
+      processors: [service-graphs, span-metrics, local-blocks]
 
 compactor:
   compaction:

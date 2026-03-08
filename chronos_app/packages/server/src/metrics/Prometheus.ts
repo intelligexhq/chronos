@@ -79,7 +79,7 @@ export class Prometheus implements IMetricsProvider {
             this.httpRequestDurationMicroseconds = new promClient.Histogram({
                 name: 'http_request_duration_ms',
                 help: 'Duration of HTTP requests in ms',
-                labelNames: ['method', 'route', 'code'],
+                labelNames: ['method', 'path', 'status'],
                 buckets: [1, 5, 15, 50, 100, 200, 300, 400, 500], // buckets for response time from 0.1ms to 500ms
                 registers: [this.register] // Explicitly set the registry
             })
@@ -133,10 +133,13 @@ export class Prometheus implements IMetricsProvider {
         this.app.use((req, res, next) => {
             res.on('finish', async () => {
                 if (res.locals.startEpoch) {
-                    this.requestCounter.inc()
+                    const method = req.method
+                    const path = req.path
+                    const status = res.statusCode.toString()
+                    this.requestCounter.labels(method, path, status).inc()
                     const responseTimeInMs = Date.now() - res.locals.startEpoch
                     this.httpRequestDurationMicroseconds
-                        .labels(req.method, req.baseUrl, res.statusCode.toString())
+                        .labels(method, path, status)
                         .observe(responseTimeInMs)
                 }
             })

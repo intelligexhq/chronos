@@ -82,7 +82,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(rate(http_requests_total{job=\"chronos-server\"}[$__rate_interval]))",
+          "expr": "sum(rate(http_requests_total{job=\"chronos-service\"}[$__rate_interval]))",
           "queryType": "instant",
           "refId": "A"
         }
@@ -140,7 +140,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(rate(http_requests_total{job=\"chronos-server\", status=~\"5..\"}[$__rate_interval]))",
+          "expr": "sum(rate(http_requests_total{job=\"chronos-service\", status=~\"5..\"}[$__rate_interval]))",
           "queryType": "instant",
           "refId": "A"
         }
@@ -198,7 +198,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_ms_bucket{job=\"chronos-server\"}[$__rate_interval])) by (le))",
+          "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_ms_bucket{job=\"chronos-service\"}[$__rate_interval])) by (le))",
           "queryType": "instant",
           "refId": "A"
         }
@@ -256,7 +256,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_ms_bucket{job=\"chronos-server\"}[$__rate_interval])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_ms_bucket{job=\"chronos-service\"}[$__rate_interval])) by (le))",
           "queryType": "instant",
           "refId": "A"
         }
@@ -350,7 +350,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum by (method) (rate(http_requests_total{job=\"chronos-server\"}[$__rate_interval]))",
+          "expr": "sum by (method) (rate(http_requests_total{job=\"chronos-service\"}[$__rate_interval]))",
           "legendFormat": "{{method}}",
           "queryType": "range",
           "refId": "A"
@@ -433,7 +433,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_ms_bucket{job=\"chronos-server\"}[$__rate_interval])) by (le))",
+          "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_ms_bucket{job=\"chronos-service\"}[$__rate_interval])) by (le))",
           "legendFormat": "p50",
           "queryType": "range",
           "refId": "A"
@@ -444,7 +444,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.90, sum(rate(http_request_duration_ms_bucket{job=\"chronos-server\"}[$__rate_interval])) by (le))",
+          "expr": "histogram_quantile(0.90, sum(rate(http_request_duration_ms_bucket{job=\"chronos-service\"}[$__rate_interval])) by (le))",
           "legendFormat": "p90",
           "queryType": "range",
           "refId": "B"
@@ -455,7 +455,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_ms_bucket{job=\"chronos-server\"}[$__rate_interval])) by (le))",
+          "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_ms_bucket{job=\"chronos-service\"}[$__rate_interval])) by (le))",
           "legendFormat": "p99",
           "queryType": "range",
           "refId": "C"
@@ -584,7 +584,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum by (status) (rate(http_requests_total{job=\"chronos-server\"}[$__rate_interval]))",
+          "expr": "sum by (status) (rate(http_requests_total{job=\"chronos-service\"}[$__rate_interval]))",
           "legendFormat": "{{status}}",
           "queryType": "range",
           "refId": "A"
@@ -654,7 +654,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "chatflow_created_total{job=\"chronos-server\"}",
+          "expr": "chatflow_created{job=\"chronos-service\"}",
           "queryType": "instant",
           "refId": "A"
         }
@@ -711,7 +711,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "prediction_total{job=\"chronos-server\"}",
+          "expr": "sum({__name__=~\"(chatflow|agentflow)_prediction_(internal|external)\", job=\"chronos-service\"})",
           "queryType": "instant",
           "refId": "A"
         }
@@ -768,7 +768,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "agentflow_created_total{job=\"chronos-server\"}",
+          "expr": "agentflow_created{job=\"chronos-service\"}",
           "queryType": "instant",
           "refId": "A"
         }
@@ -825,7 +825,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "tool_created_total{job=\"chronos-server\"}",
+          "expr": "tool_created{job=\"chronos-service\"}",
           "queryType": "instant",
           "refId": "A"
         }
@@ -961,7 +961,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "topk(20, sum by (method, path) (increase(http_requests_total{job=\"chronos-server\"}[$__range])))",
+          "expr": "topk(20, sum by (method, path) (increase(http_requests_total{job=\"chronos-service\"}[$__range])))",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -974,7 +974,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "topk(20, sum by (method, path) (increase(http_requests_total{job=\"chronos-server\", status=~\"5..\"}[$__range])))",
+          "expr": "topk(20, sum by (method, path) (increase(http_requests_total{job=\"chronos-service\", status=~\"5..\"}[$__range])))",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -987,7 +987,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "topk(20, histogram_quantile(0.95, sum by (method, path, le) (rate(http_request_duration_ms_bucket{job=\"chronos-server\"}[$__rate_interval]))))",
+          "expr": "topk(20, histogram_quantile(0.95, sum by (method, path, le) (rate(http_request_duration_ms_bucket{job=\"chronos-service\", path!=\"/api/v1/metrics\"}[$__rate_interval]))))",
           "format": "table",
           "instant": true,
           "legendFormat": "",

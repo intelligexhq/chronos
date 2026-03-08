@@ -27,8 +27,8 @@ export class OpenTelemetry implements IMetricsProvider {
     constructor(app: express.Application) {
         this.app = app
 
-        if (!process.env.METRICS_OPEN_TELEMETRY_METRIC_ENDPOINT) {
-            throw new Error('METRICS_OPEN_TELEMETRY_METRIC_ENDPOINT is not defined')
+        if (!process.env.TELEMETRY_COLLECTOR_ENDPOINT && !process.env.METRICS_OPEN_TELEMETRY_METRIC_ENDPOINT) {
+            throw new Error('TELEMETRY_COLLECTOR_ENDPOINT or METRICS_OPEN_TELEMETRY_METRIC_ENDPOINT must be defined')
         }
 
         if (process.env.METRICS_OPEN_TELEMETRY_DEBUG === 'true') {
@@ -76,8 +76,10 @@ export class OpenTelemetry implements IMetricsProvider {
                 }
             }
 
+            const collectorBase = (process.env.TELEMETRY_COLLECTOR_ENDPOINT || 'http://localhost:4318').replace(/\/+$/, '')
+            const metricsEndpoint = process.env.METRICS_OPEN_TELEMETRY_METRIC_ENDPOINT || `${collectorBase}/v1/metrics`
             this.otlpMetricExporter = new OTLPMetricExporter({
-                url: process.env.METRICS_OPEN_TELEMETRY_METRIC_ENDPOINT // OTLP endpoint for metrics
+                url: metricsEndpoint
             })
 
             // Clean up any existing metric reader

@@ -7,7 +7,7 @@
  *
  * Controlled by environment variables:
  *   ENABLE_TRACING=true                  - enable tracing (default: false)
- *   TRACING_EXPORTER_ENDPOINT            - OTLP endpoint (default: http://localhost:4318/v1/traces)
+ *   TELEMETRY_COLLECTOR_ENDPOINT         - OTLP collector base URL (default: http://localhost:4318)
  *   TRACING_PROTOCOL                     - http | grpc | proto (default: http)
  *   TRACING_SAMPLE_RATE                  - 0.0 to 1.0 (default: 1.0)
  *   TRACING_DEBUG                        - log spans to console (default: false)
@@ -47,7 +47,8 @@ export async function initTracing(): Promise<void> {
         const { getNodeAutoInstrumentations } = require('@opentelemetry/auto-instrumentations-node')
 
         const protocol = process.env.TRACING_PROTOCOL || 'http'
-        const endpoint = process.env.TRACING_EXPORTER_ENDPOINT || 'http://localhost:4318/v1/traces'
+        const collectorBase = (process.env.TELEMETRY_COLLECTOR_ENDPOINT || 'http://localhost:4318').replace(/\/+$/, '')
+        const endpoint = `${collectorBase}/v1/traces`
         const sampleRate = parseFloat(process.env.TRACING_SAMPLE_RATE || '1.0')
         const serviceName = process.env.METRICS_SERVICE_NAME || 'Chronos'
 

@@ -1,3 +1,9 @@
+# Observability infrastructure stack.
+
+networks:
+  observability-network:
+    name: observability-network
+
 services:
   # Grafana Alloy - unified telemetry collector (logs, traces, metrics)
   alloy:
@@ -11,13 +17,14 @@ services:
       # allow access to docker runtime details
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      # map alloy data to local directory 
       - ./.alloy:/var/lib/alloy/data
     command:
       - run
       - /etc/alloy/config.alloy
       - --storage.path=/var/lib/alloy/data
       - --server.http.listen-addr=0.0.0.0:12345
+    networks:
+      - observability-network
     depends_on:
       - loki
       - tempo
@@ -32,6 +39,8 @@ services:
       - ./configs/loki-config.yml:/etc/loki/local-config.yaml
       - ./.loki:/loki
     command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - observability-network
 
   # Grafana Tempo - distributed tracing
   tempo:
@@ -42,6 +51,8 @@ services:
       - ./configs/tempo-config.yml:/etc/tempo/config.yml
       - ./.tempo:/var/tempo
     command: ["-config.file=/etc/tempo/config.yml"]
+    networks:
+      - observability-network
 
   # Prometheus - metrics storage
   prometheus:
@@ -57,6 +68,8 @@ services:
       - "--storage.tsdb.retention.time=30d"
       - "--web.enable-remote-write-receiver"
       - "--web.enable-lifecycle"
+    networks:
+      - observability-network
 
   # Grafana - visualization
   grafana:
@@ -71,6 +84,8 @@ services:
     volumes:
       - ./configs/grafana/provisioning:/etc/grafana/provisioning
       - ./.grafana:/var/lib/grafana
+    networks:
+      - observability-network
     depends_on:
       - loki
       - tempo
