@@ -138,9 +138,7 @@ export class Prometheus implements IMetricsProvider {
                     const status = res.statusCode.toString()
                     this.requestCounter.labels(method, path, status).inc()
                     const responseTimeInMs = Date.now() - res.locals.startEpoch
-                    this.httpRequestDurationMicroseconds
-                        .labels(method, path, status)
-                        .observe(responseTimeInMs)
+                    this.httpRequestDurationMicroseconds.labels(method, path, status).observe(responseTimeInMs)
                 }
             })
             next()
