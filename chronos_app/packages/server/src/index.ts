@@ -1,3 +1,7 @@
+// Tracing must be initialized before any other imports so auto-instrumentations
+// can monkey-patch libraries (express, http, pg, ioredis) before they are loaded.
+import { initTracing } from './tracing'
+
 import express, { Request, Response } from 'express'
 import path from 'path'
 import cors from 'cors'
@@ -320,6 +324,8 @@ export class App {
 let serverApp: App | undefined
 
 export async function start(): Promise<void> {
+    await initTracing()
+
     serverApp = new App()
 
     const host = process.env.HOST

@@ -125,5 +125,11 @@
                 }
             ]
         ]
+    },
+    "dependencies": {
+        "@opentelemetry/api-logs": "^0.213.0",
+        "@opentelemetry/exporter-logs-otlp-http": "^0.213.0",
+        "@opentelemetry/sdk-logs": "^0.213.0",
+        "bullmq-otel": "^1.3.0"
     }
 }
