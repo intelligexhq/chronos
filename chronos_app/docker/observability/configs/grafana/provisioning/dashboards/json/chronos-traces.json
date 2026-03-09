@@ -43,6 +43,7 @@
             "mode": "thresholds"
           },
           "mappings": [],
+          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -100,6 +101,7 @@
             "mode": "thresholds"
           },
           "mappings": [],
+          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -166,6 +168,7 @@
               }
             ]
           },
+          "noValue": "0",
           "unit": "s"
         },
         "overrides": []
@@ -224,6 +227,7 @@
               }
             ]
           },
+          "noValue": "0",
           "unit": "s"
         },
         "overrides": []

@@ -110,6 +110,7 @@
               }
             ]
           },
+          "noValue": "0",
           "unit": "reqps"
         },
         "overrides": []
@@ -616,6 +617,7 @@
             "mode": "thresholds"
           },
           "mappings": [],
+          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -654,7 +656,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "chatflow_created{job=\"chronos-service\"}",
+          "expr": "sum(chatflow_created{job=\"chronos-service\"})",
           "queryType": "instant",
           "refId": "A"
         }
@@ -673,6 +675,7 @@
             "mode": "thresholds"
           },
           "mappings": [],
+          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -730,6 +733,7 @@
             "mode": "thresholds"
           },
           "mappings": [],
+          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -768,7 +772,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "agentflow_created{job=\"chronos-service\"}",
+          "expr": "sum(agentflow_created{job=\"chronos-service\"})",
           "queryType": "instant",
           "refId": "A"
         }
@@ -787,6 +791,7 @@
             "mode": "thresholds"
           },
           "mappings": [],
+          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -825,7 +830,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "tool_created{job=\"chronos-service\"}",
+          "expr": "sum(tool_created{job=\"chronos-service\"})",
           "queryType": "instant",
           "refId": "A"
         }
@@ -885,48 +890,6 @@
                 "value": 120
               }
             ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "p95 Duration"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "ms"
-              },
-              {
-                "id": "custom.width",
-                "value": 120
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Errors"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 100
-              },
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "red",
-                  "mode": "fixed"
-                }
-              },
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "mode": "basic",
-                  "type": "gauge"
-                }
-              }
-            ]
           }
         ]
       },
@@ -961,63 +924,25 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "topk(20, sum by (method, path) (increase(http_requests_total{job=\"chronos-service\"}[$__range])))",
+          "expr": "topk(20, round(sum by (method, path) (increase(http_requests_total{job=\"chronos-service\", path!~\"/(assets|node_modules)/.*|.*\\\\.(json|png|jpg|jpeg|gif|svg|ico|css|js|woff2?|ttf|eot|map)$\"}[$__range]))))",
           "format": "table",
           "instant": true,
           "legendFormat": "",
           "refId": "Requests"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "topk(20, sum by (method, path) (increase(http_requests_total{job=\"chronos-service\", status=~\"5..\"}[$__range])))",
-          "format": "table",
-          "instant": true,
-          "legendFormat": "",
-          "refId": "Errors"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "topk(20, histogram_quantile(0.95, sum by (method, path, le) (rate(http_request_duration_ms_bucket{job=\"chronos-service\", path!=\"/api/v1/metrics\"}[$__rate_interval]))))",
-          "format": "table",
-          "instant": true,
-          "legendFormat": "",
-          "refId": "Duration"
         }
       ],
       "title": "Top Endpoints by Traffic",
       "transformations": [
         {
-          "id": "seriesToColumns",
-          "options": {
-            "byField": "path"
-          }
-        },
-        {
           "id": "organize",
           "options": {
             "excludeByName": {
-              "Time": true,
-              "Time 1": true,
-              "Time 2": true,
-              "Time 3": true,
-              "method 2": true,
-              "method 3": true
+              "Time": true
             },
             "renameByName": {
-              "Value #Duration": "p95 Duration",
-              "Value #Errors": "Errors",
+              "Value": "Requests",
               "Value #Requests": "Requests",
-              "method 1": "Method",
+              "method": "Method",
               "path": "Path"
             }
           }

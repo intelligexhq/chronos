@@ -53,7 +53,7 @@ services:
         ENABLE_TRACING: true # default false
         TRACING_PROTOCOL: http
         TRACING_SAMPLE_RATE: 1.0 # 0 to 1.0
-        TRACING_DEBUG: true # default false
+        TRACING_DEBUG: false # default false
         # Log-trace correlation
         ENABLE_LOG_CORRELATION: true # default false
       ports:
