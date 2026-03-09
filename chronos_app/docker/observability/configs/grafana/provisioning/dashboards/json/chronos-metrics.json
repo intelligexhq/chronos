@@ -656,12 +656,12 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(chatflow_created{job=\"chronos-service\"})",
+          "expr": "sum(tool_invocation{job=\"chronos-service\"})",
           "queryType": "instant",
           "refId": "A"
         }
       ],
-      "title": "Chatflows Created",
+      "title": "Tool Use Count",
       "type": "stat"
     },
     {
@@ -719,7 +719,7 @@
           "refId": "A"
         }
       ],
-      "title": "Predictions",
+      "title": "Conversations",
       "type": "stat"
     },
     {

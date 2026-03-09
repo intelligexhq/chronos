@@ -1231,6 +1231,21 @@ const executeNode = async ({
         // Execute node
         let results = await newNodeInstance.run(reactFlowNodeData, finalInput, runParams)
 
+        // Track tool invocations for metrics
+        if (reactFlowNode.data.name === 'toolAgentflow') {
+            const appServer = getRunningExpressApp()
+            appServer.metricsProvider?.incrementCounter(CHRONOS_METRIC_COUNTERS.TOOL_INVOCATION, {
+                status: CHRONOS_COUNTER_STATUS.SUCCESS
+            })
+        } else if (reactFlowNode.data.name === 'agentAgentflow' && results?.usedTools && Array.isArray(results.usedTools)) {
+            const appServer = getRunningExpressApp()
+            for (const tool of results.usedTools) {
+                appServer.metricsProvider?.incrementCounter(CHRONOS_METRIC_COUNTERS.TOOL_INVOCATION, {
+                    status: tool.error ? CHRONOS_COUNTER_STATUS.FAILURE : CHRONOS_COUNTER_STATUS.SUCCESS
+                })
+            }
+        }
+
         // Handle iteration node with recursive execution
         if (
             reactFlowNode.data.name === 'iterationAgentflow' &&
