@@ -1,7 +1,7 @@
 import { createContext, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import PropTypes from 'prop-types'
-import { getUniqueNodeId, showHideInputParams } from '@/utils/genericHelper'
+import { getUniqueNodeId, showHideInputParams, showHideInputAnchors } from '@/utils/genericHelper'
 import { cloneDeep, isEqual } from 'lodash'
 import { SET_DIRTY } from '@/store/actions'
 
@@ -55,10 +55,10 @@ export const ReactFlowContext = ({ children }) => {
 
                 updatedInputs[inputParam.name] = newValue
 
-                const updatedInputParams = showHideInputParams({
-                    ...node.data,
-                    inputs: updatedInputs
-                })
+                const clonedInputAnchors = cloneDeep(node.data.inputAnchors)
+                const nodeDataWithInputs = { ...node.data, inputs: updatedInputs, inputAnchors: clonedInputAnchors }
+                const updatedInputParams = showHideInputParams(nodeDataWithInputs)
+                const updatedInputAnchors = showHideInputAnchors(nodeDataWithInputs)
 
                 // Remove inputs with display set to false
                 Object.keys(updatedInputs).forEach((key) => {
@@ -73,6 +73,7 @@ export const ReactFlowContext = ({ children }) => {
                     data: {
                         ...node.data,
                         inputParams: updatedInputParams,
+                        inputAnchors: updatedInputAnchors,
                         inputs: updatedInputs
                     }
                 }
@@ -80,9 +81,11 @@ export const ReactFlowContext = ({ children }) => {
             return node
         })
 
-        // Check if any node's inputParams have changed before updating
+        // Check if any node's inputParams or inputAnchors have changed before updating
         const hasChanges = updatedNodes.some(
-            (node, index) => !isEqual(node.data.inputParams, reactFlowInstance.getNodes()[index].data.inputParams)
+            (node, index) =>
+                !isEqual(node.data.inputParams, reactFlowInstance.getNodes()[index].data.inputParams) ||
+                !isEqual(node.data.inputAnchors, reactFlowInstance.getNodes()[index].data.inputAnchors)
         )
 
         if (hasChanges) {

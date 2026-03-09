@@ -31,6 +31,7 @@ docker run -d --name chronos -p 3001:3000 chronos:local
 
 ```bash
 docker compose -f docker-compose.yml up  # or docker compose -f docker-compose.yml up -d
+# docker compose -f docker-compose-opentelemetry.yml up # start chronos with telemetry enabled
 docker compose ls
 docker-compose down # or docker-compose down --volumes
 # chronos is now accessable on http://localhost:3001
