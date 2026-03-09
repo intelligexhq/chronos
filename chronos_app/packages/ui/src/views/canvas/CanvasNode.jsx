@@ -223,9 +223,11 @@ const CanvasNode = ({ data }) => {
                                 <Divider />
                             </>
                         )}
-                        {data.inputAnchors.map((inputAnchor, index) => (
-                            <NodeInputHandler key={index} inputAnchor={inputAnchor} data={data} />
-                        ))}
+                        {data.inputAnchors
+                            .filter((inputAnchor) => inputAnchor.display !== false)
+                            .map((inputAnchor, index) => (
+                                <NodeInputHandler key={index} inputAnchor={inputAnchor} data={data} />
+                            ))}
                         {data.inputParams
                             .filter((inputParam) => !inputParam.hidden)
                             .filter((inputParam) => inputParam.display !== false)

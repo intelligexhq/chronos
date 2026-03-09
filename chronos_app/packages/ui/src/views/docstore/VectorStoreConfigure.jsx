@@ -120,6 +120,16 @@ const VectorStoreConfigure = () => {
             updatedData.inputParams = showHideInputParams(updatedData)
             return updatedData
         })
+
+        // Hide Record Manager step when recreateIndex is enabled
+        if (inputParam.name === 'recreateIndex') {
+            if (newValue === true || newValue === 'true') {
+                setRecordManagerUnavailable(true)
+                setSelectedRecordManagerProvider({})
+            } else {
+                setRecordManagerUnavailable(false)
+            }
+        }
     }
 
     const handleRecordManagerProviderDataChange = ({ inputParam, newValue }) => {

@@ -149,7 +149,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
     const dispatch = useDispatch()
     const { isEnterpriseLicensed, isOpenSource } = useConfig()
     const isAuthenticated = useSelector((state) => state.auth.isAuthenticated)
-    const [_starCount, __setStarCount] = useState(0)
+    const [_starCount, _setStarCount] = useState(0)
 
     useNotifier()
 

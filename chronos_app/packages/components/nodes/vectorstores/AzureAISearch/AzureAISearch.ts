@@ -59,13 +59,24 @@ class AzureAISearch_VectorStores implements INode {
                 name: 'recordManager',
                 type: 'RecordManager',
                 description: 'Keep track of the record to prevent duplication',
-                optional: true
+                optional: true,
+                hide: {
+                    recreateIndex: 'true'
+                }
             },
             {
                 label: 'Index Name',
                 name: 'indexName',
                 type: 'string',
                 placeholder: 'vectorsearch'
+            },
+            {
+                label: 'Recreate Index on Upsert',
+                name: 'recreateIndex',
+                description: 'Selecting this option will delete the existing index and recreate it when upserting',
+                default: false,
+                type: 'boolean',
+                optional: true
             },
             {
                 label: 'Search Type',
@@ -136,6 +147,7 @@ class AzureAISearch_VectorStores implements INode {
             const indexName = nodeData.inputs?.indexName as string
             const embeddings = nodeData.inputs?.embeddings as Embeddings
             const recordManager = nodeData.inputs?.recordManager
+            const recreateIndex = nodeData.inputs?.recreateIndex as boolean
 
             const docs = nodeData.inputs?.document as Document[]
             const flattenDocs = docs && docs.length ? flatten(docs) : []
@@ -153,6 +165,22 @@ class AzureAISearch_VectorStores implements INode {
             })
 
             const config = await buildSearchConfig(nodeData, options, indexName)
+
+            // Delete existing index if recreateIndex is enabled; addDocuments will recreate it
+            if (recreateIndex) {
+                try {
+                    const { SearchIndexClient } = require('@azure/search-documents')
+                    const { DefaultAzureCredential } = require('@azure/identity')
+                    const indexClient = new SearchIndexClient(config.endpoint, new DefaultAzureCredential())
+                    await indexClient.deleteIndex(indexName)
+                } catch (e: any) {
+                    // Ignore if index does not exist
+                    if (e?.statusCode !== 404) {
+                        throw new Error(e)
+                    }
+                }
+            }
+
             const vectorStore = new AzureAISearchVectorStore(embeddings, config)
 
             try {
