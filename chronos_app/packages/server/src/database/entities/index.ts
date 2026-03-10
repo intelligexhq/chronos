@@ -18,6 +18,7 @@ import { ApiKey } from './ApiKey'
 import { CustomTemplate } from './CustomTemplate'
 import { Execution } from './Execution'
 import { User } from './User'
+import { OAuthClient } from './OAuthClient'
 
 export const entities = {
     ChatFlow,
@@ -39,5 +40,6 @@ export const entities = {
     ApiKey,
     CustomTemplate,
     Execution,
-    User
+    User,
+    OAuthClient
 }

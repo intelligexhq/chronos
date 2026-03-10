@@ -1,3 +1,4 @@
+import { AddOAuthClient1780000000000 } from './1780000000000-AddOAuthClient'
 import { Init1693835579790 } from './1693835579790-Init'
 import { ModifyChatFlow1693920824108 } from './1693920824108-ModifyChatFlow'
 import { ModifyChatMessage1693921865247 } from './1693921865247-ModifyChatMessage'
@@ -83,5 +84,6 @@ export const sqliteMigrations = [
     AddTextToSpeechToChatFlow1759419136055,
     AddChatFlowNameIndex1759424923093,
     AddSimpleUser1760000000000,
-    AddRoleToUser1770000000000
+    AddRoleToUser1770000000000,
+    AddOAuthClient1780000000000
 ]

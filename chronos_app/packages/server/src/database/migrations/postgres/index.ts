@@ -1,3 +1,4 @@
+import { AddOAuthClient1780000000000 } from './1780000000000-AddOAuthClient'
 import { Init1693891895163 } from './1693891895163-Init'
 import { ModifyChatFlow1693995626941 } from './1693995626941-ModifyChatFlow'
 import { ModifyChatMessage1693996694528 } from './1693996694528-ModifyChatMessage'
@@ -85,5 +86,6 @@ export const postgresMigrations = [
     AddTextToSpeechToChatFlow1759419194331,
     AddChatFlowNameIndex1759424903973,
     AddSimpleUser1760000000000,
-    AddRoleToUser1770000000000
+    AddRoleToUser1770000000000,
+    AddOAuthClient1780000000000
 ]

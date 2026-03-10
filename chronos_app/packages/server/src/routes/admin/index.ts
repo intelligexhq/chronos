@@ -1,0 +1,22 @@
+/**
+ * Admin API Router — mounts all admin sub-routes with admin auth middleware.
+ */
+
+import express from 'express'
+import { adminAuthMiddleware } from '../../middlewares/adminAuth'
+import chatflowsRouter from './chatflows'
+import credentialsRouter from './credentials'
+import apikeysRouter from './apikeys'
+import oauthClientsRouter from './oauth-clients'
+
+const router = express.Router()
+
+// All admin routes require a valid client credentials JWT
+router.use(adminAuthMiddleware)
+
+router.use('/chatflows', chatflowsRouter)
+router.use('/credentials', credentialsRouter)
+router.use('/apikeys', apikeysRouter)
+router.use('/oauth-clients', oauthClientsRouter)
+
+export default router

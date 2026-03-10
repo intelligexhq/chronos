@@ -60,6 +60,7 @@ import { internalChatMessagesRouteTest } from './routes/v1/internal-chat-message
 import { oauth2RouteTest } from './routes/v1/oauth2.route.test'
 import { openaiRealtimeRouteTest } from './routes/v1/openai-realtime.route.test'
 import { usersRouteTest } from './routes/v1/users.route.test'
+import { adminRouteTest } from './routes/v1/admin.route.test'
 import { chatflowsServiceTest } from './services/chatflows.service.test'
 import { agentflowv2GeneratorServiceTest } from './services/agentflowv2-generator.service.test'
 import { toolsServiceTest } from './services/tools.service.test'
@@ -92,6 +93,7 @@ import { logServiceTest } from './services/log.service.test'
 import { predictionsServiceTest } from './services/predictions.service.test'
 import { evaluatorServiceTest } from './services/evaluator.service.test'
 import { documentstoreServiceTest } from './services/documentstore.service.test'
+import { oauthClientServiceTest } from './services/oauth-client.service.test'
 import { apiKeyTest } from './utils/api-key.util.test'
 import { sanitizeUtilTest } from './utils/sanitize.util.test'
 import { domainValidationUtilTest } from './utils/domain-validation.util.test'
@@ -193,6 +195,7 @@ describe('Routes Test', () => {
     oauth2RouteTest()
     openaiRealtimeRouteTest()
     usersRouteTest()
+    adminRouteTest()
 })
 
 describe('Services Test', () => {
@@ -226,6 +229,7 @@ describe('Services Test', () => {
     predictionsServiceTest()
     evaluatorServiceTest()
     documentstoreServiceTest()
+    oauthClientServiceTest()
 })
 
 describe('Utils Test', () => {
