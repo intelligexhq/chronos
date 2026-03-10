@@ -337,6 +337,26 @@ export interface IUploadFileSizeAndTypes {
     maxUploadSize: number
 }
 
+export enum AdminScope {
+    CHATFLOWS_READ = 'chatflows:read',
+    CHATFLOWS_WRITE = 'chatflows:write',
+    CREDENTIALS_READ = 'credentials:read',
+    CREDENTIALS_WRITE = 'credentials:write',
+    APIKEYS_READ = 'apikeys:read',
+    APIKEYS_WRITE = 'apikeys:write',
+    ADMIN_FULL = 'admin:full'
+}
+
+export interface IOAuthClient {
+    id: string
+    clientId: string
+    clientSecret: string
+    clientName: string
+    scopes: string | null
+    createdDate: Date
+    updatedDate: Date
+}
+
 export interface IApiKey {
     id: string
     keyName: string

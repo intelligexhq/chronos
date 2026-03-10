@@ -36,6 +36,7 @@ import 'global-agent/bootstrap'
 import { UsageCacheManager } from './UsageCacheManager'
 import { ExpressAdapter } from '@bull-board/express'
 import { initializeInitialUser } from './utils/initializeUser'
+import { bootstrapAdminOAuthClient } from './utils/bootstrapAdminClient'
 
 declare global {
     namespace Express {
@@ -94,6 +95,9 @@ export class App {
 
             // Initialize initial user from environment variables (first run only)
             await initializeInitialUser()
+
+            // Bootstrap admin OAuth client from environment variables (first run only)
+            await bootstrapAdminOAuthClient()
 
             // Initialize Identity Manager
             this.identityManager = await SimpleIdentityManager.getInstance()
@@ -226,7 +230,9 @@ export class App {
                 if (URL_CASE_SENSITIVE_REGEX.test(req.path)) {
                     // Step 3: Check if the req path is in the whitelist
                     const isWhitelisted = whitelistURLs.some((url) => req.path.startsWith(url))
-                    if (isWhitelisted) {
+                    // Admin API paths handle their own auth via adminAuthMiddleware
+                    const isAdminPath = req.path.startsWith('/api/v1/admin/')
+                    if (isWhitelisted || isAdminPath) {
                         next()
                     } else if (req.headers['x-request-from'] === 'internal') {
                         verifyToken(req, res, next)

@@ -20,6 +20,12 @@ export interface AuthTokenPayload {
     role: string
 }
 
+export interface ClientTokenPayload {
+    clientId: string
+    scopes: string[]
+    grantType: 'client_credentials'
+}
+
 export interface SignupRequest {
     email: string
     password: string

@@ -28,6 +28,7 @@ import { useTheme, styled } from '@mui/material/styles'
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
 import APIKeyDialog from './APIKeyDialog'
+import OAuthClientDialog from './OAuthClientDialog'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
@@ -38,6 +39,7 @@ import TablePagination, { DEFAULT_ITEMS_PER_PAGE } from '@/ui-component/paginati
 
 // API
 import apiKeyApi from '@/api/apikey'
+import oauthClientApi from '@/api/oauthclient'
 import { useError } from '@/store/context/ErrorContext'
 
 // Hooks
@@ -58,7 +60,8 @@ import {
     IconPlus,
     IconEye,
     IconEyeOff,
-    IconFileUpload
+    IconFileUpload,
+    IconShieldLock
 } from '@tabler/icons-react'
 import APIEmptySVG from '@/assets/images/api_empty.svg'
 
@@ -224,6 +227,12 @@ const APIKey = () => {
 
     const [search, setSearch] = useState('')
 
+    // OAuth Client state
+    const [oauthClients, setOAuthClients] = useState([])
+    const [oauthLoading, setOAuthLoading] = useState(true)
+    const [showOAuthDialog, setShowOAuthDialog] = useState(false)
+    const [oauthDialogProps, setOAuthDialogProps] = useState({})
+
     /* Table Pagination */
     const [currentPage, setCurrentPage] = useState(1)
     const [pageLimit, setPageLimit] = useState(DEFAULT_ITEMS_PER_PAGE)
@@ -359,6 +368,88 @@ const APIKey = () => {
         }
     }
 
+    // OAuth Client handlers
+    const fetchOAuthClients = async () => {
+        try {
+            setOAuthLoading(true)
+            const resp = await oauthClientApi.getAllOAuthClients()
+            setOAuthClients(resp.data || [])
+        } catch {
+            setOAuthClients([])
+        } finally {
+            setOAuthLoading(false)
+        }
+    }
+
+    const addNewOAuthClient = () => {
+        setOAuthDialogProps({
+            title: 'Create Client Credentials',
+            type: 'ADD',
+            confirmButtonName: 'Create'
+        })
+        setShowOAuthDialog(true)
+    }
+
+    const editOAuthClient = (client) => {
+        setOAuthDialogProps({
+            title: 'Edit Client Credentials',
+            type: 'EDIT',
+            confirmButtonName: 'Save',
+            client
+        })
+        setShowOAuthDialog(true)
+    }
+
+    const deleteOAuthClient = async (client) => {
+        const confirmPayload = {
+            title: 'Delete',
+            description: `Delete client credentials [${client.clientName}] ?`,
+            confirmButtonName: 'Delete',
+            cancelButtonName: 'Cancel'
+        }
+        const isConfirmed = await confirm(confirmPayload)
+
+        if (isConfirmed) {
+            try {
+                await oauthClientApi.deleteOAuthClient(client.id)
+                enqueueSnackbar({
+                    message: 'Client credentials deleted',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'success',
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+                fetchOAuthClients()
+            } catch (error) {
+                enqueueSnackbar({
+                    message: `Failed to delete client credentials: ${
+                        typeof error.response?.data === 'object' ? error.response.data.error : error.response?.data
+                    }`,
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'error',
+                        persist: true,
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+            }
+        }
+    }
+
+    const onOAuthConfirm = () => {
+        setShowOAuthDialog(false)
+        fetchOAuthClients()
+    }
+
     const onConfirm = () => {
         setShowDialog(false)
         setShowUploadDialog(false)
@@ -367,6 +458,7 @@ const APIKey = () => {
 
     useEffect(() => {
         refresh(currentPage, pageLimit)
+        fetchOAuthClients()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
@@ -389,11 +481,127 @@ const APIKey = () => {
                 ) : (
                     <Stack flexDirection='column' sx={{ gap: 3 }}>
                         <ViewHeader
+                            title='Client Credentials'
+                            description='OAuth2 client credentials for the Management API'
+                            search={false}
+                        >
+                            <StyledPermissionButton
+                                permissionId={'apikeys:create'}
+                                variant='contained'
+                                sx={{ borderRadius: 2, height: '100%' }}
+                                onClick={addNewOAuthClient}
+                                startIcon={<IconShieldLock />}
+                                id='btn_createOAuthClient'
+                            >
+                                Create Credentials
+                            </StyledPermissionButton>
+                        </ViewHeader>
+                        {!oauthLoading && oauthClients.length <= 0 ? (
+                            <Stack sx={{ alignItems: 'center', justifyContent: 'center', py: 4 }} flexDirection='column'>
+                                <Typography variant='body2' color='text.secondary'>
+                                    No client credentials yet. Create one to access the Management API.
+                                </Typography>
+                            </Stack>
+                        ) : (
+                            <TableContainer
+                                sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                                component={Paper}
+                            >
+                                <Table sx={{ minWidth: 650 }} aria-label='oauth clients table'>
+                                    <TableHead
+                                        sx={{
+                                            backgroundColor: customization.isDarkMode
+                                                ? theme.palette.common.black
+                                                : theme.palette.grey[100],
+                                            height: 56
+                                        }}
+                                    >
+                                        <TableRow>
+                                            <StyledTableCell>Client Name</StyledTableCell>
+                                            <StyledTableCell>Client ID</StyledTableCell>
+                                            <StyledTableCell>Scopes</StyledTableCell>
+                                            <StyledTableCell>Created</StyledTableCell>
+                                            <Available permission={'apikeys:update,apikeys:create'}>
+                                                <StyledTableCell> </StyledTableCell>
+                                            </Available>
+                                            <Available permission={'apikeys:delete'}>
+                                                <StyledTableCell> </StyledTableCell>
+                                            </Available>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {oauthLoading ? (
+                                            <StyledTableRow>
+                                                <StyledTableCell>
+                                                    <Skeleton variant='text' />
+                                                </StyledTableCell>
+                                                <StyledTableCell>
+                                                    <Skeleton variant='text' />
+                                                </StyledTableCell>
+                                                <StyledTableCell>
+                                                    <Skeleton variant='text' />
+                                                </StyledTableCell>
+                                                <StyledTableCell>
+                                                    <Skeleton variant='text' />
+                                                </StyledTableCell>
+                                            </StyledTableRow>
+                                        ) : (
+                                            oauthClients.map((client, index) => (
+                                                <StyledTableRow key={index}>
+                                                    <StyledTableCell>{client.clientName}</StyledTableCell>
+                                                    <StyledTableCell>
+                                                        <Typography sx={{ fontFamily: 'monospace', fontSize: '0.85rem' }} variant='body2'>
+                                                            {client.clientId}
+                                                        </Typography>
+                                                    </StyledTableCell>
+                                                    <StyledTableCell>
+                                                        {client.scopes &&
+                                                            JSON.parse(client.scopes).map((scope, i) => (
+                                                                <Chip key={i} label={scope} size='small' sx={{ mr: 0.5, mb: 0.5 }} />
+                                                            ))}
+                                                    </StyledTableCell>
+                                                    <StyledTableCell>{moment(client.createdDate).format('MMMM Do, YYYY')}</StyledTableCell>
+                                                    <Available permission={'apikeys:update,apikeys:create'}>
+                                                        <StyledTableCell>
+                                                            <IconButton
+                                                                title='Edit'
+                                                                color='primary'
+                                                                onClick={() => editOAuthClient(client)}
+                                                            >
+                                                                <IconEdit />
+                                                            </IconButton>
+                                                        </StyledTableCell>
+                                                    </Available>
+                                                    <Available permission={'apikeys:delete'}>
+                                                        <StyledTableCell>
+                                                            <IconButton
+                                                                title='Delete'
+                                                                color='error'
+                                                                onClick={() => deleteOAuthClient(client)}
+                                                            >
+                                                                <IconTrash />
+                                                            </IconButton>
+                                                        </StyledTableCell>
+                                                    </Available>
+                                                </StyledTableRow>
+                                            ))
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        )}
+                    </Stack>
+                )}
+            </MainCard>
+            <Box sx={{ mt: 3 }}>
+                <MainCard>
+                    <Stack flexDirection='column' sx={{ gap: 3 }}>
+                        <ViewHeader
                             onSearchChange={onSearchChange}
                             search={true}
                             searchPlaceholder='Search API Keys'
                             title='API Keys'
-                            description='Flowise API & SDK authentication keys'
+                            description='Chronos API keys and credentials'
                         >
                             <PermissionButton
                                 permissionId={'apikeys:import'}
@@ -532,8 +740,8 @@ const APIKey = () => {
                             </>
                         )}
                     </Stack>
-                )}
-            </MainCard>
+                </MainCard>
+            </Box>
             <APIKeyDialog
                 show={showDialog}
                 dialogProps={dialogProps}
@@ -541,6 +749,12 @@ const APIKey = () => {
                 onConfirm={onConfirm}
                 setError={setError}
             ></APIKeyDialog>
+            <OAuthClientDialog
+                show={showOAuthDialog}
+                dialogProps={oauthDialogProps}
+                onCancel={() => setShowOAuthDialog(false)}
+                onConfirm={onOAuthConfirm}
+            />
             {showUploadDialog && (
                 <UploadJSONFileDialog
                     show={showUploadDialog}

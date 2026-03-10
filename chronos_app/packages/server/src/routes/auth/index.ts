@@ -4,6 +4,7 @@
 
 import express, { Request, Response } from 'express'
 import { AuthService } from '../../services/auth'
+import oauthClientService from '../../services/oauth-client'
 
 const router = express.Router()
 
@@ -76,6 +77,36 @@ router.get('/me', async (req: Request, res: Response) => {
         res.json({ user })
     } catch (error: any) {
         res.status(401).json({ error: error.message })
+    }
+})
+
+// POST /api/v1/auth/token — OAuth2 Client Credentials grant
+router.post('/token', async (req: Request, res: Response) => {
+    try {
+        const { grant_type, client_id, client_secret } = req.body
+
+        if (grant_type !== 'client_credentials') {
+            return res
+                .status(400)
+                .json({ error: 'unsupported_grant_type', error_description: 'Only client_credentials grant type is supported' })
+        }
+
+        if (!client_id || !client_secret) {
+            return res.status(400).json({ error: 'invalid_request', error_description: 'client_id and client_secret are required' })
+        }
+
+        const client = await oauthClientService.verifyClientCredentials(client_id, client_secret)
+        const authService = new AuthService()
+        const tokenResponse = authService.generateClientToken(client)
+
+        res.json({
+            access_token: tokenResponse.accessToken,
+            token_type: tokenResponse.tokenType,
+            expires_in: tokenResponse.expiresIn
+        })
+    } catch (error: any) {
+        const status = error.statusCode === 401 ? 401 : 500
+        res.status(status).json({ error: 'invalid_client', error_description: error.message })
     }
 })
 

@@ -55,6 +55,12 @@ import textToSpeechRouter from './text-to-speech'
 import authRouter from './auth'
 import usersRouter from './users'
 
+// OAuth client management (UI, JWT auth)
+import oauthClientsRouter from './oauth-clients'
+
+// Management Admin API
+import adminRouter from './admin'
+
 const router = express.Router()
 
 router.use('/ping', pingRouter)
@@ -114,5 +120,11 @@ router.use('/auth', authRouter)
 
 // Users management routes (admin only)
 router.use('/users', usersRouter)
+
+// OAuth client management (admin-only, UI access)
+router.use('/oauth-clients', oauthClientsRouter)
+
+// Management Admin API (OAuth2 client credentials auth)
+router.use('/admin', adminRouter)
 
 export default router

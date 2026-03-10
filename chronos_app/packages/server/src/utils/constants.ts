@@ -27,7 +27,9 @@ export const WHITELIST_URLS = [
     '/api/v1/auth/signup',
     '/api/v1/auth/login',
     '/api/v1/auth/logout',
-    '/api/v1/auth/me'
+    '/api/v1/auth/me',
+    // OAuth2 token endpoint (client credentials grant)
+    '/api/v1/auth/token'
 ]
 
 export const enum GeneralErrorMessage {

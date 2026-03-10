@@ -1,3 +1,4 @@
+import { AddOAuthClient1780000000000 } from './1780000000000-AddOAuthClient'
 import { Init1693840429259 } from './1693840429259-Init'
 import { ModifyChatFlow1693997791471 } from './1693997791471-ModifyChatFlow'
 import { ModifyChatMessage1693999022236 } from './1693999022236-ModifyChatMessage'
@@ -91,5 +92,6 @@ export const mysqlMigrations = [
     AddChatFlowNameIndex1759424828558,
     FixDocumentStoreFileChunkLongText1765000000000,
     AddSimpleUser1760000000000,
-    AddRoleToUser1770000000000
+    AddRoleToUser1770000000000,
+    AddOAuthClient1780000000000
 ]
