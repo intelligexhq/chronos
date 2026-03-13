@@ -62,7 +62,7 @@ import { useError } from '@/store/context/ErrorContext'
 
 const badges = ['POPULAR', 'NEW']
 const types = ['AgentflowV2', 'Tool']
-const framework = ['Langchain', 'LlamaIndex']
+const typeDisplayNames = { AgentflowV2: 'Agentflow', Tool: 'Tool' }
 const MenuProps = {
     PaperProps: {
         style: {
@@ -97,7 +97,7 @@ const Templates = () => {
     const [search, setSearch] = useState('')
     const [badgeFilter, setBadgeFilter] = useState([])
     const [typeFilter, setTypeFilter] = useState([])
-    const [frameworkFilter, setFrameworkFilter] = useState([])
+    const [frameworkFilter] = useState([])
 
     const getAllCustomTemplatesApi = useApi(templatesApi.getAllCustomTemplates)
     const [activeTabValue, setActiveTabValue] = useState(0)
@@ -182,23 +182,6 @@ const Templates = () => {
             typeFilter: typeof value === 'string' ? value.split(',') : value,
             badgeFilter,
             frameworkFilter,
-            search
-        })
-    }
-
-    const handleFrameworkFilterChange = (event) => {
-        const {
-            target: { value }
-        } = event
-        setFrameworkFilter(
-            // On autofill we get a stringified value.
-            typeof value === 'string' ? value.split(',') : value
-        )
-        const data = activeTabValue === 0 ? getAllBuiltinTemplatesApi.data : getAllCustomTemplatesApi.data
-        getEligibleUsecases(data, {
-            typeFilter,
-            badgeFilter,
-            frameworkFilter: typeof value === 'string' ? value.split(',') : value,
             search
         })
     }
@@ -531,7 +514,7 @@ const Templates = () => {
                                             value={typeFilter}
                                             onChange={handleTypeFilterChange}
                                             input={<OutlinedInput label='Type' />}
-                                            renderValue={(selected) => selected.join(', ')}
+                                            renderValue={(selected) => selected.map((s) => typeDisplayNames[s] || s).join(', ')}
                                             MenuProps={MenuProps}
                                             sx={getSelectStyles(theme.palette.grey[900] + 25, theme?.customization?.isDarkMode)}
                                         >
@@ -542,47 +525,82 @@ const Templates = () => {
                                                     sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1 }}
                                                 >
                                                     <Checkbox checked={typeFilter.indexOf(name) > -1} sx={{ p: 0 }} />
-                                                    <ListItemText primary={name} />
+                                                    <ListItemText primary={typeDisplayNames[name] || name} />
                                                 </MenuItem>
                                             ))}
                                         </Select>
                                     </FormControl>
-                                    <FormControl
-                                        sx={{
-                                            borderRadius: 2,
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            justifyContent: 'end',
-                                            minWidth: 120
+                                    <Autocomplete
+                                        id='useCases'
+                                        multiple
+                                        size='small'
+                                        options={usecases}
+                                        value={selectedUsecases}
+                                        onChange={(_, newValue) => setSelectedUsecases(newValue)}
+                                        disableCloseOnSelect
+                                        getOptionLabel={(option) => option}
+                                        isOptionEqualToValue={(option, value) => option === value}
+                                        renderOption={(props, option, { selected }) => {
+                                            const isDisabled = eligibleUsecases.length > 0 && !eligibleUsecases.includes(option)
+
+                                            return (
+                                                <li {...props} style={{ pointerEvents: isDisabled ? 'none' : 'auto' }}>
+                                                    <Checkbox checked={selected} color='success' disabled={isDisabled} />
+                                                    <ListItemText primary={option} />
+                                                </li>
+                                            )
                                         }}
-                                    >
-                                        <InputLabel size='small' id='type-fw-label'>
-                                            Framework
-                                        </InputLabel>
-                                        <Select
-                                            size='small'
-                                            labelId='type-fw-label'
-                                            id='type-fw-checkbox'
-                                            multiple
-                                            value={frameworkFilter}
-                                            onChange={handleFrameworkFilterChange}
-                                            input={<OutlinedInput label='Framework' />}
-                                            renderValue={(selected) => selected.join(', ')}
-                                            MenuProps={MenuProps}
-                                            sx={getSelectStyles(theme.palette.grey[900] + 25, theme?.customization?.isDarkMode)}
-                                        >
-                                            {framework.map((name) => (
-                                                <MenuItem
-                                                    key={name}
-                                                    value={name}
-                                                    sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1 }}
-                                                >
-                                                    <Checkbox checked={frameworkFilter.indexOf(name) > -1} sx={{ p: 0 }} />
-                                                    <ListItemText primary={name} />
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
-                                    </FormControl>
+                                        renderInput={(params) => <TextField {...params} label='Usecases' />}
+                                        sx={{
+                                            minWidth: 180
+                                        }}
+                                        limitTags={1}
+                                        renderTags={(value, getTagProps) => {
+                                            const totalTags = value.length
+                                            const limitTags = 1
+
+                                            return (
+                                                <>
+                                                    {value.slice(0, limitTags).map((option, index) => (
+                                                        <Chip
+                                                            {...getTagProps({ index })}
+                                                            key={index}
+                                                            label={option}
+                                                            sx={{
+                                                                height: 24,
+                                                                '& .MuiSvgIcon-root': {
+                                                                    fontSize: 16,
+                                                                    background: 'None'
+                                                                }
+                                                            }}
+                                                        />
+                                                    ))}
+
+                                                    {totalTags > limitTags && (
+                                                        <Tooltip
+                                                            title={
+                                                                <ol style={{ paddingLeft: '20px' }}>
+                                                                    {value.slice(limitTags).map((item, i) => (
+                                                                        <li key={i}>{item}</li>
+                                                                    ))}
+                                                                </ol>
+                                                            }
+                                                            placement='top'
+                                                        >
+                                                            +{totalTags - limitTags}
+                                                        </Tooltip>
+                                                    )}
+                                                </>
+                                            )
+                                        }}
+                                        slotProps={{
+                                            paper: {
+                                                sx: {
+                                                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
+                                                }
+                                            }
+                                        }}
+                                    />
                                 </>
                             }
                             onSearchChange={onSearchChange}
@@ -625,82 +643,11 @@ const Templates = () => {
                             </ToggleButtonGroup>
                         </ViewHeader>
                         {hasPermission('templates:marketplace') && hasPermission('templates:custom') && (
-                            <Stack direction='row' justifyContent='space-between' sx={{ mb: 2 }}>
+                            <Stack direction='row' sx={{ mb: 2 }}>
                                 <Tabs value={activeTabValue} onChange={handleTabChange} textColor='primary' aria-label='tabs'>
-                                    <PermissionTab permissionId='templates:marketplace' value={0} label='Community Templates' />
+                                    <PermissionTab permissionId='templates:marketplace' value={0} label='Templates Library' />
                                     <PermissionTab permissionId='templates:custom' value={1} label='My Templates' />
                                 </Tabs>
-                                <Autocomplete
-                                    id='useCases'
-                                    multiple
-                                    size='small'
-                                    options={usecases}
-                                    value={selectedUsecases}
-                                    onChange={(_, newValue) => setSelectedUsecases(newValue)}
-                                    disableCloseOnSelect
-                                    getOptionLabel={(option) => option}
-                                    isOptionEqualToValue={(option, value) => option === value}
-                                    renderOption={(props, option, { selected }) => {
-                                        const isDisabled = eligibleUsecases.length > 0 && !eligibleUsecases.includes(option)
-
-                                        return (
-                                            <li {...props} style={{ pointerEvents: isDisabled ? 'none' : 'auto' }}>
-                                                <Checkbox checked={selected} color='success' disabled={isDisabled} />
-                                                <ListItemText primary={option} />
-                                            </li>
-                                        )
-                                    }}
-                                    renderInput={(params) => <TextField {...params} label='Usecases' />}
-                                    sx={{
-                                        width: 300
-                                    }}
-                                    limitTags={2}
-                                    renderTags={(value, getTagProps) => {
-                                        const totalTags = value.length
-                                        const limitTags = 2
-
-                                        return (
-                                            <>
-                                                {value.slice(0, limitTags).map((option, index) => (
-                                                    <Chip
-                                                        {...getTagProps({ index })}
-                                                        key={index}
-                                                        label={option}
-                                                        sx={{
-                                                            height: 24,
-                                                            '& .MuiSvgIcon-root': {
-                                                                fontSize: 16,
-                                                                background: 'None'
-                                                            }
-                                                        }}
-                                                    />
-                                                ))}
-
-                                                {totalTags > limitTags && (
-                                                    <Tooltip
-                                                        title={
-                                                            <ol style={{ paddingLeft: '20px' }}>
-                                                                {value.slice(limitTags).map((item, i) => (
-                                                                    <li key={i}>{item}</li>
-                                                                ))}
-                                                            </ol>
-                                                        }
-                                                        placement='top'
-                                                    >
-                                                        +{totalTags - limitTags}
-                                                    </Tooltip>
-                                                )}
-                                            </>
-                                        )
-                                    }}
-                                    slotProps={{
-                                        paper: {
-                                            sx: {
-                                                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
-                                            }
-                                        }
-                                    }}
-                                />
                             </Stack>
                         )}
                         <Available permission='templates:marketplace'>

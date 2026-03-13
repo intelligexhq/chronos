@@ -31,6 +31,7 @@ docker run -d --name chronos -p 3001:3000 chronos:local
 
 ```bash
 docker compose -f docker-compose.yml up  # or docker compose -f docker-compose.yml up -d
+# docker build -f Dockerfile.local -t chronos:local .. && docker compose -f docker-compose.yml up
 # docker compose -f docker-compose-opentelemetry.yml up # start chronos with telemetry enabled
 docker compose ls
 docker-compose down # or docker-compose down --volumes
