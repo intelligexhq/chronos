@@ -64,10 +64,10 @@ COPY --from=builder /app/pnpm-lock.yaml ./
 COPY --from=builder /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/node_modules ./node_modules
 
-# Server: compiled output + runtime marketplaces JSON templates
+# Server: compiled output + runtime JSON templates
 COPY --from=builder /app/packages/server/dist ./packages/server/dist
 COPY --from=builder /app/packages/server/package.json ./packages/server/
-COPY --from=builder /app/packages/server/marketplaces ./packages/server/marketplaces
+COPY --from=builder /app/packages/server/templates ./packages/server/templates
 
 # UI: Vite build output
 COPY --from=builder /app/packages/ui/build ./packages/ui/build

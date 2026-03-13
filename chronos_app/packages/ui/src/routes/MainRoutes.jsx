@@ -10,11 +10,14 @@ import { DefaultRedirect } from '@/routes/DefaultRedirect'
 // agents routing
 const Agentflows = Loadable(lazy(() => import('@/views/agentflows')))
 
-// marketplaces routing
-const Marketplaces = Loadable(lazy(() => import('@/views/marketplaces')))
+// templates routing
+const Templates = Loadable(lazy(() => import('@/views/templates')))
 
 // apikey routing
 const APIKey = Loadable(lazy(() => import('@/views/apikey')))
+
+// skills routing
+const Skills = Loadable(lazy(() => import('@/views/skills')))
 
 // tools routing
 const Tools = Loadable(lazy(() => import('@/views/tools')))
@@ -88,10 +91,10 @@ const MainRoutes = {
             )
         },
         {
-            path: '/marketplaces',
+            path: '/templates',
             element: (
                 <RequireAuth permission={'templates:marketplace,templates:custom'}>
-                    <Marketplaces />
+                    <Templates />
                 </RequireAuth>
             )
         },
@@ -100,6 +103,14 @@ const MainRoutes = {
             element: (
                 <RequireAuth permission={'apikeys:view'}>
                     <APIKey />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/skills',
+            element: (
+                <RequireAuth permission={'skills:view'}>
+                    <Skills />
                 </RequireAuth>
             )
         },

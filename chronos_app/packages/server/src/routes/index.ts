@@ -24,7 +24,7 @@ import internalPredictionRouter from './internal-predictions'
 import leadsRouter from './leads'
 import loadPromptRouter from './load-prompts'
 import logsRouter from './log'
-import marketplacesRouter from './marketplaces'
+import templatesRouter from './templates'
 import nodeConfigRouter from './node-configs'
 import nodeCustomFunctionRouter from './node-custom-functions'
 import nodeIconRouter from './node-icons'
@@ -40,6 +40,7 @@ import publicChatflowsRouter from './public-chatflows'
 import publicExecutionsRouter from './public-executions'
 import settingsRouter from './settings'
 import statsRouter from './stats'
+import skillsRouter from './skills'
 import toolsRouter from './tools'
 import upsertHistoryRouter from './upsert-history'
 import variablesRouter from './variables'
@@ -87,7 +88,7 @@ router.use('/get-upload-file', getUploadFileRouter)
 router.use('/get-upload-path', getUploadPathRouter)
 router.use('/leads', leadsRouter)
 router.use('/load-prompt', loadPromptRouter)
-router.use('/marketplaces', marketplacesRouter)
+router.use('/templates', templatesRouter)
 router.use('/node-config', nodeConfigRouter)
 router.use('/node-custom-function', nodeCustomFunctionRouter)
 router.use('/node-icon', nodeIconRouter)
@@ -101,6 +102,7 @@ router.use('/public-chatbotConfig', publicChatbotRouter)
 router.use('/public-chatflows', publicChatflowsRouter)
 router.use('/public-executions', publicExecutionsRouter)
 router.use('/stats', statsRouter)
+router.use('/skills', skillsRouter)
 router.use('/tools', toolsRouter)
 router.use('/variables', variablesRouter)
 router.use('/vector', vectorRouter)

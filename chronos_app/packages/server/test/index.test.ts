@@ -15,6 +15,7 @@ import { versionsRouteTest } from './routes/v1/versions.route.test'
 import { statsRouteTest } from './routes/v1/stats.route.test'
 import { promptsListsRouteTest } from './routes/v1/prompts-lists.route.test'
 import { nodesRouteTest } from './routes/v1/nodes.route.test'
+import { skillsRouteTest } from './routes/v1/skills.route.test'
 import { toolsRouteTest } from './routes/v1/tools.route.test'
 import { variablesRouteTest } from './routes/v1/variables.route.test'
 import { credentialsRouteTest } from './routes/v1/credentials.route.test'
@@ -24,7 +25,7 @@ import { executionsRouteTest } from './routes/v1/executions.route.test'
 import { chatMessagesRouteTest } from './routes/v1/chat-messages.route.test'
 import { documentstoreRouteTest } from './routes/v1/documentstore.route.test'
 import { upsertHistoryRouteTest } from './routes/v1/upsert-history.route.test'
-import { marketplacesRouteTest } from './routes/v1/marketplaces.route.test'
+import { templatesRouteTest } from './routes/v1/templates.route.test'
 import { chatflowsExtendedRouteTest } from './routes/v1/chatflows-extended.route.test'
 import { flowConfigRouteTest } from './routes/v1/flow-config.route.test'
 import { internalPredictionsRouteTest } from './routes/v1/internal-predictions.route.test'
@@ -64,6 +65,7 @@ import { usersCreateRouteTest } from './routes/v1/users-create.route.test'
 import { adminRouteTest } from './routes/v1/admin.route.test'
 import { chatflowsServiceTest } from './services/chatflows.service.test'
 import { agentflowv2GeneratorServiceTest } from './services/agentflowv2-generator.service.test'
+import { skillsServiceTest } from './services/skills.service.test'
 import { toolsServiceTest } from './services/tools.service.test'
 import { credentialsServiceTest } from './services/credentials.service.test'
 import { executionsServiceTest } from './services/executions.service.test'
@@ -72,7 +74,7 @@ import { nodesServiceTest } from './services/nodes.service.test'
 import { validationServiceTest } from './services/validation.service.test'
 import { feedbackValidationServiceTest } from './services/feedback-validation.service.test'
 import { chatMessagesServiceTest } from './services/chat-messages.service.test'
-import { marketplacesServiceTest } from './services/marketplaces.service.test'
+import { templatesServiceTest } from './services/templates.service.test'
 import { usersServiceTest } from './services/users.service.test'
 import { usersCreateServiceTest } from './services/users-create.service.test'
 import { userScopingServiceTest } from './services/user-scoping.service.test'
@@ -153,6 +155,7 @@ describe('Routes Test', () => {
     statsRouteTest()
     promptsListsRouteTest()
     nodesRouteTest()
+    skillsRouteTest()
     toolsRouteTest()
     variablesRouteTest()
     credentialsRouteTest()
@@ -162,7 +165,7 @@ describe('Routes Test', () => {
     chatMessagesRouteTest()
     documentstoreRouteTest()
     upsertHistoryRouteTest()
-    marketplacesRouteTest()
+    templatesRouteTest()
     chatflowsExtendedRouteTest()
     flowConfigRouteTest()
     internalPredictionsRouteTest()
@@ -205,6 +208,7 @@ describe('Routes Test', () => {
 describe('Services Test', () => {
     chatflowsServiceTest()
     agentflowv2GeneratorServiceTest()
+    skillsServiceTest()
     toolsServiceTest()
     credentialsServiceTest()
     executionsServiceTest()
@@ -213,7 +217,7 @@ describe('Services Test', () => {
     nodesServiceTest()
     validationServiceTest()
     chatMessagesServiceTest()
-    marketplacesServiceTest()
+    templatesServiceTest()
     usersServiceTest()
     usersCreateServiceTest()
     apikeyServiceTest()

@@ -23,7 +23,8 @@ import {
     IconLockCheck,
     IconFileDatabase,
     IconShieldLock,
-    IconListCheck
+    IconListCheck,
+    IconSparkles
 } from '@tabler/icons-react'
 
 // constant
@@ -51,7 +52,8 @@ const icons = {
     IconLockCheck,
     IconFileDatabase,
     IconShieldLock,
-    IconListCheck
+    IconListCheck,
+    IconSparkles
 }
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
@@ -85,13 +87,22 @@ const dashboard = {
                     permission: 'executions:view'
                 },
                 {
-                    id: 'marketplaces',
-                    title: 'Marketplaces',
+                    id: 'templates',
+                    title: 'Templates',
                     type: 'item',
-                    url: '/marketplaces',
+                    url: '/templates',
                     icon: icons.IconBuildingStore,
                     breadcrumbs: true,
                     permission: 'templates:marketplace,templates:custom'
+                },
+                {
+                    id: 'skills',
+                    title: 'Skills',
+                    type: 'item',
+                    url: '/skills',
+                    icon: icons.IconSparkles,
+                    breadcrumbs: true,
+                    permission: 'skills:view'
                 },
                 {
                     id: 'tools',

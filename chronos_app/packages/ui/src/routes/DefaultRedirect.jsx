@@ -18,7 +18,7 @@ export const DefaultRedirect = () => {
         { path: '/agentflows', permission: 'agentflows:view' },
         { path: '/chatflows', permission: 'chatflows:view' },
         { path: '/executions', permission: 'executions:view' },
-        { path: '/marketplaces', permission: 'templates:marketplace,templates:custom' },
+        { path: '/templates', permission: 'templates:marketplace,templates:custom' },
         { path: '/tools', permission: 'tools:view' },
         { path: '/credentials', permission: 'credentials:view' },
         { path: '/variables', permission: 'variables:view' },
