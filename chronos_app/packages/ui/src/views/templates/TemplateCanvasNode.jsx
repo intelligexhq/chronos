@@ -31,7 +31,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 
 // ===========================|| CANVAS NODE ||=========================== //
 
-const MarketplaceCanvasNode = ({ data }) => {
+const TemplateCanvasNode = ({ data }) => {
     const theme = useTheme()
 
     const [showDialog, setShowDialog] = useState(false)
@@ -173,8 +173,8 @@ const MarketplaceCanvasNode = ({ data }) => {
     )
 }
 
-MarketplaceCanvasNode.propTypes = {
+TemplateCanvasNode.propTypes = {
     data: PropTypes.object
 }
 
-export default MarketplaceCanvasNode
+export default TemplateCanvasNode

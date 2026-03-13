@@ -19,7 +19,7 @@ import Chip from '@mui/material/Chip'
 import { IconX } from '@tabler/icons-react'
 
 // API
-import marketplacesApi from '@/api/marketplaces'
+import templatesApi from '@/api/templates'
 import useApi from '@/hooks/useApi'
 
 // Project imports
@@ -34,7 +34,7 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
     const [usecases, setUsecases] = useState([])
     const [usecaseInput, setUsecaseInput] = useState('')
 
-    const saveCustomTemplateApi = useApi(marketplacesApi.saveAsCustomTemplate)
+    const saveCustomTemplateApi = useApi(templatesApi.saveAsCustomTemplate)
 
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))

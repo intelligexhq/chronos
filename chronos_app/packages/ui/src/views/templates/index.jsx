@@ -34,7 +34,7 @@ import MainCard from '@/ui-component/cards/MainCard'
 import ItemCard from '@/ui-component/cards/ItemCard'
 import WorkflowEmptySVG from '@/assets/images/workflow_empty.svg'
 import ToolDialog from '@/views/tools/ToolDialog'
-import { MarketplaceTable } from '@/ui-component/table/MarketplaceTable'
+import { TemplateTable } from '@/ui-component/table/TemplateTable'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
 import { TabPanel } from '@/ui-component/tabs/TabPanel'
@@ -45,7 +45,7 @@ import { Available } from '@/ui-component/rbac/available'
 import ShareWithWorkspaceDialog from '@/ui-component/dialog/ShareWithWorkspaceDialog'
 
 // API
-import marketplacesApi from '@/api/marketplaces'
+import templatesApi from '@/api/templates'
 
 // Hooks
 import useApi from '@/hooks/useApi'
@@ -71,9 +71,9 @@ const MenuProps = {
     }
 }
 
-// ==============================|| Marketplace ||============================== //
+// ==============================|| Templates ||============================== //
 
-const Marketplace = () => {
+const Templates = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
     useNotifier()
@@ -91,7 +91,7 @@ const Marketplace = () => {
     const [showToolDialog, setShowToolDialog] = useState(false)
     const [toolDialogProps, setToolDialogProps] = useState({})
 
-    const getAllTemplatesMarketplacesApi = useApi(marketplacesApi.getAllTemplatesFromMarketplaces)
+    const getAllBuiltinTemplatesApi = useApi(templatesApi.getAllTemplatesFromTemplates)
 
     const [view, setView] = React.useState(localStorage.getItem('mpDisplayStyle') || 'card')
     const [search, setSearch] = useState('')
@@ -99,7 +99,7 @@ const Marketplace = () => {
     const [typeFilter, setTypeFilter] = useState([])
     const [frameworkFilter, setFrameworkFilter] = useState([])
 
-    const getAllCustomTemplatesApi = useApi(marketplacesApi.getAllCustomTemplates)
+    const getAllCustomTemplatesApi = useApi(templatesApi.getAllCustomTemplates)
     const [activeTabValue, setActiveTabValue] = useState(0)
     const [templateImages, setTemplateImages] = useState({})
     const [templateIcons, setTemplateIcons] = useState({})
@@ -160,7 +160,7 @@ const Marketplace = () => {
             // On autofill we get a stringified value.
             typeof value === 'string' ? value.split(',') : value
         )
-        const data = activeTabValue === 0 ? getAllTemplatesMarketplacesApi.data : getAllCustomTemplatesApi.data
+        const data = activeTabValue === 0 ? getAllBuiltinTemplatesApi.data : getAllCustomTemplatesApi.data
         getEligibleUsecases(data, {
             typeFilter,
             badgeFilter: typeof value === 'string' ? value.split(',') : value,
@@ -177,7 +177,7 @@ const Marketplace = () => {
             // On autofill we get a stringified value.
             typeof value === 'string' ? value.split(',') : value
         )
-        const data = activeTabValue === 0 ? getAllTemplatesMarketplacesApi.data : getAllCustomTemplatesApi.data
+        const data = activeTabValue === 0 ? getAllBuiltinTemplatesApi.data : getAllCustomTemplatesApi.data
         getEligibleUsecases(data, {
             typeFilter: typeof value === 'string' ? value.split(',') : value,
             badgeFilter,
@@ -194,7 +194,7 @@ const Marketplace = () => {
             // On autofill we get a stringified value.
             typeof value === 'string' ? value.split(',') : value
         )
-        const data = activeTabValue === 0 ? getAllTemplatesMarketplacesApi.data : getAllCustomTemplatesApi.data
+        const data = activeTabValue === 0 ? getAllBuiltinTemplatesApi.data : getAllCustomTemplatesApi.data
         getEligibleUsecases(data, {
             typeFilter,
             badgeFilter,
@@ -211,7 +211,7 @@ const Marketplace = () => {
 
     const onSearchChange = (event) => {
         setSearch(event.target.value)
-        const data = activeTabValue === 0 ? getAllTemplatesMarketplacesApi.data : getAllCustomTemplatesApi.data
+        const data = activeTabValue === 0 ? getAllBuiltinTemplatesApi.data : getAllCustomTemplatesApi.data
 
         getEligibleUsecases(data, { typeFilter, badgeFilter, frameworkFilter, search: event.target.value })
     }
@@ -227,7 +227,7 @@ const Marketplace = () => {
 
         if (isConfirmed) {
             try {
-                const deleteResp = await marketplacesApi.deleteCustomTemplate(template.id)
+                const deleteResp = await templatesApi.deleteCustomTemplate(template.id)
                 if (deleteResp.data) {
                     enqueueSnackbar({
                         message: 'Custom Template deleted successfully!',
@@ -343,15 +343,15 @@ const Marketplace = () => {
 
     const goToCanvas = (selectedChatflow) => {
         if (selectedChatflow.type === 'AgentflowV2') {
-            navigate(`/v2/marketplace/${selectedChatflow.id}`, { state: selectedChatflow })
+            navigate(`/v2/template/${selectedChatflow.id}`, { state: selectedChatflow })
         } else {
-            navigate(`/marketplace/${selectedChatflow.id}`, { state: selectedChatflow })
+            navigate(`/template/${selectedChatflow.id}`, { state: selectedChatflow })
         }
     }
 
     useEffect(() => {
         if (hasPermission('templates:marketplace')) {
-            getAllTemplatesMarketplacesApi.request()
+            getAllBuiltinTemplatesApi.request()
         } else if (hasPermission('templates:custom')) {
             setActiveTabValue(1)
             getAllCustomTemplatesApi.request()
@@ -360,13 +360,13 @@ const Marketplace = () => {
     }, [])
 
     useEffect(() => {
-        setLoading(getAllTemplatesMarketplacesApi.loading)
-    }, [getAllTemplatesMarketplacesApi.loading])
+        setLoading(getAllBuiltinTemplatesApi.loading)
+    }, [getAllBuiltinTemplatesApi.loading])
 
     useEffect(() => {
-        if (getAllTemplatesMarketplacesApi.data) {
+        if (getAllBuiltinTemplatesApi.data) {
             try {
-                const flows = getAllTemplatesMarketplacesApi.data
+                const flows = getAllBuiltinTemplatesApi.data
                 const usecases = []
                 const images = {}
                 const icons = {}
@@ -403,14 +403,14 @@ const Marketplace = () => {
                 console.error(e)
             }
         }
-    }, [getAllTemplatesMarketplacesApi.data])
+    }, [getAllBuiltinTemplatesApi.data])
 
     useEffect(() => {
-        if (getAllTemplatesMarketplacesApi.error && setError) {
-            setError(getAllTemplatesMarketplacesApi.error)
+        if (getAllBuiltinTemplatesApi.error && setError) {
+            setError(getAllBuiltinTemplatesApi.error)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getAllTemplatesMarketplacesApi.error])
+    }, [getAllBuiltinTemplatesApi.error])
 
     useEffect(() => {
         setLoading(getAllCustomTemplatesApi.loading)
@@ -588,7 +588,7 @@ const Marketplace = () => {
                             onSearchChange={onSearchChange}
                             search={true}
                             searchPlaceholder='Search Name/Description/Node'
-                            title='Marketplace'
+                            title='Templates'
                             description='Explore and use pre-built templates'
                         >
                             <ToggleButtonGroup
@@ -715,7 +715,7 @@ const Marketplace = () => {
                                             </Box>
                                         ) : (
                                             <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                                {getAllTemplatesMarketplacesApi.data
+                                                {getAllBuiltinTemplatesApi.data
                                                     ?.filter(filterByBadge)
                                                     .filter(filterByType)
                                                     .filter(filterFlows)
@@ -770,8 +770,8 @@ const Marketplace = () => {
                                         )}
                                     </>
                                 ) : (
-                                    <MarketplaceTable
-                                        data={getAllTemplatesMarketplacesApi.data}
+                                    <TemplateTable
+                                        data={getAllBuiltinTemplatesApi.data}
                                         filterFunction={filterFlows}
                                         filterByType={filterByType}
                                         filterByBadge={filterByBadge}
@@ -784,19 +784,18 @@ const Marketplace = () => {
                                     />
                                 )}
 
-                                {!isLoading &&
-                                    (!getAllTemplatesMarketplacesApi.data || getAllTemplatesMarketplacesApi.data.length === 0) && (
-                                        <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                                            <Box sx={{ p: 2, height: 'auto' }}>
-                                                <img
-                                                    style={{ objectFit: 'cover', height: '25vh', width: 'auto' }}
-                                                    src={WorkflowEmptySVG}
-                                                    alt='WorkflowEmptySVG'
-                                                />
-                                            </Box>
-                                            <div>No Marketplace Yet</div>
-                                        </Stack>
-                                    )}
+                                {!isLoading && (!getAllBuiltinTemplatesApi.data || getAllBuiltinTemplatesApi.data.length === 0) && (
+                                    <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                                        <Box sx={{ p: 2, height: 'auto' }}>
+                                            <img
+                                                style={{ objectFit: 'cover', height: '25vh', width: 'auto' }}
+                                                src={WorkflowEmptySVG}
+                                                alt='WorkflowEmptySVG'
+                                            />
+                                        </Box>
+                                        <div>No Templates Yet</div>
+                                    </Stack>
+                                )}
                             </TabPanel>
                         </Available>
                         <Available permission='templates:custom'>
@@ -903,7 +902,7 @@ const Marketplace = () => {
                                         )}
                                     </>
                                 ) : (
-                                    <MarketplaceTable
+                                    <TemplateTable
                                         data={getAllCustomTemplatesApi.data}
                                         filterFunction={filterFlows}
                                         filterByType={filterByType}
@@ -955,4 +954,4 @@ const Marketplace = () => {
     )
 }
 
-export default Marketplace
+export default Templates

@@ -7,7 +7,7 @@ import { getRunningExpressApp } from '../../../src/utils/getRunningExpressApp'
 async function getAuthToken(): Promise<string> {
     const uniqueId = Date.now() + Math.random()
     const testUser = {
-        email: `market-test-${uniqueId}@test.com`,
+        email: `template-test-${uniqueId}@test.com`,
         password: 'test1234'
     }
     const response = await supertest(getRunningExpressApp().app).post('/api/v1/auth/signup').send(testUser)
@@ -15,21 +15,21 @@ async function getAuthToken(): Promise<string> {
 }
 
 /**
- * Test suite for marketplaces route
- * Tests marketplace endpoints
+ * Test suite for templates route
+ * Tests template endpoints
  */
-export function marketplacesRouteTest() {
-    describe('Marketplaces Route', () => {
+export function templatesRouteTest() {
+    describe('Templates Route', () => {
         let authToken: string
 
         beforeAll(async () => {
             authToken = await getAuthToken()
         })
 
-        describe('GET /api/v1/marketplaces/templates', () => {
-            it('should return marketplace templates', async () => {
+        describe('GET /api/v1/templates/templates', () => {
+            it('should return builtin templates', async () => {
                 const response = await supertest(getRunningExpressApp().app)
-                    .get('/api/v1/marketplaces/templates')
+                    .get('/api/v1/templates/templates')
                     .set('Authorization', `Bearer ${authToken}`)
                     .set('x-request-from', 'internal')
 
@@ -37,10 +37,10 @@ export function marketplacesRouteTest() {
             })
         })
 
-        describe('GET /api/v1/marketplaces/chatflows', () => {
-            it('should return marketplace chatflows', async () => {
+        describe('GET /api/v1/templates/custom', () => {
+            it('should return custom templates', async () => {
                 const response = await supertest(getRunningExpressApp().app)
-                    .get('/api/v1/marketplaces/chatflows')
+                    .get('/api/v1/templates/custom')
                     .set('Authorization', `Bearer ${authToken}`)
                     .set('x-request-from', 'internal')
 
@@ -48,44 +48,29 @@ export function marketplacesRouteTest() {
             })
         })
 
-        describe('GET /api/v1/marketplaces/tools', () => {
-            it('should return marketplace tools', async () => {
+        describe('POST /api/v1/templates/custom', () => {
+            it('should handle custom template creation with tool', async () => {
                 const response = await supertest(getRunningExpressApp().app)
-                    .get('/api/v1/marketplaces/tools')
+                    .post('/api/v1/templates/custom')
                     .set('Authorization', `Bearer ${authToken}`)
                     .set('x-request-from', 'internal')
-
-                expect([200, 412, 500]).toContain(response.status)
-            })
-        })
-
-        describe('GET /api/v1/marketplaces/templates/:id', () => {
-            it('should handle template retrieval', async () => {
-                const response = await supertest(getRunningExpressApp().app)
-                    .get('/api/v1/marketplaces/templates/test-template-id')
-                    .set('Authorization', `Bearer ${authToken}`)
-                    .set('x-request-from', 'internal')
-
-                expect([200, 404, 412, 500]).toContain(response.status)
-            })
-        })
-
-        describe('POST /api/v1/marketplaces/templates', () => {
-            it('should handle template creation', async () => {
-                const response = await supertest(getRunningExpressApp().app)
-                    .post('/api/v1/marketplaces/templates')
-                    .set('Authorization', `Bearer ${authToken}`)
-                    .set('x-request-from', 'internal')
-                    .send({ name: 'Test Template', flowData: '{}' })
+                    .send({
+                        name: 'Test Tool Template',
+                        tool: {
+                            iconSrc: 'test-icon.png',
+                            schema: '{ "type": "object" }',
+                            func: 'return "test"'
+                        }
+                    })
 
                 expect([200, 201, 400, 412, 500]).toContain(response.status)
             })
         })
 
-        describe('DELETE /api/v1/marketplaces/templates/:id', () => {
-            it('should handle template deletion', async () => {
+        describe('DELETE /api/v1/templates/custom/:id', () => {
+            it('should handle custom template deletion', async () => {
                 const response = await supertest(getRunningExpressApp().app)
-                    .delete('/api/v1/marketplaces/templates/non-existent-id')
+                    .delete('/api/v1/templates/custom/non-existent-id')
                     .set('Authorization', `Bearer ${authToken}`)
                     .set('x-request-from', 'internal')
 
@@ -93,10 +78,10 @@ export function marketplacesRouteTest() {
             })
         })
 
-        describe('GET /api/v1/marketplaces with filters', () => {
+        describe('GET /api/v1/templates/templates with filters', () => {
             it('should handle templates with search', async () => {
                 const response = await supertest(getRunningExpressApp().app)
-                    .get('/api/v1/marketplaces/templates?search=test')
+                    .get('/api/v1/templates/templates?search=test')
                     .set('Authorization', `Bearer ${authToken}`)
                     .set('x-request-from', 'internal')
 
@@ -105,16 +90,7 @@ export function marketplacesRouteTest() {
 
             it('should handle templates with category filter', async () => {
                 const response = await supertest(getRunningExpressApp().app)
-                    .get('/api/v1/marketplaces/templates?category=chatbot')
-                    .set('Authorization', `Bearer ${authToken}`)
-                    .set('x-request-from', 'internal')
-
-                expect([200, 412, 500]).toContain(response.status)
-            })
-
-            it('should handle chatflows with type filter', async () => {
-                const response = await supertest(getRunningExpressApp().app)
-                    .get('/api/v1/marketplaces/chatflows?type=CHATFLOW')
+                    .get('/api/v1/templates/templates?category=chatbot')
                     .set('Authorization', `Bearer ${authToken}`)
                     .set('x-request-from', 'internal')
 
@@ -123,7 +99,7 @@ export function marketplacesRouteTest() {
 
             it('should handle pagination', async () => {
                 const response = await supertest(getRunningExpressApp().app)
-                    .get('/api/v1/marketplaces/templates?page=1&limit=10')
+                    .get('/api/v1/templates/templates?page=1&limit=10')
                     .set('Authorization', `Bearer ${authToken}`)
                     .set('x-request-from', 'internal')
 

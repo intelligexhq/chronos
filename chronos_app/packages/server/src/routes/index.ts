@@ -24,7 +24,7 @@ import internalPredictionRouter from './internal-predictions'
 import leadsRouter from './leads'
 import loadPromptRouter from './load-prompts'
 import logsRouter from './log'
-import marketplacesRouter from './marketplaces'
+import templatesRouter from './templates'
 import nodeConfigRouter from './node-configs'
 import nodeCustomFunctionRouter from './node-custom-functions'
 import nodeIconRouter from './node-icons'
@@ -87,7 +87,7 @@ router.use('/get-upload-file', getUploadFileRouter)
 router.use('/get-upload-path', getUploadPathRouter)
 router.use('/leads', leadsRouter)
 router.use('/load-prompt', loadPromptRouter)
-router.use('/marketplaces', marketplacesRouter)
+router.use('/templates', templatesRouter)
 router.use('/node-config', nodeConfigRouter)
 router.use('/node-custom-function', nodeCustomFunctionRouter)
 router.use('/node-icon', nodeIconRouter)

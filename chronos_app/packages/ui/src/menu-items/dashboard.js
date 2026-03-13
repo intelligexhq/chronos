@@ -85,10 +85,10 @@ const dashboard = {
                     permission: 'executions:view'
                 },
                 {
-                    id: 'marketplaces',
-                    title: 'Marketplaces',
+                    id: 'templates',
+                    title: 'Templates',
                     type: 'item',
-                    url: '/marketplaces',
+                    url: '/templates',
                     icon: icons.IconBuildingStore,
                     breadcrumbs: true,
                     permission: 'templates:marketplace,templates:custom'

@@ -12,7 +12,7 @@ import { Available } from '@/ui-component/rbac/available'
 
 // ==============================|| CANVAS HEADER ||============================== //
 
-const MarketplaceCanvasHeader = ({ flowName, flowData, onChatflowCopy }) => {
+const TemplateCanvasHeader = ({ flowName, flowData, onChatflowCopy }) => {
     const theme = useTheme()
     const navigate = useNavigate()
 
@@ -70,10 +70,10 @@ const MarketplaceCanvasHeader = ({ flowName, flowData, onChatflowCopy }) => {
     )
 }
 
-MarketplaceCanvasHeader.propTypes = {
+TemplateCanvasHeader.propTypes = {
     flowName: PropTypes.string,
     flowData: PropTypes.object,
     onChatflowCopy: PropTypes.func
 }
 
-export default MarketplaceCanvasHeader
+export default TemplateCanvasHeader

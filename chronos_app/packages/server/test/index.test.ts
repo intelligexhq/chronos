@@ -24,7 +24,7 @@ import { executionsRouteTest } from './routes/v1/executions.route.test'
 import { chatMessagesRouteTest } from './routes/v1/chat-messages.route.test'
 import { documentstoreRouteTest } from './routes/v1/documentstore.route.test'
 import { upsertHistoryRouteTest } from './routes/v1/upsert-history.route.test'
-import { marketplacesRouteTest } from './routes/v1/marketplaces.route.test'
+import { templatesRouteTest } from './routes/v1/templates.route.test'
 import { chatflowsExtendedRouteTest } from './routes/v1/chatflows-extended.route.test'
 import { flowConfigRouteTest } from './routes/v1/flow-config.route.test'
 import { internalPredictionsRouteTest } from './routes/v1/internal-predictions.route.test'
@@ -72,7 +72,7 @@ import { nodesServiceTest } from './services/nodes.service.test'
 import { validationServiceTest } from './services/validation.service.test'
 import { feedbackValidationServiceTest } from './services/feedback-validation.service.test'
 import { chatMessagesServiceTest } from './services/chat-messages.service.test'
-import { marketplacesServiceTest } from './services/marketplaces.service.test'
+import { templatesServiceTest } from './services/templates.service.test'
 import { usersServiceTest } from './services/users.service.test'
 import { usersCreateServiceTest } from './services/users-create.service.test'
 import { userScopingServiceTest } from './services/user-scoping.service.test'
@@ -162,7 +162,7 @@ describe('Routes Test', () => {
     chatMessagesRouteTest()
     documentstoreRouteTest()
     upsertHistoryRouteTest()
-    marketplacesRouteTest()
+    templatesRouteTest()
     chatflowsExtendedRouteTest()
     flowConfigRouteTest()
     internalPredictionsRouteTest()
@@ -213,7 +213,7 @@ describe('Services Test', () => {
     nodesServiceTest()
     validationServiceTest()
     chatMessagesServiceTest()
-    marketplacesServiceTest()
+    templatesServiceTest()
     usersServiceTest()
     usersCreateServiceTest()
     apikeyServiceTest()

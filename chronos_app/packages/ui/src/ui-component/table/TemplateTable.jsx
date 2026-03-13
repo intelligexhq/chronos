@@ -39,7 +39,7 @@ const StyledTableRow = styled(TableRow)(() => ({
     }
 }))
 
-export const MarketplaceTable = ({
+export const TemplateTable = ({
     data,
     filterFunction,
     filterByBadge,
@@ -268,7 +268,7 @@ export const MarketplaceTable = ({
     )
 }
 
-MarketplaceTable.propTypes = {
+TemplateTable.propTypes = {
     data: PropTypes.array,
     filterFunction: PropTypes.func,
     filterByBadge: PropTypes.func,

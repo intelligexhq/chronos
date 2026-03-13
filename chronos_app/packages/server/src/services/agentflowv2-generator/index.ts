@@ -99,13 +99,13 @@ const getAllToolNodes = async () => {
     return JSON.stringify(toolNodes, null, 2)
 }
 
-const getAllAgentflowv2Marketplaces = async () => {
+const getAllAgentflowv2Templates = async () => {
     const templates: AgentFlowV2Template[] = []
-    let marketplaceDir = path.join(__dirname, '..', '..', '..', 'marketplaces', 'agentflowsv2')
-    let jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
+    let templateDir = path.join(__dirname, '..', '..', '..', 'templates', 'agentflowsv2')
+    let jsonsInDir = fs.readdirSync(templateDir).filter((file) => path.extname(file) === '.json')
     jsonsInDir.forEach((file) => {
         try {
-            const filePath = path.join(__dirname, '..', '..', '..', 'marketplaces', 'agentflowsv2', file)
+            const filePath = path.join(__dirname, '..', '..', '..', 'templates', 'agentflowsv2', file)
             const fileData = fs.readFileSync(filePath)
             const fileDataObj = JSON.parse(fileData.toString())
             // get rid of the node.data, remain all other properties
@@ -185,7 +185,7 @@ const generateAgentflowv2 = async (question: string, selectedChatModel: Record<s
     try {
         const agentFlow2Nodes = await getAllAgentFlow2Nodes()
         const toolNodes = await getAllToolNodes()
-        const marketplaceTemplates = await getAllAgentflowv2Marketplaces()
+        const marketplaceTemplates = await getAllAgentflowv2Templates()
 
         const prompt = sysPrompt
             .replace('{agentFlow2Nodes}', agentFlow2Nodes)

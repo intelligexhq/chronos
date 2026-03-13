@@ -21,7 +21,7 @@ import chatMessagesService from '../chat-messages'
 import chatflowService from '../chatflows'
 import documenStoreService from '../documentstore'
 import executionService, { ExecutionFilters } from '../executions'
-import marketplacesService from '../marketplaces'
+import templatesService from '../templates'
 import toolsService from '../tools'
 import variableService from '../variables'
 
@@ -90,8 +90,7 @@ const exportData = async (exportInput: ExportInput, activeWorkspaceId: string): 
         let ChatMessageFeedback: ChatMessageFeedback[] =
             exportInput.chat_feedback === true ? await chatMessagesService.getMessagesFeedbackByChatflowIds(chatflowIds) : []
 
-        let CustomTemplate: CustomTemplate[] =
-            exportInput.custom_template === true ? await marketplacesService.getAllCustomTemplates(activeWorkspaceId) : []
+        let CustomTemplate: CustomTemplate[] = exportInput.custom_template === true ? await templatesService.getAllCustomTemplates() : []
 
         let DocumentStore: DocumentStore[] | { data: DocumentStore[]; total: number } =
             exportInput.document_store === true ? await documenStoreService.getAllDocumentStores(activeWorkspaceId) : []

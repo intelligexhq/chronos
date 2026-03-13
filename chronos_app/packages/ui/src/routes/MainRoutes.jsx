@@ -10,8 +10,8 @@ import { DefaultRedirect } from '@/routes/DefaultRedirect'
 // agents routing
 const Agentflows = Loadable(lazy(() => import('@/views/agentflows')))
 
-// marketplaces routing
-const Marketplaces = Loadable(lazy(() => import('@/views/marketplaces')))
+// templates routing
+const Templates = Loadable(lazy(() => import('@/views/templates')))
 
 // apikey routing
 const APIKey = Loadable(lazy(() => import('@/views/apikey')))
@@ -88,10 +88,10 @@ const MainRoutes = {
             )
         },
         {
-            path: '/marketplaces',
+            path: '/templates',
             element: (
                 <RequireAuth permission={'templates:marketplace,templates:custom'}>
-                    <Marketplaces />
+                    <Templates />
                 </RequireAuth>
             )
         },

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState, useCallback, useRef, useContext } from 'react'
 import ReactFlow, { Controls, Background, useNodesState, useEdgesState } from 'reactflow'
 import 'reactflow/dist/style.css'
 import '@/views/canvas/index.css'
@@ -11,19 +11,23 @@ import { Toolbar, Box, AppBar } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
-import MarketplaceCanvasNode from './MarketplaceCanvasNode'
-import MarketplaceCanvasHeader from './MarketplaceCanvasHeader'
-import StickyNote from '../canvas/StickyNote'
+import AgentFlowNode from './AgentFlowNode'
+import AgentFlowEdge from './AgentFlowEdge'
+import IterationNode from './IterationNode'
+import TemplateCanvasHeader from '@/views/templates/TemplateCanvasHeader'
+import StickyNote from './StickyNote'
+import EditNodeDialog from '@/views/agentflowsv2/EditNodeDialog'
+import { flowContext } from '@/store/context/ReactFlowContext'
 
 // icons
 import { IconMagnetFilled, IconMagnetOff, IconArtboard, IconArtboardOff } from '@tabler/icons-react'
 
-const nodeTypes = { customNode: MarketplaceCanvasNode, stickyNote: StickyNote }
-const edgeTypes = { buttonedge: '' }
+const nodeTypes = { agentFlow: AgentFlowNode, stickyNote: StickyNote, iteration: IterationNode }
+const edgeTypes = { agentFlow: AgentFlowEdge }
 
 // ==============================|| CANVAS ||============================== //
 
-const MarketplaceCanvas = () => {
+const TemplateCanvasV2 = () => {
     const theme = useTheme()
     const navigate = useNavigate()
     const customization = useSelector((state) => state.customization)
@@ -35,10 +39,13 @@ const MarketplaceCanvas = () => {
 
     const [nodes, setNodes, onNodesChange] = useNodesState()
     const [edges, setEdges, onEdgesChange] = useEdgesState()
+    const [editNodeDialogOpen, setEditNodeDialogOpen] = useState(false)
+    const [editNodeDialogProps, setEditNodeDialogProps] = useState({})
     const [isSnappingEnabled, setIsSnappingEnabled] = useState(false)
     const [isBackgroundEnabled, setIsBackgroundEnabled] = useState(true)
 
     const reactFlowWrapper = useRef(null)
+    const { setReactFlowInstance } = useContext(flowContext)
 
     // ==============================|| useEffect ||============================== //
 
@@ -53,12 +60,26 @@ const MarketplaceCanvas = () => {
     }, [flowData])
 
     const onChatflowCopy = (flowData) => {
-        const isAgentCanvas = (flowData?.nodes || []).some(
-            (node) => node.data.category === 'Multi Agents' || node.data.category === 'Sequential Agents'
-        )
         const templateFlowData = JSON.stringify(flowData)
-        navigate(`/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`, { state: { templateFlowData } })
+        navigate('/v2/agentcanvas', { state: { templateFlowData } })
     }
+
+    // eslint-disable-next-line
+    const onNodeDoubleClick = useCallback((event, node) => {
+        if (!node || !node.data) return
+        if (node.data.name === 'stickyNoteAgentflow') {
+            // dont show dialog
+        } else {
+            const dialogProps = {
+                data: node.data,
+                inputParams: node.data.inputParams.filter((inputParam) => !inputParam.hidden),
+                disabled: true
+            }
+
+            setEditNodeDialogProps(dialogProps)
+            setEditNodeDialogOpen(true)
+        }
+    })
 
     return (
         <>
@@ -73,7 +94,7 @@ const MarketplaceCanvas = () => {
                     }}
                 >
                     <Toolbar>
-                        <MarketplaceCanvasHeader
+                        <TemplateCanvasHeader
                             flowName={name}
                             flowData={JSON.parse(flowData)}
                             onChatflowCopy={(flowData) => onChatflowCopy(flowData)}
@@ -88,7 +109,8 @@ const MarketplaceCanvas = () => {
                                 edges={edges}
                                 onNodesChange={onNodesChange}
                                 onEdgesChange={onEdgesChange}
-                                nodesDraggable={false}
+                                onNodeDoubleClick={onNodeDoubleClick}
+                                onInit={setReactFlowInstance}
                                 nodeTypes={nodeTypes}
                                 edgeTypes={edgeTypes}
                                 fitView
@@ -127,6 +149,11 @@ const MarketplaceCanvas = () => {
                                     </button>
                                 </Controls>
                                 {isBackgroundEnabled && <Background color='#aaa' gap={16} />}
+                                <EditNodeDialog
+                                    show={editNodeDialogOpen}
+                                    dialogProps={editNodeDialogProps}
+                                    onCancel={() => setEditNodeDialogOpen(false)}
+                                />
                             </ReactFlow>
                         </div>
                     </div>
@@ -136,4 +163,4 @@ const MarketplaceCanvas = () => {
     )
 }
 
-export default MarketplaceCanvas
+export default TemplateCanvasV2

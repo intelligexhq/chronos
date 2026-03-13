@@ -23,15 +23,15 @@ const getCategories = (fileDataObj: ITemplate) => {
     return Array.from(new Set(fileDataObj?.nodes?.map((node) => node.data.category).filter((category) => category)))
 }
 
-// Get all templates for marketplaces
+// Get all templates
 const getAllTemplates = async () => {
     try {
         let templates: any[] = []
 
-        let marketplaceDir = path.join(__dirname, '..', '..', '..', 'marketplaces', 'tools')
-        let jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
+        let templateDir = path.join(__dirname, '..', '..', '..', 'templates', 'tools')
+        let jsonsInDir = fs.readdirSync(templateDir).filter((file) => path.extname(file) === '.json')
         jsonsInDir.forEach((file) => {
-            const filePath = path.join(__dirname, '..', '..', '..', 'marketplaces', 'tools', file)
+            const filePath = path.join(__dirname, '..', '..', '..', 'templates', 'tools', file)
             const fileData = fs.readFileSync(filePath)
             const fileDataObj = JSON.parse(fileData.toString())
             const template = {
@@ -49,10 +49,10 @@ const getAllTemplates = async () => {
 
         /*
         * Agentflow is deprecated
-        marketplaceDir = path.join(__dirname, '..', '..', '..', 'marketplaces', 'agentflows')
-        jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
+        templateDir = path.join(__dirname, '..', '..', '..', 'templates', 'agentflows')
+        jsonsInDir = fs.readdirSync(templateDir).filter((file) => path.extname(file) === '.json')
         jsonsInDir.forEach((file) => {
-            const filePath = path.join(__dirname, '..', '..', '..', 'marketplaces', 'agentflows', file)
+            const filePath = path.join(__dirname, '..', '..', '..', 'templates', 'agentflows', file)
             const fileData = fs.readFileSync(filePath)
             const fileDataObj = JSON.parse(fileData.toString())
             const template = {
@@ -69,10 +69,10 @@ const getAllTemplates = async () => {
             templates.push(template)
         })*/
 
-        marketplaceDir = path.join(__dirname, '..', '..', '..', 'marketplaces', 'agentflowsv2')
-        jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
+        templateDir = path.join(__dirname, '..', '..', '..', 'templates', 'agentflowsv2')
+        jsonsInDir = fs.readdirSync(templateDir).filter((file) => path.extname(file) === '.json')
         jsonsInDir.forEach((file) => {
-            const filePath = path.join(__dirname, '..', '..', '..', 'marketplaces', 'agentflowsv2', file)
+            const filePath = path.join(__dirname, '..', '..', '..', 'templates', 'agentflowsv2', file)
             const fileData = fs.readFileSync(filePath)
             const fileDataObj = JSON.parse(fileData.toString())
             const template = {
@@ -111,7 +111,7 @@ const getAllTemplates = async () => {
     } catch (error) {
         throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: marketplacesService.getAllTemplates - ${getErrorMessage(error)}`
+            `Error: templatesService.getAllTemplates - ${getErrorMessage(error)}`
         )
     }
 }
@@ -123,7 +123,7 @@ const deleteCustomTemplate = async (templateId: string): Promise<DeleteResult> =
     } catch (error) {
         throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: marketplacesService.deleteCustomTemplate - ${getErrorMessage(error)}`
+            `Error: templatesService.deleteCustomTemplate - ${getErrorMessage(error)}`
         )
     }
 }
@@ -132,14 +132,14 @@ const _modifyTemplates = (templates: any[]) => {
     templates.map((template) => {
         template.usecases = template.usecases ? JSON.parse(template.usecases) : ''
         if (template.type === 'Tool') {
-            template.flowData = JSON.parse(template.flowData)
-            template.iconSrc = template.flowData.iconSrc
-            template.schema = template.flowData.schema
-            template.func = template.flowData.func
+            const parsed = template.flowData ? JSON.parse(template.flowData) : {}
+            template.iconSrc = parsed.iconSrc
+            template.schema = parsed.schema
+            template.func = parsed.func
             template.categories = []
             template.flowData = undefined
         } else {
-            template.categories = getCategories(JSON.parse(template.flowData))
+            template.categories = template.flowData ? getCategories(JSON.parse(template.flowData)) : []
         }
         if (!template.badge) {
             template.badge = ''
@@ -150,7 +150,7 @@ const _modifyTemplates = (templates: any[]) => {
     })
 }
 
-const getAllCustomTemplates = async (_workspaceId?: string): Promise<any> => {
+const getAllCustomTemplates = async (): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         const templates: any[] = await appServer.AppDataSource.getRepository(CustomTemplate).find()
@@ -161,7 +161,7 @@ const getAllCustomTemplates = async (_workspaceId?: string): Promise<any> => {
     } catch (error) {
         throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: marketplacesService.getAllCustomTemplates - ${getErrorMessage(error)}`
+            `Error: templatesService.getAllCustomTemplates - ${getErrorMessage(error)}`
         )
     }
 }
@@ -201,7 +201,7 @@ const saveCustomTemplate = async (body: any): Promise<any> => {
     } catch (error) {
         throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: marketplacesService.saveCustomTemplate - ${getErrorMessage(error)}`
+            `Error: templatesService.saveCustomTemplate - ${getErrorMessage(error)}`
         )
     }
 }

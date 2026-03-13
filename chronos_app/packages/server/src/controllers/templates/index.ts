@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { InternalChronosError } from '../../errors/internalChronosError'
-import marketplacesService from '../../services/marketplaces'
+import templatesService from '../../services/templates'
 
-// Get all templates for marketplaces
+// Get all templates
 const getAllTemplates = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await marketplacesService.getAllTemplates()
+        const apiResponse = await templatesService.getAllTemplates()
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -18,10 +18,10 @@ const deleteCustomTemplate = async (req: Request, res: Response, next: NextFunct
         if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalChronosError(
                 StatusCodes.PRECONDITION_FAILED,
-                `Error: marketplacesService.deleteCustomTemplate - id not provided!`
+                `Error: templatesService.deleteCustomTemplate - id not provided!`
             )
         }
-        const apiResponse = await marketplacesService.deleteCustomTemplate(req.params.id)
+        const apiResponse = await templatesService.deleteCustomTemplate(req.params.id)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -30,7 +30,7 @@ const deleteCustomTemplate = async (req: Request, res: Response, next: NextFunct
 
 const getAllCustomTemplates = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await marketplacesService.getAllCustomTemplates()
+        const apiResponse = await templatesService.getAllCustomTemplates()
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -42,11 +42,11 @@ const saveCustomTemplate = async (req: Request, res: Response, next: NextFunctio
         if ((!req.body && !(req.body.chatflowId || req.body.tool)) || !req.body.name) {
             throw new InternalChronosError(
                 StatusCodes.PRECONDITION_FAILED,
-                `Error: marketplacesService.saveCustomTemplate - body not provided!`
+                `Error: templatesService.saveCustomTemplate - body not provided!`
             )
         }
         const body = req.body
-        const apiResponse = await marketplacesService.saveCustomTemplate(body)
+        const apiResponse = await templatesService.saveCustomTemplate(body)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

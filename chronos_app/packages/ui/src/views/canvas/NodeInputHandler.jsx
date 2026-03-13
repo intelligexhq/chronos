@@ -1053,7 +1053,7 @@ const NodeInputHandler = ({
 
                         {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') &&
                             (inputParam?.acceptVariable &&
-                            (window.location.href.includes('v2/agentcanvas') || window.location.href.includes('v2/marketplace')) ? (
+                            (window.location.href.includes('v2/agentcanvas') || window.location.href.includes('v2/template')) ? (
                                 <RichInput
                                     key={data.inputs[inputParam.name]}
                                     placeholder={inputParam.placeholder}
