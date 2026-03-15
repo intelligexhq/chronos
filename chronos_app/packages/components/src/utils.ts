@@ -24,7 +24,8 @@ import logger from './logger'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
-export const FLOWISE_CHATID = 'flowise_chatId'
+// Keep string value as 'flowise_chatId' for backward compatibility with existing vector store metadata
+export const CHRONOS_CHATID = 'flowise_chatId'
 
 let secretsManagerClient: SecretsManagerClient | null = null
 const USE_AWS_SECRETS_MANAGER = process.env.SECRETKEY_STORAGE_TYPE === 'aws'
@@ -659,13 +660,13 @@ export const getCredentialParam = (paramName: string, credentialData: ICommonObj
 
 // reference https://www.freeformatter.com/json-escape.html
 const jsonEscapeCharacters = [
-    { escape: '"', value: 'FLOWISE_DOUBLE_QUOTE' },
-    { escape: '\n', value: 'FLOWISE_NEWLINE' },
-    { escape: '\b', value: 'FLOWISE_BACKSPACE' },
-    { escape: '\f', value: 'FLOWISE_FORM_FEED' },
-    { escape: '\r', value: 'FLOWISE_CARRIAGE_RETURN' },
-    { escape: '\t', value: 'FLOWISE_TAB' },
-    { escape: '\\', value: 'FLOWISE_BACKSLASH' }
+    { escape: '"', value: 'CHRONOS_DOUBLE_QUOTE' },
+    { escape: '\n', value: 'CHRONOS_NEWLINE' },
+    { escape: '\b', value: 'CHRONOS_BACKSPACE' },
+    { escape: '\f', value: 'CHRONOS_FORM_FEED' },
+    { escape: '\r', value: 'CHRONOS_CARRIAGE_RETURN' },
+    { escape: '\t', value: 'CHRONOS_TAB' },
+    { escape: '\\', value: 'CHRONOS_BACKSLASH' }
 ]
 
 function handleEscapesJSONParse(input: string, reverse: Boolean): string {

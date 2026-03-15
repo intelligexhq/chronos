@@ -143,41 +143,6 @@ const updateChatflow = async (req: Request, res: Response, next: NextFunction) =
     }
 }
 
-const getSinglePublicChatflow = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        if (typeof req.params === 'undefined' || !req.params.id) {
-            throw new InternalChronosError(
-                StatusCodes.PRECONDITION_FAILED,
-                `Error: chatflowsController.getSinglePublicChatflow - id not provided!`
-            )
-        }
-        const chatflow = await chatflowsService.getChatflowById(req.params.id)
-        if (!chatflow) return res.status(StatusCodes.NOT_FOUND).json({ message: 'Chatflow not found' })
-        // Open source: Return chatflow if public or if user is authenticated
-        if (chatflow.isPublic || req.user) {
-            return res.status(StatusCodes.OK).json(chatflow)
-        }
-        return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Unauthorized' })
-    } catch (error) {
-        next(error)
-    }
-}
-
-const getSinglePublicChatbotConfig = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        if (typeof req.params === 'undefined' || !req.params.id) {
-            throw new InternalChronosError(
-                StatusCodes.PRECONDITION_FAILED,
-                `Error: chatflowsController.getSinglePublicChatbotConfig - id not provided!`
-            )
-        }
-        const apiResponse = await chatflowsService.getSinglePublicChatbotConfig(req.params.id)
-        return res.json(apiResponse)
-    } catch (error) {
-        next(error)
-    }
-}
-
 const checkIfChatflowHasChanged = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params === 'undefined' || !req.params.id) {
@@ -208,7 +173,5 @@ export default {
     getChatflowById,
     saveChatflow,
     updateChatflow,
-    getSinglePublicChatflow,
-    getSinglePublicChatbotConfig,
     checkIfChatflowHasChanged
 }

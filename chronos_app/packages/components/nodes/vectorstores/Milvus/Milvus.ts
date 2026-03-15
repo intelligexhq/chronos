@@ -4,7 +4,7 @@ import { Document } from '@langchain/core/documents'
 import { MilvusLibArgs, Milvus } from '@langchain/community/vectorstores/milvus'
 import { Embeddings } from '@langchain/core/embeddings'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
-import { FLOWISE_CHATID, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { CHRONOS_CHATID, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { howToUseFileUpload } from '../VectorStoreUtils'
 
 interface InsertRow {
@@ -222,7 +222,7 @@ class Milvus_VectorStores implements INode {
             for (let i = 0; i < flattenDocs.length; i += 1) {
                 if (flattenDocs[i] && flattenDocs[i].pageContent) {
                     if (isFileUploadEnabled && options.chatId) {
-                        flattenDocs[i].metadata = { ...flattenDocs[i].metadata, [FLOWISE_CHATID]: options.chatId }
+                        flattenDocs[i].metadata = { ...flattenDocs[i].metadata, [CHRONOS_CHATID]: options.chatId }
                     }
                     finalDocs.push(new Document(flattenDocs[i]))
                 }
@@ -302,8 +302,8 @@ class Milvus_VectorStores implements INode {
 
         let milvusFilter = _milvusFilter
         if (isFileUploadEnabled && options.chatId) {
-            if (milvusFilter) milvusFilter += ` OR ${FLOWISE_CHATID} == "${options.chatId}" OR NOT EXISTS(${FLOWISE_CHATID})`
-            else milvusFilter = `${FLOWISE_CHATID} == "${options.chatId}" OR NOT EXISTS(${FLOWISE_CHATID})`
+            if (milvusFilter) milvusFilter += ` OR ${CHRONOS_CHATID} == "${options.chatId}" OR NOT EXISTS(${CHRONOS_CHATID})`
+            else milvusFilter = `${CHRONOS_CHATID} == "${options.chatId}" OR NOT EXISTS(${CHRONOS_CHATID})`
         }
 
         const vectorStore = await Milvus.fromExistingCollection(embeddings, milVusArgs)

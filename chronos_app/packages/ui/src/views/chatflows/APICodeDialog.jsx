@@ -25,8 +25,6 @@ import { useAuth } from '@/hooks/useAuth'
 
 // Project import
 import { Dropdown } from '@/ui-component/dropdown/Dropdown'
-import ShareChatbot from './ShareChatbot'
-import EmbedChat from './EmbedChat'
 import { Available } from '@/ui-component/rbac/available'
 
 // Const
@@ -37,8 +35,6 @@ import { SET_CHATFLOW } from '@/store/actions'
 import pythonSVG from '@/assets/images/python.svg'
 import javascriptSVG from '@/assets/images/javascript.svg'
 import cURLSVG from '@/assets/images/cURL.svg'
-import EmbedSVG from '@/assets/images/embed.svg'
-import ShareChatbotSVG from '@/assets/images/sharing.png'
 import settingsSVG from '@/assets/images/settings.svg'
 import { IconBulb, IconBox, IconVariable, IconExclamationCircle } from '@tabler/icons-react'
 
@@ -93,7 +89,7 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
     const apiConfig = chatflow?.apiConfig ? JSON.parse(chatflow.apiConfig) : {}
     const overrideConfigStatus = apiConfig?.overrideConfig?.status !== undefined ? apiConfig.overrideConfig.status : false
 
-    const codes = ['Embed', 'Python', 'JavaScript', 'cURL', 'Share Chatbot']
+    const codes = ['Python', 'JavaScript', 'cURL']
     const [value, setValue] = useState(0)
     const [apiKeys, setAPIKeys] = useState([])
     const [chatflowApiKeyId, setChatflowApiKeyId] = useState('')
@@ -387,12 +383,8 @@ query({"question": "Hey, how are you?"}).then((response) => {
             return pythonSVG
         } else if (codeLang === 'JavaScript') {
             return javascriptSVG
-        } else if (codeLang === 'Embed') {
-            return EmbedSVG
         } else if (codeLang === 'cURL') {
             return cURLSVG
-        } else if (codeLang === 'Share Chatbot') {
-            return ShareChatbotSVG
         } else if (codeLang === 'Configuration') {
             return settingsSVG
         }
@@ -741,16 +733,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                 <div style={{ marginTop: 10 }}></div>
                 {codes.map((codeLang, index) => (
                     <TabPanel key={index} value={value} index={index}>
-                        {(codeLang === 'Embed' || codeLang === 'Share Chatbot') && chatflowApiKeyId && (
-                            <>
-                                <p>You cannot use API key while embedding/sharing chatbot.</p>
-                                <p>
-                                    Please select <b>&quot;No Authorization&quot;</b> from the dropdown at the top right corner.
-                                </p>
-                            </>
-                        )}
-                        {codeLang === 'Embed' && !chatflowApiKeyId && <EmbedChat chatflowid={dialogProps.chatflowid} />}
-                        {codeLang !== 'Embed' && codeLang !== 'Share Chatbot' && codeLang !== 'Configuration' && (
+                        {codeLang !== 'Configuration' && (
                             <>
                                 <CopyBlock
                                     theme={atomOneDark}
@@ -939,9 +922,6 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                     </p>
                                 )}
                             </>
-                        )}
-                        {codeLang === 'Share Chatbot' && !chatflowApiKeyId && (
-                            <ShareChatbot isSessionMemory={dialogProps.isSessionMemory} isAgentCanvas={dialogProps.isAgentCanvas} />
                         )}
                     </TabPanel>
                 ))}

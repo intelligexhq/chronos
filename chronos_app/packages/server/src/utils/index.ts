@@ -72,7 +72,7 @@ export const CHAT_HISTORY_VAR_PREFIX = 'chat_history'
 export const RUNTIME_MESSAGES_LENGTH_VAR_PREFIX = 'runtime_messages_length'
 export const LOOP_COUNT_VAR_PREFIX = 'loop_count'
 export const CURRENT_DATE_TIME_VAR_PREFIX = 'current_date_time'
-export const REDACTED_CREDENTIAL_VALUE = '_FLOWISE_BLANK_07167752-1a71-43b1-bf8f-4f32252165db'
+export const REDACTED_CREDENTIAL_VALUE = '_CHRONOS_BLANK_07167752-1a71-43b1-bf8f-4f32252165db'
 
 let secretsManagerClient: SecretsManagerClient | null = null
 const USE_AWS_SECRETS_MANAGER = process.env.SECRETKEY_STORAGE_TYPE === 'aws'
@@ -898,7 +898,7 @@ export const getVariableValue = async (
             /**
              * Apply string transformation to convert special chars:
              * FROM: hello i am ben\n\n\thow are you?
-             * TO: hello i am benFLOWISE_NEWLINEFLOWISE_NEWLINEFLOWISE_TABhow are you?
+             * TO: hello i am benCHRONOS_NEWLINECHRONOS_NEWLINECHRONOS_TABhow are you?
              */
             if (isAcceptVariable && variableFullPath === QUESTION_VAR_PREFIX) {
                 variableDict[`{{${variableFullPath}}}`] = handleEscapeCharacters(question, false)

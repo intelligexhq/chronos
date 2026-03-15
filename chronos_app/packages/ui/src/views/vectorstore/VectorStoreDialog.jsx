@@ -262,12 +262,8 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
             return pythonSVG
         } else if (codeLang === 'JavaScript') {
             return javascriptSVG
-        } else if (codeLang === 'Embed') {
-            return EmbedSVG
         } else if (codeLang === 'cURL') {
             return cURLSVG
-        } else if (codeLang === 'Share Chatbot') {
-            return ShareChatbotSVG
         } else if (codeLang === 'Configuration') {
             return settingsSVG
         }
