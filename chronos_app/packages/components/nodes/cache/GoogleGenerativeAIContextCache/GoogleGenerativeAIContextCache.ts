@@ -1,5 +1,5 @@
 import { getBaseClasses, getCredentialData, getCredentialParam, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
-import FlowiseGoogleAICacheManager from './FlowiseGoogleAICacheManager'
+import ChronosGoogleAICacheManager from './ChronosGoogleAICacheManager'
 
 class GoogleGenerativeAIContextCache implements INode {
     label: string
@@ -21,7 +21,7 @@ class GoogleGenerativeAIContextCache implements INode {
         this.description = 'Large context cache for Google Gemini large language models'
         this.icon = 'GoogleGemini.svg'
         this.category = 'Cache'
-        this.baseClasses = [this.type, ...getBaseClasses(FlowiseGoogleAICacheManager)]
+        this.baseClasses = [this.type, ...getBaseClasses(ChronosGoogleAICacheManager)]
         this.inputs = [
             {
                 label: 'TTL',
@@ -44,7 +44,7 @@ class GoogleGenerativeAIContextCache implements INode {
         const ttl = nodeData.inputs?.ttl as number
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const apiKey = getCredentialParam('googleGenerativeAPIKey', credentialData, nodeData)
-        const manager = new FlowiseGoogleAICacheManager(apiKey)
+        const manager = new ChronosGoogleAICacheManager(apiKey)
         manager.setTtlSeconds(ttl)
         return manager
     }

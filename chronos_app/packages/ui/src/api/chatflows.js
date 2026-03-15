@@ -6,8 +6,6 @@ const getAllAgentflows = (type, params) => client.get(`/chatflows?type=${type}`,
 
 const getSpecificChatflow = (id) => client.get(`/chatflows/${id}`)
 
-const getSpecificChatflowFromPublicEndpoint = (id) => client.get(`/public-chatflows/${id}`)
-
 const createNewChatflow = (body) => client.post(`/chatflows`, body)
 
 const updateChatflow = (id, body) => client.put(`/chatflows/${id}`, body)
@@ -26,7 +24,6 @@ export default {
     getAllChatflows,
     getAllAgentflows,
     getSpecificChatflow,
-    getSpecificChatflowFromPublicEndpoint,
     createNewChatflow,
     updateChatflow,
     deleteChatflow,

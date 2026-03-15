@@ -24,7 +24,8 @@ import logger from './logger'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
-export const FLOWISE_CHATID = 'flowise_chatId'
+// Keep string value as 'flowise_chatId' for backward compatibility with existing vector store metadata
+export const CHRONOS_CHATID = 'flowise_chatId'
 
 let secretsManagerClient: SecretsManagerClient | null = null
 const USE_AWS_SECRETS_MANAGER = process.env.SECRETKEY_STORAGE_TYPE === 'aws'
@@ -48,7 +49,7 @@ if (USE_AWS_SECRETS_MANAGER) {
 }
 
 /*
- * List of dependencies allowed to be import in @flowiseai/nodevm
+ * List of dependencies allowed to be imported in the secure VM sandbox
  */
 export const availableDependencies = [
     '@aws-sdk/client-bedrock-runtime',
@@ -551,7 +552,7 @@ const getEncryptionKey = async (): Promise<string> => {
     }
     try {
         if (USE_AWS_SECRETS_MANAGER && secretsManagerClient) {
-            const secretId = process.env.SECRETKEY_AWS_NAME || 'FlowiseEncryptionKey'
+            const secretId = process.env.SECRETKEY_AWS_NAME || 'ChronosEncryptionKey'
             const command = new GetSecretValueCommand({ SecretId: secretId })
             const response = await secretsManagerClient.send(command)
 
@@ -577,7 +578,7 @@ const decryptCredentialData = async (encryptedData: string): Promise<ICommonObje
 
     if (USE_AWS_SECRETS_MANAGER && secretsManagerClient) {
         try {
-            if (encryptedData.startsWith('FlowiseCredential_')) {
+            if (encryptedData.startsWith('ChronosCredential_')) {
                 const command = new GetSecretValueCommand({ SecretId: encryptedData })
                 const response = await secretsManagerClient.send(command)
 
@@ -659,13 +660,13 @@ export const getCredentialParam = (paramName: string, credentialData: ICommonObj
 
 // reference https://www.freeformatter.com/json-escape.html
 const jsonEscapeCharacters = [
-    { escape: '"', value: 'FLOWISE_DOUBLE_QUOTE' },
-    { escape: '\n', value: 'FLOWISE_NEWLINE' },
-    { escape: '\b', value: 'FLOWISE_BACKSPACE' },
-    { escape: '\f', value: 'FLOWISE_FORM_FEED' },
-    { escape: '\r', value: 'FLOWISE_CARRIAGE_RETURN' },
-    { escape: '\t', value: 'FLOWISE_TAB' },
-    { escape: '\\', value: 'FLOWISE_BACKSLASH' }
+    { escape: '"', value: 'CHRONOS_DOUBLE_QUOTE' },
+    { escape: '\n', value: 'CHRONOS_NEWLINE' },
+    { escape: '\b', value: 'CHRONOS_BACKSPACE' },
+    { escape: '\f', value: 'CHRONOS_FORM_FEED' },
+    { escape: '\r', value: 'CHRONOS_CARRIAGE_RETURN' },
+    { escape: '\t', value: 'CHRONOS_TAB' },
+    { escape: '\\', value: 'CHRONOS_BACKSLASH' }
 ]
 
 function handleEscapesJSONParse(input: string, reverse: Boolean): string {

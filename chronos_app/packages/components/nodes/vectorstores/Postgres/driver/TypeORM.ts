@@ -1,6 +1,6 @@
 import { DataSourceOptions } from 'typeorm'
 import { VectorStoreDriver } from './Base'
-import { FLOWISE_CHATID, ICommonObject } from '../../../../src'
+import { CHRONOS_CHATID, ICommonObject } from '../../../../src'
 import { TypeORMVectorStore, TypeORMVectorStoreArgs, TypeORMVectorStoreDocument } from '@langchain/community/vectorstores/typeorm'
 import { VectorStore } from '@langchain/core/vectorstores'
 import { Document } from '@langchain/core/documents'
@@ -199,7 +199,7 @@ export class TypeORMDriver extends VectorStoreDriver {
     ) => {
         const embeddingString = `[${query.join(',')}]`
         let chatflowOr = ''
-        const { [FLOWISE_CHATID]: chatId, ...restFilters } = filter || {}
+        const { [CHRONOS_CHATID]: chatId, ...restFilters } = filter || {}
 
         const _filter = JSON.stringify(restFilters || {})
         const parameters: any[] = [embeddingString, _filter, k]
@@ -207,14 +207,14 @@ export class TypeORMDriver extends VectorStoreDriver {
         // Match chatflow uploaded file and keep filtering on other files:
         // https://github.com/FlowiseAI/Flowise/pull/3367#discussion_r1804229295
         if (chatId) {
-            parameters.push({ [FLOWISE_CHATID]: chatId })
+            parameters.push({ [CHRONOS_CHATID]: chatId })
             chatflowOr = `OR metadata @> $${parameters.length}`
         }
 
         const queryString = `
             SELECT *, embedding ${distanceOperator} $1 as "_distance"
             FROM ${tablePath}
-            WHERE ((metadata @> $2) AND NOT (metadata ? '${FLOWISE_CHATID}')) ${chatflowOr}
+            WHERE ((metadata @> $2) AND NOT (metadata ? '${CHRONOS_CHATID}')) ${chatflowOr}
             ORDER BY "_distance" ASC
             LIMIT $3;`
 

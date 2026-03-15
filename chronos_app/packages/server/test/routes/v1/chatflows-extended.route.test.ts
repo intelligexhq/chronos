@@ -287,31 +287,6 @@ export function chatflowsExtendedRouteTest() {
             })
         })
 
-        describe('GET /api/v1/public-chatflows/:id', () => {
-            it('should return 404 for non-existent public chatflow', async () => {
-                const response = await supertest(getRunningExpressApp().app)
-                    .get('/api/v1/public-chatflows/non-existent-id')
-                    .set('x-request-from', 'internal')
-
-                expect([404, 500]).toContain(response.status)
-            })
-
-            it('should return 401 for non-public chatflow without auth', async () => {
-                const response = await supertest(getRunningExpressApp().app).get('/api/v1/public-chatflows/some-private-id')
-
-                expect([401, 404, 500]).toContain(response.status)
-            })
-
-            it('should allow access to public chatflow with auth', async () => {
-                const response = await supertest(getRunningExpressApp().app)
-                    .get('/api/v1/public-chatflows/test-id')
-                    .set('Authorization', `Bearer ${authToken}`)
-                    .set('x-request-from', 'internal')
-
-                expect([200, 404, 500]).toContain(response.status)
-            })
-        })
-
         describe('GET /api/v1/chatflows/:id/config', () => {
             it('should get config for non-existent chatflow', async () => {
                 const response = await supertest(getRunningExpressApp().app)

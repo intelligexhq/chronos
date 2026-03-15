@@ -17,7 +17,7 @@ interface ICustomFunctionInputVariables {
 }
 
 const exampleFunc = `/*
-* You can use any libraries imported in Flowise
+* You can use any libraries imported in Chronos
 * You can use properties specified in Input Variables with the prefix $. For example: $foo
 * You can get default flow config: $flow.sessionId, $flow.chatId, $flow.chatflowId, $flow.input, $flow.state
 * You can get global variables: $vars.<variable-name>

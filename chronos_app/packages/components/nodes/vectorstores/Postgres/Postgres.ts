@@ -1,7 +1,7 @@
 import { flatten } from 'lodash'
 import { Document } from '@langchain/core/documents'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
-import { FLOWISE_CHATID, getBaseClasses, parseJsonBody } from '../../../src/utils'
+import { CHRONOS_CHATID, getBaseClasses, parseJsonBody } from '../../../src/utils'
 import { index } from '../../../src/indexing'
 import { howToUseFileUpload } from '../VectorStoreUtils'
 import { VectorStore } from '@langchain/core/vectorstores'
@@ -250,7 +250,7 @@ class Postgres_VectorStores implements INode {
             for (let i = 0; i < flattenDocs.length; i += 1) {
                 if (flattenDocs[i] && flattenDocs[i].pageContent) {
                     if (isFileUploadEnabled && options.chatId) {
-                        flattenDocs[i].metadata = { ...flattenDocs[i].metadata, [FLOWISE_CHATID]: options.chatId }
+                        flattenDocs[i].metadata = { ...flattenDocs[i].metadata, [CHRONOS_CHATID]: options.chatId }
                     }
                     finalDocs.push(new Document(flattenDocs[i]))
                 }
@@ -335,7 +335,7 @@ class Postgres_VectorStores implements INode {
         if (isFileUploadEnabled && options.chatId) {
             pgMetadataFilter = {
                 ...(pgMetadataFilter || {}),
-                [FLOWISE_CHATID]: options.chatId
+                [CHRONOS_CHATID]: options.chatId
             }
         }
 

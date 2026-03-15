@@ -35,7 +35,7 @@ import { exportImportRouteTest } from './routes/v1/export-import.route.test'
 import { logRouteTest } from './routes/v1/log.route.test'
 import { chatflowsStreamingRouteTest } from './routes/v1/chatflows-streaming.route.test'
 import { chatflowsUploadsRouteTest } from './routes/v1/chatflows-uploads.route.test'
-import { publicChatflowsRouteTest } from './routes/v1/public-chatflows.route.test'
+
 import { verifyRouteTest } from './routes/v1/verify.route.test'
 import { loadPromptsRouteTest } from './routes/v1/load-prompts.route.test'
 import { vectorsRouteTest } from './routes/v1/vectors.route.test'
@@ -47,7 +47,7 @@ import { getUploadFileRouteTest } from './routes/v1/get-upload-file.route.test'
 import { nodeIconsRouteTest } from './routes/v1/node-icons.route.test'
 import { attachmentsRouteTest } from './routes/v1/attachments.route.test'
 import { evaluatorRouteTest } from './routes/v1/evaluator.route.test'
-import { publicChatbotsRouteTest } from './routes/v1/public-chatbots.route.test'
+
 import { publicExecutionsRouteTest } from './routes/v1/public-executions.route.test'
 import { nodeLoadMethodsRouteTest } from './routes/v1/node-load-methods.route.test'
 import { nodeCustomFunctionsRouteTest } from './routes/v1/node-custom-functions.route.test'
@@ -175,7 +175,6 @@ describe('Routes Test', () => {
     logRouteTest()
     chatflowsStreamingRouteTest()
     chatflowsUploadsRouteTest()
-    publicChatflowsRouteTest()
     verifyRouteTest()
     loadPromptsRouteTest()
     vectorsRouteTest()
@@ -187,7 +186,6 @@ describe('Routes Test', () => {
     nodeIconsRouteTest()
     attachmentsRouteTest()
     evaluatorRouteTest()
-    publicChatbotsRouteTest()
     publicExecutionsRouteTest()
     nodeLoadMethodsRouteTest()
     nodeCustomFunctionsRouteTest()

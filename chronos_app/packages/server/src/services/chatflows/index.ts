@@ -283,50 +283,6 @@ const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow, user
     return dbResponse
 }
 
-// Get specific chatflow chatbotConfig via id (PUBLIC endpoint, used to retrieve config for embedded chat)
-// Safe as public endpoint as chatbotConfig doesn't contain sensitive credential
-const getSinglePublicChatbotConfig = async (chatflowId: string): Promise<any> => {
-    try {
-        const appServer = getRunningExpressApp()
-        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
-            id: chatflowId
-        })
-        if (!dbResponse) {
-            throw new InternalChronosError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
-        }
-        const uploadsConfig = await utilGetUploadsConfig(chatflowId)
-        // even if chatbotConfig is not set but uploads are enabled
-        // send uploadsConfig to the chatbot
-        if (dbResponse.chatbotConfig || uploadsConfig) {
-            try {
-                const parsedConfig = dbResponse.chatbotConfig ? JSON.parse(dbResponse.chatbotConfig) : {}
-                const ttsConfig =
-                    typeof dbResponse.textToSpeech === 'string' ? JSON.parse(dbResponse.textToSpeech) : dbResponse.textToSpeech
-
-                let isTTSEnabled = false
-                if (ttsConfig) {
-                    Object.keys(ttsConfig).forEach((provider) => {
-                        if (provider !== 'none' && ttsConfig?.[provider]?.status) {
-                            isTTSEnabled = true
-                        }
-                    })
-                }
-                delete parsedConfig.allowedOrigins
-                delete parsedConfig.allowedOriginsError
-                return { ...parsedConfig, uploads: uploadsConfig, flowData: dbResponse.flowData, isTTSEnabled }
-            } catch (e) {
-                throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, `Error parsing Chatbot Config for Chatflow ${chatflowId}`)
-            }
-        }
-        return 'OK'
-    } catch (error) {
-        throw new InternalChronosError(
-            StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: chatflowsService.getSinglePublicChatbotConfig - ${getErrorMessage(error)}`
-        )
-    }
-}
-
 const _checkAndUpdateDocumentStoreUsage = async (chatflow: ChatFlow) => {
     const parsedFlowData: IReactFlowObject = JSON.parse(chatflow.flowData)
     const nodes = parsedFlowData.nodes
@@ -370,7 +326,6 @@ export default {
     getChatflowById,
     saveChatflow,
     updateChatflow,
-    getSinglePublicChatbotConfig,
     checkIfChatflowHasChanged,
     getAllChatflowsCountByOrganization
 }

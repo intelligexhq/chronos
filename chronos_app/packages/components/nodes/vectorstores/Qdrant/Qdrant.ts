@@ -6,7 +6,7 @@ import { Document } from '@langchain/core/documents'
 import { QdrantVectorStore, QdrantLibArgs } from '@langchain/qdrant'
 import { Embeddings } from '@langchain/core/embeddings'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
-import { FLOWISE_CHATID, getBaseClasses, getCredentialData, getCredentialParam, parseJsonBody } from '../../../src/utils'
+import { CHRONOS_CHATID, getBaseClasses, getCredentialData, getCredentialParam, parseJsonBody } from '../../../src/utils'
 import { index } from '../../../src/indexing'
 import { howToUseFileUpload } from '../VectorStoreUtils'
 
@@ -221,7 +221,7 @@ class Qdrant_VectorStores implements INode {
             for (let i = 0; i < flattenDocs.length; i += 1) {
                 if (flattenDocs[i] && flattenDocs[i].pageContent) {
                     if (isFileUploadEnabled && options.chatId) {
-                        flattenDocs[i].metadata = { ...flattenDocs[i].metadata, [FLOWISE_CHATID]: options.chatId }
+                        flattenDocs[i].metadata = { ...flattenDocs[i].metadata, [CHRONOS_CHATID]: options.chatId }
                     }
                     finalDocs.push(new Document(flattenDocs[i]))
                 }
@@ -465,14 +465,14 @@ class Qdrant_VectorStores implements INode {
 
             retrieverConfig.filter.should.push(
                 {
-                    key: `metadata.${FLOWISE_CHATID}`,
+                    key: `metadata.${CHRONOS_CHATID}`,
                     match: {
                         value: options.chatId
                     }
                 },
                 {
                     is_empty: {
-                        key: `metadata.${FLOWISE_CHATID}`
+                        key: `metadata.${CHRONOS_CHATID}`
                     }
                 }
             )

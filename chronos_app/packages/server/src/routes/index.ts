@@ -35,8 +35,6 @@ import openaiRealtimeRouter from './openai-realtime'
 import pingRouter from './ping'
 import predictionRouter from './predictions'
 import promptListsRouter from './prompts-lists'
-import publicChatbotRouter from './public-chatbots'
-import publicChatflowsRouter from './public-chatflows'
 import publicExecutionsRouter from './public-executions'
 import settingsRouter from './settings'
 import statsRouter from './stats'
@@ -98,8 +96,6 @@ router.use('/oauth2-credential', oauth2Router)
 router.use('/openai-realtime', openaiRealtimeRouter)
 router.use('/prediction', predictionRouter)
 router.use('/prompts-list', promptListsRouter)
-router.use('/public-chatbotConfig', publicChatbotRouter)
-router.use('/public-chatflows', publicChatflowsRouter)
 router.use('/public-executions', publicExecutionsRouter)
 router.use('/stats', statsRouter)
 router.use('/skills', skillsRouter)

@@ -40,7 +40,7 @@ try {
 }
 `
 export const howToUseCode = `- **Libraries:**  
-  You can use any libraries imported in Flowise.
+  You can use any libraries imported in Chronos.
 
 - **Tool Input Arguments:**  
   Tool input arguments are available as the following variables:

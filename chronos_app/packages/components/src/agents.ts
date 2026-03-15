@@ -27,9 +27,9 @@ import { IUsedTool } from './Interface'
 import { getErrorMessage } from './error'
 import logger from './logger'
 
-export const SOURCE_DOCUMENTS_PREFIX = '\n\n----FLOWISE_SOURCE_DOCUMENTS----\n\n'
-export const ARTIFACTS_PREFIX = '\n\n----FLOWISE_ARTIFACTS----\n\n'
-export const TOOL_ARGS_PREFIX = '\n\n----FLOWISE_TOOL_ARGS----\n\n'
+export const SOURCE_DOCUMENTS_PREFIX = '\n\n----CHRONOS_SOURCE_DOCUMENTS----\n\n'
+export const ARTIFACTS_PREFIX = '\n\n----CHRONOS_ARTIFACTS----\n\n'
+export const TOOL_ARGS_PREFIX = '\n\n----CHRONOS_TOOL_ARGS----\n\n'
 
 /**
  * Utility function to format tool error messages with parameters for debugging

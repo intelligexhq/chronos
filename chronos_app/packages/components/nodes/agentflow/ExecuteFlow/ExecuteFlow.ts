@@ -71,7 +71,7 @@ class ExecuteFlow_Agentflow implements INode {
                 name: 'executeFlowBaseURL',
                 type: 'string',
                 description:
-                    'Base URL to Flowise. By default, it is the URL of the incoming request. Useful when you need to execute flow through an alternative route.',
+                    'Base URL to Chronos. By default, it is the URL of the incoming request. Useful when you need to execute flow through an alternative route.',
                 placeholder: 'http://localhost:3000',
                 optional: true
             },
@@ -181,7 +181,7 @@ class ExecuteFlow_Agentflow implements INode {
 
             let headers: Record<string, string> = {
                 'Content-Type': 'application/json',
-                'flowise-tool': 'true'
+                'chronos-tool': 'true'
             }
             if (chatflowApiKey) headers = { ...headers, Authorization: `Bearer ${chatflowApiKey}` }
 
