@@ -203,7 +203,7 @@ const DeleteDocStoreDialog = ({ show, dialogProps, onCancel, onDelete }) => {
                             document store. The actual vector embeddings in your vector store database will remain unchanged. To enable
                             automatic cleanup of vector store data, please configure a Record Manager.{' '}
                             <Link
-                                href='https://docs.flowiseai.com/integrations/langchain/record-managers'
+                                href='https://intelligex.com/integrations/langchain/record-managers'
                                 target='_blank'
                                 rel='noopener noreferrer'
                                 sx={{ fontWeight: 500, color: 'rgb(116,66,16)', textDecoration: 'underline' }}

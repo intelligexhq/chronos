@@ -338,17 +338,17 @@ const AgentExecutedDataCard = ({ status, execution, agentflowId, sessionId }) =>
     const buildTreeData = (nodes) => {
         // for each node, loop through each and every nested key of node.data, and remove the key if it is equal to CHRONOS_CREDENTIAL_ID
         nodes.forEach((node) => {
-            const removeFlowiseCredentialId = (data) => {
+            const removeChronosCredentialId = (data) => {
                 for (const key in data) {
                     if (key === CHRONOS_CREDENTIAL_ID) {
                         delete data[key]
                     }
                     if (typeof data[key] === 'object') {
-                        removeFlowiseCredentialId(data[key])
+                        removeChronosCredentialId(data[key])
                     }
                 }
             }
-            removeFlowiseCredentialId(node.data)
+            removeChronosCredentialId(node.data)
         })
 
         // Create a map for quick node lookup

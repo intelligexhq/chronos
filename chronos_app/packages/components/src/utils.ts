@@ -49,7 +49,7 @@ if (USE_AWS_SECRETS_MANAGER) {
 }
 
 /*
- * List of dependencies allowed to be import in @flowiseai/nodevm
+ * List of dependencies allowed to be imported in the secure VM sandbox
  */
 export const availableDependencies = [
     '@aws-sdk/client-bedrock-runtime',
@@ -552,7 +552,7 @@ const getEncryptionKey = async (): Promise<string> => {
     }
     try {
         if (USE_AWS_SECRETS_MANAGER && secretsManagerClient) {
-            const secretId = process.env.SECRETKEY_AWS_NAME || 'FlowiseEncryptionKey'
+            const secretId = process.env.SECRETKEY_AWS_NAME || 'ChronosEncryptionKey'
             const command = new GetSecretValueCommand({ SecretId: secretId })
             const response = await secretsManagerClient.send(command)
 
@@ -578,7 +578,7 @@ const decryptCredentialData = async (encryptedData: string): Promise<ICommonObje
 
     if (USE_AWS_SECRETS_MANAGER && secretsManagerClient) {
         try {
-            if (encryptedData.startsWith('FlowiseCredential_')) {
+            if (encryptedData.startsWith('ChronosCredential_')) {
                 const command = new GetSecretValueCommand({ SecretId: encryptedData })
                 const response = await secretsManagerClient.send(command)
 

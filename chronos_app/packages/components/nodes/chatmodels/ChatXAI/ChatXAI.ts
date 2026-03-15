@@ -2,7 +2,7 @@ import { BaseCache } from '@langchain/core/caches'
 import { ChatXAIInput } from '@langchain/xai'
 import { ICommonObject, IMultiModalOption, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { ChatXAI } from './FlowiseChatXAI'
+import { ChatXAI } from './ChronosChatXAI'
 
 class ChatXAI_ChatModels implements INode {
     label: string
@@ -81,7 +81,7 @@ class ChatXAI_ChatModels implements INode {
                 name: 'allowImageUploads',
                 type: 'boolean',
                 description:
-                    'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
+                    'Allow image input. Refer to the <a href="https://intelligex.com/using-chronos/uploads#image" target="_blank">docs</a> for more details.',
                 default: false,
                 optional: true
             }

@@ -775,7 +775,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                                     <a
                                                         rel='noreferrer'
                                                         target='_blank'
-                                                        href='https://intelligex.com/using-flowise/prediction#configuration-override'
+                                                        href='https://intelligex.com/using-chronos/prediction#configuration-override'
                                                     >
                                                         here
                                                     </a>{' '}
@@ -915,7 +915,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                 {getIsChatflowStreamingApi.data?.isStreaming && (
                                     <p>
                                         Read&nbsp;
-                                        <a rel='noreferrer' target='_blank' href='https://intelligex.com/using-flowise/streaming'>
+                                        <a rel='noreferrer' target='_blank' href='https://intelligex.com/using-chronos/streaming'>
                                             here
                                         </a>
                                         &nbsp;on how to stream response back to application

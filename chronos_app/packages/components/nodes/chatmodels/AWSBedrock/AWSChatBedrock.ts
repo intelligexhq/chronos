@@ -3,7 +3,7 @@ import { ICommonObject, IMultiModalOption, INode, INodeData, INodeOptionsValue, 
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { getModels, getRegions, MODEL_TYPE } from '../../../src/modelLoader'
 import { ChatBedrockConverseInput, ChatBedrockConverse } from '@langchain/aws'
-import { BedrockChat } from './FlowiseAWSChatBedrock'
+import { BedrockChat } from './ChronosAWSChatBedrock'
 
 /**
  * @author Michael Connor <mlconnor@yahoo.com>
@@ -97,7 +97,7 @@ class AWSChatBedrock_ChatModels implements INode {
                 name: 'allowImageUploads',
                 type: 'boolean',
                 description:
-                    'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
+                    'Allow image input. Refer to the <a href="https://intelligex.com/using-chronos/uploads#image" target="_blank">docs</a> for more details.',
                 default: false,
                 optional: true
             },

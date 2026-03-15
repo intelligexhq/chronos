@@ -75,7 +75,7 @@ class Custom_MCP implements INode {
                 placeholder: mcpServerConfig,
                 warning:
                     process.env.CUSTOM_MCP_PROTOCOL === 'sse'
-                        ? 'Only Remote MCP with url is supported. Read more <a href="https://docs.flowiseai.com/tutorials/tools-and-mcp#streamable-http-recommended" target="_blank">here</a>'
+                        ? 'Only Remote MCP with url is supported. Read more <a href="https://intelligex.com/tutorials/tools-and-mcp#streamable-http-recommended" target="_blank">here</a>'
                         : undefined
             },
             {
