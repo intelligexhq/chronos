@@ -144,6 +144,7 @@ interface ISubagentConfig {
     subagentDescription: string
     subagentSystemPrompt: string
     subagentSkills: string[]
+    subagentTools: string[]
 }
 
 /**
@@ -296,6 +297,25 @@ function buildAgentReasoning(steps: IDeepAgentStep[]): IAgentReasoning[] {
 }
 
 /**
+ * Parses an asyncMultiOptions value which may be a string[] array,
+ * a JSON-encoded string, or undefined. Returns a flat string[].
+ */
+function parseMultiSelectValue(value: unknown): string[] {
+    if (!value) return []
+    if (Array.isArray(value)) return value.filter((v) => typeof v === 'string' && v.length > 0)
+    if (typeof value === 'string') {
+        try {
+            const parsed = JSON.parse(value)
+            if (Array.isArray(parsed)) return parsed.filter((v: any) => typeof v === 'string' && v.length > 0)
+        } catch {
+            // Single value string
+            return value.length > 0 ? [value] : []
+        }
+    }
+    return []
+}
+
+/**
  * DeepAgent agentflow node.
  * Uses the deepagents package to create an agent with built-in planning (todos),
  * optional subagent delegation, and configurable middleware.
@@ -432,6 +452,14 @@ class DeepAgent_Agentflow implements INode {
                         loadMethod: 'listSkills',
                         optional: true,
                         description: 'Select skills to inject into the subagent system message'
+                    },
+                    {
+                        label: 'Tools',
+                        name: 'subagentTools',
+                        type: 'asyncMultiOptions',
+                        loadMethod: 'listSelectedTools',
+                        optional: true,
+                        description: 'Select which tools this subagent can use. If none selected, the subagent uses default tool access.'
                     }
                 ]
             },
@@ -530,6 +558,25 @@ class DeepAgent_Agentflow implements INode {
             return returnOptions
         },
         /**
+         * Lists tools already selected on the parent Deep Agent node,
+         * so subagents can only pick from the parent's configured tools.
+         */
+        async listSelectedTools(_: INodeData, options?: ICommonObject): Promise<INodeOptionsValue[]> {
+            const currentNode = options?.currentNode as ICommonObject
+            const componentNodes = (options?.componentNodes || {}) as { [key: string]: INode }
+            const parentTools = (currentNode?.inputs?.deepAgentTools as ITool[]) || []
+            return parentTools
+                .filter((t) => t.agentSelectedTool)
+                .map((t) => {
+                    const node = componentNodes[t.agentSelectedTool]
+                    return {
+                        label: node?.label || t.agentSelectedTool,
+                        name: t.agentSelectedTool,
+                        imageSrc: node?.icon
+                    }
+                })
+        },
+        /**
          * Lists runtime state keys for state update configuration
          */
         async listRuntimeStateKeys(_: INodeData, options?: ICommonObject): Promise<INodeOptionsValue[]> {
@@ -573,6 +620,7 @@ class DeepAgent_Agentflow implements INode {
             // ── Tool instantiation ──
             const tools = (nodeData.inputs?.deepAgentTools as ITool[]) || []
             const toolsInstance: Tool[] = []
+            const toolsByConfigName = new Map<string, Tool[]>()
             for (const tool of tools) {
                 const toolConfig = tool.agentSelectedToolConfig
                 const toolFilePath = options.componentNodes[tool.agentSelectedTool].filePath as string
@@ -584,19 +632,26 @@ class DeepAgent_Agentflow implements INode {
                     inputs: { ...nodeData.inputs, ...toolConfig }
                 }
                 const toolInstance = await newToolNodeInstance.init(toolNodeData, '', options)
+                const instancesForConfig: Tool[] = []
                 if (Array.isArray(toolInstance)) {
                     for (const subTool of toolInstance) {
                         if (tool.agentSelectedToolRequiresHumanInput) {
                             ;(subTool as any).requiresHumanInput = true
                         }
                         toolsInstance.push(subTool as Tool)
+                        instancesForConfig.push(subTool as Tool)
                     }
                 } else {
                     if (tool.agentSelectedToolRequiresHumanInput) {
                         ;(toolInstance as any).requiresHumanInput = true
                     }
                     toolsInstance.push(toolInstance as Tool)
+                    instancesForConfig.push(toolInstance as Tool)
                 }
+                toolsByConfigName.set(tool.agentSelectedTool, [
+                    ...(toolsByConfigName.get(tool.agentSelectedTool) || []),
+                    ...instancesForConfig
+                ])
             }
 
             // ── Load all skills from DB once (used by main agent and subagents) ──
@@ -629,11 +684,27 @@ class DeepAgent_Agentflow implements INode {
                             prompt = prompt ? `${prompt}\n\n${skillsText}` : skillsText
                         }
                     }
-                    return {
+
+                    // Resolve scoped tools for this subagent
+                    const subagentToolNames = parseMultiSelectValue(s.subagentTools)
+                    let scopedTools: Tool[] | undefined
+                    if (subagentToolNames.length > 0) {
+                        scopedTools = []
+                        for (const toolName of subagentToolNames) {
+                            const instances = toolsByConfigName.get(toolName)
+                            if (instances) scopedTools.push(...instances)
+                        }
+                    }
+
+                    const subagent: SubAgent = {
                         name: s.subagentName,
                         description: s.subagentDescription,
                         systemPrompt: prompt
                     }
+                    if (scopedTools && scopedTools.length > 0) {
+                        subagent.tools = scopedTools
+                    }
+                    return subagent
                 })
 
             // ── System prompt with skills ──

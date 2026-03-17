@@ -1,9 +1,11 @@
 import PropTypes from 'prop-types'
+import { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
+import axios from 'axios'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
-import { Box, Drawer, useMediaQuery } from '@mui/material'
+import { Box, Drawer, Typography, useMediaQuery } from '@mui/material'
 
 // third-party
 import PerfectScrollbar from 'react-perfect-scrollbar'
@@ -13,7 +15,7 @@ import { BrowserView, MobileView } from 'react-device-detect'
 import MenuList from './MenuList'
 import LogoSection from '../LogoSection'
 // store
-import { drawerWidth, headerHeight } from '@/store/constant'
+import { baseURL, drawerWidth, headerHeight } from '@/store/constant'
 
 // ==============================|| SIDEBAR DRAWER ||============================== //
 
@@ -21,6 +23,21 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
     const theme = useTheme()
     const matchUpMd = useMediaQuery(theme.breakpoints.up('md'))
     const isAuthenticated = useSelector((state) => state.auth.isAuthenticated)
+    const [version, setVersion] = useState('')
+
+    useEffect(() => {
+        axios
+            .get(`${baseURL}/api/v1/version`, {
+                withCredentials: true,
+                headers: { 'Content-type': 'application/json', 'x-request-from': 'internal' }
+            })
+            .then((response) => {
+                setVersion(response.data.version)
+            })
+            .catch((error) => {
+                console.error('Error fetching version:', error)
+            })
+    }, [])
 
     const drawer = (
         <>
@@ -44,11 +61,21 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
                     }}
                 >
                     <MenuList />
+                    {version && (
+                        <Typography variant='caption' sx={{ mt: 'auto', p: 2, color: theme.palette.text.secondary }}>
+                            chronos v{version}
+                        </Typography>
+                    )}
                 </PerfectScrollbar>
             </BrowserView>
             <MobileView>
-                <Box sx={{ px: 2 }}>
+                <Box sx={{ px: 2, display: 'flex', flexDirection: 'column', height: '100%' }}>
                     <MenuList />
+                    {version && (
+                        <Typography variant='caption' sx={{ mt: 'auto', p: 2, color: theme.palette.text.secondary }}>
+                            chronos v{version}
+                        </Typography>
+                    )}
                 </Box>
             </MobileView>
         </>

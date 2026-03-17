@@ -31,7 +31,8 @@ export const ArrayRenderer = ({ inputParam, data, disabled, isDocStore = false }
         for (let i = 0; i < inputParam.array.length; i += 1) {
             const fieldDef = inputParam.array[i]
             if (fieldDef.show || fieldDef.hide) {
-                updatedItem[fieldDef.name] = fieldDef.default || ''
+                const isMultiSelect = fieldDef.type === 'asyncMultiOptions' || fieldDef.type === 'multiOptions'
+                updatedItem[fieldDef.name] = fieldDef.default || (isMultiSelect ? [] : '')
             }
         }
 
@@ -135,7 +136,8 @@ export const ArrayRenderer = ({ inputParam, data, disabled, isDocStore = false }
         let newItem = {}
 
         for (const fieldDef of inputParam.array) {
-            newItem[fieldDef.name] = fieldDef.default || ''
+            const isMultiSelect = fieldDef.type === 'asyncMultiOptions' || fieldDef.type === 'multiOptions'
+            newItem[fieldDef.name] = fieldDef.default || (isMultiSelect ? [] : '')
         }
 
         /*if (inputParam.default?.length) {
