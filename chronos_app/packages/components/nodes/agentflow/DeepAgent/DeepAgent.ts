@@ -143,6 +143,7 @@ interface ISubagentConfig {
     subagentName: string
     subagentDescription: string
     subagentSystemPrompt: string
+    subagentSkills: string[]
 }
 
 /**
@@ -421,7 +422,16 @@ class DeepAgent_Agentflow implements INode {
                         name: 'subagentSystemPrompt',
                         type: 'string',
                         placeholder: 'You are a research assistant. Your job is to...',
+                        optional: true,
                         rows: 4
+                    },
+                    {
+                        label: 'Skills',
+                        name: 'subagentSkills',
+                        type: 'asyncMultiOptions',
+                        loadMethod: 'listSkills',
+                        optional: true,
+                        description: 'Select skills to inject into the subagent system message'
                     }
                 ]
             },
@@ -589,26 +599,48 @@ class DeepAgent_Agentflow implements INode {
                 }
             }
 
-            // ── Subagents ──
+            // ── Load all skills from DB once (used by main agent and subagents) ──
+            const appDataSource = options.appDataSource as DataSource
+            const databaseEntities = options.databaseEntities as IDatabaseEntity
+            let allSkills: any[] = []
+            const selectedSkills = nodeData.inputs?.deepAgentSkills as string[]
             const subagentConfigs = (nodeData.inputs?.deepAgentSubagents as ISubagentConfig[]) || []
+            const needsSkills =
+                (selectedSkills && selectedSkills.length > 0) || subagentConfigs.some((s) => s.subagentSkills && s.subagentSkills.length > 0)
+            if (needsSkills && appDataSource) {
+                allSkills = await appDataSource.getRepository(databaseEntities['Skill']).find()
+            }
+
+            const buildSkillsText = (skillIds: string[]): string => {
+                const matched = allSkills.filter((skill: any) => skillIds.includes(skill.id))
+                if (matched.length === 0) return ''
+                return matched.map((s: any) => `## Skill: ${s.name}\n${s.description}\n\n${s.instruction}`).join('\n\n')
+            }
+
+            // ── Subagents ──
             const subagents: SubAgent[] = subagentConfigs
                 .filter((s) => s.subagentName && s.subagentDescription)
-                .map((s) => ({
-                    name: s.subagentName,
-                    description: s.subagentDescription,
-                    systemPrompt: s.subagentSystemPrompt || ''
-                }))
+                .map((s) => {
+                    let prompt = s.subagentSystemPrompt || ''
+                    if (s.subagentSkills && s.subagentSkills.length > 0) {
+                        const skillsText = buildSkillsText(s.subagentSkills)
+                        if (skillsText) {
+                            prompt = prompt ? `${prompt}\n\n${skillsText}` : skillsText
+                        }
+                    }
+                    return {
+                        name: s.subagentName,
+                        description: s.subagentDescription,
+                        systemPrompt: prompt
+                    }
+                })
 
             // ── System prompt with skills ──
             let systemPrompt = (nodeData.inputs?.deepAgentSystemPrompt as string) || ''
 
-            const selectedSkills = nodeData.inputs?.deepAgentSkills as string[]
             if (selectedSkills && selectedSkills.length > 0) {
-                const appDataSource = options.appDataSource as DataSource
-                const databaseEntities = options.databaseEntities as IDatabaseEntity
                 if (appDataSource) {
-                    const skills = await appDataSource.getRepository(databaseEntities['Skill']).find()
-                    const matchedSkills = skills.filter((skill: any) => selectedSkills.includes(skill.id))
+                    const matchedSkills = allSkills.filter((skill: any) => selectedSkills.includes(skill.id))
                     if (matchedSkills.length > 0) {
                         const skillsText = matchedSkills
                             .map((s: any) => `## Skill: ${s.name}\n${s.description}\n\n${s.instruction}`)

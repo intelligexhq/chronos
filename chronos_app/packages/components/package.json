@@ -1,6 +1,6 @@
 {
     "name": "chronos-components",
-    "version": "1.1.0",
+    "version": "1.2.1",
     "description": "Chronos Components",
     "main": "dist/src/index",
     "types": "dist/src/index.d.ts",
