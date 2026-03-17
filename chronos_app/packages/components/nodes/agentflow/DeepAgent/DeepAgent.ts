@@ -606,7 +606,8 @@ class DeepAgent_Agentflow implements INode {
             const selectedSkills = nodeData.inputs?.deepAgentSkills as string[]
             const subagentConfigs = (nodeData.inputs?.deepAgentSubagents as ISubagentConfig[]) || []
             const needsSkills =
-                (selectedSkills && selectedSkills.length > 0) || subagentConfigs.some((s) => s.subagentSkills && s.subagentSkills.length > 0)
+                (selectedSkills && selectedSkills.length > 0) ||
+                subagentConfigs.some((s) => s.subagentSkills && s.subagentSkills.length > 0)
             if (needsSkills && appDataSource) {
                 allSkills = await appDataSource.getRepository(databaseEntities['Skill']).find()
             }
