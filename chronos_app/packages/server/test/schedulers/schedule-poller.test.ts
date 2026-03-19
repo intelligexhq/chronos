@@ -1,48 +1,51 @@
+import { SchedulePoller } from '../../src/schedulers/SchedulePoller'
+import { Schedule } from '../../src/database/entities/Schedule'
+import * as buildAgentflow from '../../src/utils/buildAgentflow'
+
+function mockSchedule(overrides: Partial<Schedule> = {}): Schedule {
+    return {
+        id: 'sched-1',
+        name: 'Test Schedule',
+        cronExpression: '*/5 * * * *',
+        timezone: 'UTC',
+        agentflowId: 'flow-1',
+        inputPayload: undefined,
+        enabled: true,
+        lastRunDate: undefined,
+        nextRunDate: new Date('2026-01-01T00:00:00Z'),
+        lastRunStatus: undefined,
+        userId: undefined,
+        createdDate: new Date(),
+        updatedDate: new Date(),
+        agentflow: {} as any,
+        ...overrides
+    } as Schedule
+}
+
 /**
  * Test suite for SchedulePoller (DB polling scheduler)
- * Tests claim logic, poll cycle, and double-fire prevention
+ * Tests claim logic, poll cycle, and double-fire prevention.
+ *
+ * Uses the real logger (already loaded by server) and mocks only
+ * executeFlow and SSEStreamer via jest.mock at the top level.
  */
+
 export function schedulePollerTest() {
     describe('SchedulePoller', () => {
-        let SchedulePoller: any
         let mockDataSource: any
+        let executeFlowSpy: jest.SpyInstance
         let mockScheduleRepo: any
         let mockAgentflowRepo: any
         let mockExecutionRepo: any
         let mockQueryBuilder: any
 
-        beforeAll(() => {
-            jest.resetModules()
-
-            // Mock executeFlow
-            jest.doMock('../../src/utils/buildAgentflow', () => ({
-                executeFlow: jest.fn().mockResolvedValue({ text: 'result' })
-            }))
-
-            // Mock SSEStreamer
-            jest.doMock('../../src/utils/SSEStreamer', () => ({
-                SSEStreamer: jest.fn().mockImplementation(() => ({}))
-            }))
-
-            // Mock logger
-            jest.doMock('../../src/utils/logger', () => ({
-                default: {
-                    info: jest.fn(),
-                    error: jest.fn(),
-                    warn: jest.fn(),
-                    debug: jest.fn()
-                }
-            }))
-
-            SchedulePoller = require('../../src/schedulers/SchedulePoller').SchedulePoller
-        })
-
-        afterAll(() => {
-            jest.resetModules()
+        afterEach(() => {
+            executeFlowSpy?.mockRestore()
         })
 
         beforeEach(() => {
             jest.clearAllMocks()
+            executeFlowSpy = jest.spyOn(buildAgentflow, 'executeFlow').mockResolvedValue({ text: 'result' } as any)
 
             mockQueryBuilder = {
                 update: jest.fn().mockReturnThis(),
@@ -81,9 +84,9 @@ export function schedulePollerTest() {
             return new SchedulePoller({
                 appDataSource: mockDataSource,
                 componentNodes: {},
-                telemetry: { sendTelemetry: jest.fn() },
-                cachePool: {},
-                usageCacheManager: {}
+                telemetry: { sendTelemetry: jest.fn() } as any,
+                cachePool: {} as any,
+                usageCacheManager: {} as any
             })
         }
 
@@ -126,7 +129,6 @@ export function schedulePollerTest() {
                 poller['running'] = true
                 await poller['poll']()
 
-                // Should have returned immediately without querying
                 expect(mockScheduleRepo.find).not.toHaveBeenCalled()
             })
 
@@ -149,28 +151,18 @@ export function schedulePollerTest() {
                 mockQueryBuilder.execute.mockResolvedValue({ affected: 1 })
                 const poller = createPoller()
 
-                const schedule = {
-                    id: 'sched-1',
-                    cronExpression: '*/5 * * * *',
-                    timezone: 'UTC',
-                    nextRunDate: new Date('2026-01-01T00:00:00Z')
-                }
+                const schedule = mockSchedule()
 
                 const result = await poller['tryClaimSchedule'](schedule)
                 expect(result).toBeInstanceOf(Date)
-                expect(result!.getTime()).toBeGreaterThan(schedule.nextRunDate.getTime())
+                expect(result!.getTime()).toBeGreaterThan(schedule.nextRunDate!.getTime())
             })
 
             it('should return null when another instance already claimed', async () => {
                 mockQueryBuilder.execute.mockResolvedValue({ affected: 0 })
                 const poller = createPoller()
 
-                const schedule = {
-                    id: 'sched-1',
-                    cronExpression: '*/5 * * * *',
-                    timezone: 'UTC',
-                    nextRunDate: new Date('2026-01-01T00:00:00Z')
-                }
+                const schedule = mockSchedule()
 
                 const result = await poller['tryClaimSchedule'](schedule)
                 expect(result).toBeNull()
@@ -179,12 +171,7 @@ export function schedulePollerTest() {
             it('should disable schedule with invalid cron and return null', async () => {
                 const poller = createPoller()
 
-                const schedule = {
-                    id: 'sched-bad',
-                    cronExpression: 'not-valid-cron',
-                    timezone: 'UTC',
-                    nextRunDate: new Date()
-                }
+                const schedule = mockSchedule({ id: 'sched-bad', cronExpression: 'not-valid-cron' })
 
                 const result = await poller['tryClaimSchedule'](schedule)
                 expect(result).toBeNull()
@@ -196,20 +183,9 @@ export function schedulePollerTest() {
             it('should skip execution when claim fails', async () => {
                 mockQueryBuilder.execute.mockResolvedValue({ affected: 0 })
                 const poller = createPoller()
-                const { executeFlow } = require('../../src/utils/buildAgentflow')
+                await poller['executeSchedule'](mockSchedule())
 
-                const schedule = {
-                    id: 'sched-1',
-                    cronExpression: '*/5 * * * *',
-                    timezone: 'UTC',
-                    agentflowId: 'flow-1',
-                    nextRunDate: new Date()
-                }
-
-                await poller['executeSchedule'](schedule)
-
-                // executeFlow should NOT have been called
-                expect(executeFlow).not.toHaveBeenCalled()
+                expect(executeFlowSpy).not.toHaveBeenCalled()
             })
 
             it('should update lastRunStatus to ERROR when agentflow not found', async () => {
@@ -217,15 +193,7 @@ export function schedulePollerTest() {
                 mockAgentflowRepo.findOneBy.mockResolvedValue(null)
                 const poller = createPoller()
 
-                const schedule = {
-                    id: 'sched-1',
-                    cronExpression: '*/5 * * * *',
-                    timezone: 'UTC',
-                    agentflowId: 'missing-flow',
-                    nextRunDate: new Date()
-                }
-
-                await poller['executeSchedule'](schedule)
+                await poller['executeSchedule'](mockSchedule({ agentflowId: 'missing-flow' }))
 
                 expect(mockScheduleRepo.update).toHaveBeenCalledWith(
                     'sched-1',
@@ -239,21 +207,10 @@ export function schedulePollerTest() {
                 mockQueryBuilder.execute.mockResolvedValue({ affected: 1 })
                 mockAgentflowRepo.findOneBy.mockResolvedValue({ id: 'flow-1', name: 'Test Flow', flowData: '{}' })
                 const poller = createPoller()
-                const { executeFlow } = require('../../src/utils/buildAgentflow')
 
-                const schedule = {
-                    id: 'sched-1',
-                    name: 'Test Schedule',
-                    cronExpression: '*/5 * * * *',
-                    timezone: 'UTC',
-                    agentflowId: 'flow-1',
-                    inputPayload: null,
-                    nextRunDate: new Date()
-                }
+                await poller['executeSchedule'](mockSchedule({ inputPayload: undefined }))
 
-                await poller['executeSchedule'](schedule)
-
-                expect(executeFlow).toHaveBeenCalled()
+                expect(executeFlowSpy).toHaveBeenCalled()
                 expect(mockScheduleRepo.update).toHaveBeenCalledWith(
                     'sched-1',
                     expect.objectContaining({
@@ -265,21 +222,10 @@ export function schedulePollerTest() {
             it('should mark ERROR when executeFlow throws', async () => {
                 mockQueryBuilder.execute.mockResolvedValue({ affected: 1 })
                 mockAgentflowRepo.findOneBy.mockResolvedValue({ id: 'flow-1', name: 'Test Flow', flowData: '{}' })
-                const { executeFlow } = require('../../src/utils/buildAgentflow')
-                executeFlow.mockRejectedValueOnce(new Error('Flow failed'))
+                executeFlowSpy.mockRejectedValueOnce(new Error('Flow failed'))
                 const poller = createPoller()
 
-                const schedule = {
-                    id: 'sched-1',
-                    name: 'Failing Schedule',
-                    cronExpression: '*/5 * * * *',
-                    timezone: 'UTC',
-                    agentflowId: 'flow-1',
-                    inputPayload: null,
-                    nextRunDate: new Date()
-                }
-
-                await poller['executeSchedule'](schedule)
+                await poller['executeSchedule'](mockSchedule({ name: 'Failing Schedule' }))
 
                 expect(mockScheduleRepo.update).toHaveBeenCalledWith(
                     'sched-1',
@@ -292,22 +238,11 @@ export function schedulePollerTest() {
             it('should parse inputPayload JSON', async () => {
                 mockQueryBuilder.execute.mockResolvedValue({ affected: 1 })
                 mockAgentflowRepo.findOneBy.mockResolvedValue({ id: 'flow-1', name: 'Test Flow', flowData: '{}' })
-                const { executeFlow } = require('../../src/utils/buildAgentflow')
                 const poller = createPoller()
 
-                const schedule = {
-                    id: 'sched-1',
-                    name: 'Payload Schedule',
-                    cronExpression: '*/5 * * * *',
-                    timezone: 'UTC',
-                    agentflowId: 'flow-1',
-                    inputPayload: '{"question": "daily report"}',
-                    nextRunDate: new Date()
-                }
+                await poller['executeSchedule'](mockSchedule({ inputPayload: '{"question": "daily report"}' }))
 
-                await poller['executeSchedule'](schedule)
-
-                expect(executeFlow).toHaveBeenCalledWith(
+                expect(executeFlowSpy).toHaveBeenCalledWith(
                     expect.objectContaining({
                         incomingInput: expect.objectContaining({
                             question: 'daily report'

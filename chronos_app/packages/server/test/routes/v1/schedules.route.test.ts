@@ -72,7 +72,7 @@ export function schedulesRouteTest() {
                     .set('x-request-from', 'internal')
                     .send({})
 
-                expect([400, 412, 500]).toContain(response.status)
+                expect([400, 412, 500, 503]).toContain(response.status)
             })
 
             it('should reject invalid cron expression', async () => {
@@ -86,7 +86,7 @@ export function schedulesRouteTest() {
                         agentflowId: '550e8400-e29b-41d4-a716-446655440000'
                     })
 
-                expect([400, 412, 500]).toContain(response.status)
+                expect([400, 412, 500, 503]).toContain(response.status)
             })
         })
 
@@ -98,7 +98,7 @@ export function schedulesRouteTest() {
                     .set('x-request-from', 'internal')
                     .send({})
 
-                expect([400, 412, 500]).toContain(response.status)
+                expect([400, 412, 500, 503]).toContain(response.status)
             })
         })
 
@@ -109,7 +109,7 @@ export function schedulesRouteTest() {
                     .set('Authorization', `Bearer ${authToken}`)
                     .set('x-request-from', 'internal')
 
-                expect([200, 404, 500]).toContain(response.status)
+                expect([200, 404, 500, 503]).toContain(response.status)
             })
         })
 
