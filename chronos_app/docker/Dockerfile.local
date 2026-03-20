@@ -20,28 +20,14 @@ RUN apk add --no-cache \
     npm install -g pnpm
 ENV NODE_OPTIONS=--max-old-space-size=8192
 
-# Target Linux platform to avoid installing macOS binaries
-ENV npm_config_platform=linux
-ENV npm_config_arch=x64
-
 WORKDIR /app
 
 # Copy all source files (respects .dockerignore)
 COPY . .
 
-# Install all deps (needed for build), build, then reinstall prod-only deps
-RUN pnpm install && \
-    pnpm build && \
-    # Remove all node_modules and reinstall production only
-    rm -rf node_modules packages/*/node_modules && \
-    pnpm install --prod && \
-    # Clean up unnecessary files from node_modules (conservative)
-    find node_modules -name "*.d.ts" -type f -delete && \
-    find node_modules -name "*.map" -type f -delete && \
-    # Remove any macOS binaries (not needed in Linux container)
-    find node_modules -type d -name "*-darwin-*" -exec rm -rf {} + 2>/dev/null || true && \
-    find node_modules -type d -name "*-darwin64" -exec rm -rf {} + 2>/dev/null || true && \
-    rm -rf node_modules/.cache
+# Install deps, build, then prune devDependencies in-place
+# (preserves compiled native binaries like sqlite3 for musl/Alpine)
+RUN pnpm install && pnpm build && CI=true pnpm prune --prod
 
 # =============================================================================
 # Stage 2: Production - Minimal runtime image
@@ -68,15 +54,18 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/packages/server/dist ./packages/server/dist
 COPY --from=builder /app/packages/server/package.json ./packages/server/
 COPY --from=builder /app/packages/server/templates ./packages/server/templates
+COPY --from=builder /app/packages/server/node_modules ./packages/server/node_modules
 
 # UI: Vite build output
 COPY --from=builder /app/packages/ui/build ./packages/ui/build
 COPY --from=builder /app/packages/ui/package.json ./packages/ui/
+COPY --from=builder /app/packages/ui/node_modules ./packages/ui/node_modules
 
 # Components: compiled output (includes icons via gulp) + models config
 COPY --from=builder /app/packages/components/dist ./packages/components/dist
 COPY --from=builder /app/packages/components/package.json ./packages/components/
 COPY --from=builder /app/packages/components/models.json ./packages/components/
+COPY --from=builder /app/packages/components/node_modules ./packages/components/node_modules
 
 EXPOSE 3000
 

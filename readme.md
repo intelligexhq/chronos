@@ -1,4 +1,4 @@
-# Chronos - Visual AI agent builder
+# Chronos – visual AI agent builder for self‑hosting
 
 ![Build Status](https://github.com/intelligexhq/chronos/actions/workflows/validate.yml/badge.svg)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE.md)
@@ -8,68 +8,110 @@
 [![LangGraph](https://img.shields.io/badge/%40langchain%2Flanggraph-^1.2.2-blue)](https://www.npmjs.com/package/@langchain/langgraph)
 [![MCP SDK](https://img.shields.io/badge/%40modelcontextprotocol%2Fsdk-^1.27.1-blue)](https://www.npmjs.com/package/@modelcontextprotocol/sdk)
 
-<div align=center style="padding-bottom: 35px;">
-<img src="./resources/chronos_main_page.gif" width="600"/>
-</div>
-<div style="page-break-after: always;">&nbsp;</div>
+<div align="center" style="padding-bottom: 35px;">
+  <img src="./resources/chronos_main_page.gif" width="600" />
+</div><div style="page-break-after: always;">&nbsp;</div>
 
-[Chronos](https://intelligex.com/chronos) is a visual AI agent workflow builder. Focused on the self-hosted enviroenments, with strong support for local data models and self hosted tool integrations. With enterprise grade observability, tracing and auditing.
+> Build, run, and debug AI agents on your own infrastructure — with full visibility and control. The self-hosted, production-ready alternative to SaaS AI agent builders
 
-This project has started as a fork of [Flowise](https://github.com/FlowiseAI/Flowise) - but since has implemented multiple improvements and updates towards enterprise grade and self-hosting focus.
+Chronos is a visual AI agent workflow builder designed for teams who don’t want to rely on black-box solutions and want to **own** their infrastructure.  
+Design complex AI workflows, run them on your own infra (local or cloud), and inspect everything — from prompts to tool calls to failures.
 
-- 100+ of prebuilt LLM model integrations, agent templates, skills, and deep research examples.
-- Enterprise level observability, tracing, loging and auditing.
-- Number of [Docker compose examples](./chronos_app/docker/) to get you started fast.
-- Maintained project [`backlog`](#backlog) with regular releases.
+- Visual builder for complex agent workflows
+- Fully self-hosted (local, on-prem, private cloud)
+- Deep observability (trace every step of every run)
 
-## Chronos features
+TL;DR: Chronos is like [Flowise](https://github.com/FlowiseAI/Flowise) — but tailored for teams who need self-hosting, observability, and production readiness.
 
-- OpenAI API specification for deployed agentflows.
-- Scheduled agents. Run agents on the schedule for continuos work.
+## Why Chronos?
 
-## Quick Start
+Most AI agent tools are great for demos — but fall apart in production. Chronos is built and used for real-world use cases
 
-Chronos is tailored for the deployments on local enviroenments and self-hosted production enviroenments. Simpliest way to get started quickly is to build and run all in one Chronos container image. For the more advanced hosting examples see the [docker compose examples](./chronos_app/docker/).
+- *Own your data:* Run everything inside your infrastructure. No forced SaaS, no hidden data flows.
+- *See everything your agents do:* Inspect prompts, tool calls, responses, errors, and token usage — end-to-end.
+- *Debug faster:* Trace failures across the entire workflow instead of guessing.
+- *Go from prototype to production:* Start visually, then integrate via OpenAI spec APIs into real systems.
 
-*Build and run a local Docker container image:*
+## What can you build?
+
+- Internal copilots over private company data  
+- RAG pipelines with local embeddings and vector stores  
+- Automated reporting and monitoring agents  
+- Multi-step research and analysis workflows  
+- Scheduled background agents (sync, alerts, enrichment)
+
+If your agents need access to private data or internal systems — Chronos is built for that.
+
+
+## Quick start
+
+Get Chronos running locally in under 5 minutes.
+The fastest way to try it is to build and run the all‑in‑one Chronos Docker image.
+
+### 1. Clone the repository
 
 ```bash
-# clone the project
 git clone git@github.com:intelligexhq/chronos.git
-# go to docker directory and build&run Chronos
-cd chronos/chronos_app/docker
+cd chronos
+```
+### 2. Build and run the local Docker image
+
+```bash
+cd chronos_app/docker
+# Build local image
 docker build -f Dockerfile.local -t chronos:local ..
+# Run Chronos
 docker run -d --name chronos -p 3001:3000 chronos:local
-# chronos is now accessable on http://localhost:3001
+# Chronos UI is now available at:
+# http://localhost:3001
 ```
 
-## Env Variables
+For more advanced hosting scenarios (multi‑container setups, external databases, etc.), see the [Docker Compose examples](./chronos_app/docker/).
 
-Chronos allows configuration via set of supported environment variables. See example [env variables](chronos_app/docker/.env.example).
+## Get involved
+
+- ⭐ Star this repo to support development  
+- Contribute via PRs and issues  
+- Suggest features or use cases  
+
+Chronos is actively evolving — your feedback helps shape it.
 
 ## Backlog
 
-- Versioning and publishing for agents.
-- SSO user logins
-- Agents with Webhooks
-- Cost & Performance Dashboard
-- Additional Chronos tutorials on [intelligex.com](https://intelligex.com/) explaining skill catalogue, deep agents, data privacy.
+Some of the upcoming capabilities:
 
+- Versioning and publishing for agents.
+- SSO (single sign‑on) for user logins.
+- Agents with webhooks for event‑driven workflows.
+- Cost & performance dashboard for monitoring usage and optimisation.
+- Additional tutorials on [intelligex.com](https://intelligex.com/) covering skill catalogues, deep agents, and data privacy.
+
+You can track progress and suggest features via Issues and Pull Requests.
+
+---
 
 ## Tutorials
 
-List of tutorials and guides to get you started and building Chronos agents:
+Use these guides to go from “first install” to building real agents:
 
-- [Chronos visual agent builder. Up and running in local enviroenment](https://intelligex.com/chronos/chronos-visual-ai-agent-builder-up-and-running)
-- [Chronos visual agent builder. Advanced docker compose examples](https://intelligex.com/chronos/hosting-chronos-advanced-examples)
-- [Chronos visual agent builder. Build your first agent](https://intelligex.com/chronos/chronos-build-your-first-agent-flow)
-- [Chronos visual agent builder. Build RAG agent with Qdrant and Ollama](https://intelligex.com/chronos/build-rag-for-your-documents-with-local-embeddings)
-- [Chronos visual agent builder. How and where data is stored](https://intelligex.com/chronos/how-chronos-agent-builder-stores-data)
+- [Chronos visual agent builder – up and running in a local environment](https://intelligex.com/chronos/chronos-visual-ai-agent-builder-up-and-running)
+- [Chronos visual agent builder – advanced Docker Compose examples](https://intelligex.com/chronos/hosting-chronos-advanced-examples)
+- [Chronos visual agent builder – build your first agent](https://intelligex.com/chronos/chronos-build-your-first-agent-flow)
+- [Build a RAG agent with Qdrant and Ollama](https://intelligex.com/chronos/build-rag-for-your-documents-with-local-embeddings)
+- [How and where Chronos stores data](https://intelligex.com/chronos/how-chronos-agent-builder-stores-data)
+
+---
 
 ## License
 
 Source code in this repository is made available under the [Apache License Version 2.0](LICENSE.md).
 
-## Need Assistance?
+---
 
-We do [provide professional services](https://intelligex.com/about) to deploy, customise and run Chronos visual AI agent builder within your organization enviroenments.
+## Need assistance?
+
+We provide [professional services](https://intelligex.com/about) to help you deploy, customise, and operate Chronos in your organisation’s environment:
+
+- Architecture and deployment in your infra (on‑prem or cloud).
+- Custom agent development and integrations.
+- Training and best practices for teams.
