@@ -27,9 +27,12 @@
 Most AI agent tools are great for demos — but fall apart in production. Chronos is built and used for real-world applied AI use cases
 
 - *Own your data:* Run everything inside your infrastructure.
-- *See everything your agents do:* Inspect prompts, tool calls, responses, errors, and token usage.
-- *Debug faster:* Trace failures across the entire workflow.
-- *Go from prototype to production:* Start visually, then integrate via OpenAI spec APIs.
+- *Visibility of agents actions:* Inspect prompts, tool calls, responses, errors, and token usage.
+- *Cost & Performance Dashboard:* Track or optimise agent cost and performance.
+- *Scheduled agents:* Maintain schedules for your agents.
+- *Debug faster:* Trace failures across the entire workflows.
+- *From prototype to production:* Build agents visually, then integrate to wider enterprise systems via OpenAI API specification.
+
 
 ## What can you build?
 

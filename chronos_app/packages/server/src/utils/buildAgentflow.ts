@@ -23,6 +23,7 @@ import {
     getFileFromUpload,
     removeSpecificFileFromUpload
 } from 'chronos-components'
+import { collectExecutionMetrics } from '../services/metrics-collector'
 import { StatusCodes } from 'http-status-codes'
 import {
     IncomingAgentflowInput,
@@ -2205,6 +2206,22 @@ export const executeAgentFlow = async ({
         })
 
         sseStreamer?.streamAgentFlowEvent(chatId, status)
+
+        // Collect execution metrics for the dashboard (non-blocking)
+        const triggerType = evaluationRunId ? 'evaluation' : isInternal ? 'api' : 'manual'
+        collectExecutionMetrics(
+            appDataSource,
+            {
+                id: newExecution.id,
+                agentflowId: agentflowid,
+                executionData: JSON.stringify(agentFlowExecutedData),
+                state: status,
+                createdDate: newExecution.createdDate,
+                updatedDate: new Date(),
+                stoppedDate: newExecution.stoppedDate
+            } as any,
+            triggerType
+        ).catch(() => {})
     }
 
     logger.debug(`[Agentflow Engine] Flow execution completed. Status: ${status}`)

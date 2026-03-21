@@ -15,6 +15,7 @@ import {
     IconMicroscope,
     IconDatabase,
     IconChartHistogram,
+    IconChartBar,
     IconUserEdit,
     IconFileUpload,
     IconClipboardList,
@@ -46,6 +47,7 @@ const icons = {
     IconDatabase,
     IconUserEdit,
     IconChartHistogram,
+    IconChartBar,
     IconFileUpload,
     IconClipboardList,
     IconStack2,
@@ -70,6 +72,16 @@ const dashboard = {
             title: '',
             type: 'group',
             children: [
+                {
+                    id: 'cost-dashboard',
+                    title: 'Dashboard',
+                    type: 'item',
+                    url: '/dashboard',
+                    icon: icons.IconChartBar,
+                    breadcrumbs: true,
+                    permission: 'dashboard:view',
+                    display: 'feat:dashboard'
+                },
                 {
                     id: 'agentflows',
                     title: 'Agentflows',

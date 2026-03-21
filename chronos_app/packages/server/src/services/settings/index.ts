@@ -1,4 +1,4 @@
-// TODO: add settings
+/** Settings service — returns platform config and feature flags */
 
 import { Platform } from '../../Interface'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
@@ -10,7 +10,8 @@ const getSettings = async () => {
 
         const featureFlags = {
             SCHEDULES_ENABLED: process.env.ENABLE_SCHEDULES === 'true',
-            EVALUATIONS_ENABLED: process.env.ENABLE_EVALUATIONS === 'true'
+            EVALUATIONS_ENABLED: process.env.ENABLE_EVALUATIONS === 'true',
+            DASHBOARD_ENABLED: process.env.ENABLE_DASHBOARD !== 'false'
         }
 
         switch (platformType) {

@@ -35,6 +35,7 @@ import { ScheduleQueue } from './queue/ScheduleQueue'
 import { RedisEventSubscriber } from './queue/RedisEventSubscriber'
 import { Schedule } from './database/entities/Schedule'
 import { SchedulePoller } from './schedulers/SchedulePoller'
+import { MetricsAggregator } from './services/metrics-aggregator'
 import 'global-agent/bootstrap'
 import { UsageCacheManager } from './UsageCacheManager'
 import { ExpressAdapter } from '@bull-board/express'
@@ -81,6 +82,8 @@ export class App {
     redisSubscriber: RedisEventSubscriber
     usageCacheManager: UsageCacheManager
     schedulePoller: SchedulePoller
+    metricsAggregator: MetricsAggregator
+    httpServer: http.Server
     sessionStore: any
 
     constructor() {
@@ -188,6 +191,12 @@ export class App {
                     usageCacheManager: this.usageCacheManager
                 })
                 this.schedulePoller.start()
+            }
+
+            // Dashboard metrics aggregator — runs daily rollup of execution_metrics into daily_metrics
+            if (process.env.ENABLE_DASHBOARD !== 'false') {
+                this.metricsAggregator = new MetricsAggregator(this.AppDataSource)
+                this.metricsAggregator.start()
             }
 
             logger.info('🎉 [server]: All initialization steps completed successfully!')
@@ -355,6 +364,14 @@ export class App {
             if (this.schedulePoller) {
                 this.schedulePoller.stop()
             }
+            if (this.metricsAggregator) {
+                this.metricsAggregator.stop()
+            }
+            if (this.httpServer) {
+                await new Promise<void>((resolve, reject) => {
+                    this.httpServer.close((err) => (err ? reject(err) : resolve()))
+                })
+            }
             await Promise.all(removePromises)
         } catch (e) {
             logger.error(`❌[server]: Chronos Server shut down error: ${e}`)
@@ -371,12 +388,12 @@ export async function start(): Promise<void> {
 
     const host = process.env.HOST
     const port = parseInt(process.env.PORT || '', 10) || 3000
-    const server = http.createServer(serverApp.app)
+    serverApp.httpServer = http.createServer(serverApp.app)
 
     await serverApp.initDatabase()
     await serverApp.config()
 
-    server.listen(port, host, () => {
+    serverApp.httpServer.listen(port, host, () => {
         logger.info(`⚡️ [server]: Chronos Server is listening at ${host ? 'http://' + host : ''}:${port}`)
     })
 }

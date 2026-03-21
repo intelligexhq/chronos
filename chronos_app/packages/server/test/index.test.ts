@@ -66,7 +66,10 @@ import { usersCreateRouteTest } from './routes/v1/users-create.route.test'
 import { adminRouteTest } from './routes/v1/admin.route.test'
 import { adminAgentflowsRouteTest } from './routes/v1/admin-agentflows.route.test'
 import { schedulesRouteTest } from './routes/v1/schedules.route.test'
+import { dashboardRouteTest } from './routes/v1/dashboard.route.test'
 import { schedulesServiceTest } from './services/schedules.service.test'
+import { metricsCollectorServiceTest } from './services/metrics-collector.service.test'
+import { metricsAggregatorServiceTest } from './services/metrics-aggregator.service.test'
 import { agentflowsServiceTest } from './services/agentflows.service.test'
 import { agentflowv2GeneratorServiceTest } from './services/agentflowv2-generator.service.test'
 import { skillsServiceTest } from './services/skills.service.test'
@@ -210,6 +213,7 @@ describe('Routes Test', () => {
     adminRouteTest()
     adminAgentflowsRouteTest()
     schedulesRouteTest()
+    dashboardRouteTest()
 })
 
 describe('Services Test', () => {
@@ -249,6 +253,8 @@ describe('Services Test', () => {
     oauthClientServiceTest()
     openaiServiceTest()
     userScopingServiceTest()
+    metricsCollectorServiceTest()
+    metricsAggregatorServiceTest()
 })
 
 describe('Utils Test', () => {
