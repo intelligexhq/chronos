@@ -15,7 +15,8 @@ const ADMIN_PERMISSIONS = new Set([
     'loginActivity:view',
     'datasets:view',
     'evaluators:view',
-    'evaluations:view'
+    'evaluations:view',
+    'dashboard:view'
 ])
 
 export const useAuth = () => {

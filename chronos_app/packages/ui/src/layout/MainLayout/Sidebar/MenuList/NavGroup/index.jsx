@@ -16,7 +16,7 @@ import { Available } from '@/ui-component/rbac/available'
 const NavGroup = ({ item }) => {
     const theme = useTheme()
     const { hasPermission, hasDisplay } = useAuth()
-    const { schedulesEnabled, evaluationsEnabled } = useConfig()
+    const { schedulesEnabled, evaluationsEnabled, dashboardEnabled } = useConfig()
 
     const listItems = (menu, level = 1) => {
         // Filter based on display and permission
@@ -45,6 +45,11 @@ const NavGroup = ({ item }) => {
 
         // Hide schedules when the feature is not enabled on the server
         if (menu.id === 'schedules' && !schedulesEnabled) {
+            return false
+        }
+
+        // Hide dashboard when the feature is not enabled on the server
+        if (menu.id === 'cost-dashboard' && !dashboardEnabled) {
             return false
         }
 

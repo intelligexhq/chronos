@@ -27,9 +27,12 @@
 Most AI agent tools are great for demos — but fall apart in production. Chronos is built and used for real-world applied AI use cases
 
 - *Own your data:* Run everything inside your infrastructure.
-- *See everything your agents do:* Inspect prompts, tool calls, responses, errors, and token usage.
-- *Debug faster:* Trace failures across the entire workflow.
-- *Go from prototype to production:* Start visually, then integrate via OpenAI spec APIs.
+- *Visibility of agents actions:* Inspect prompts, tool calls, responses, errors, and token usage.
+- *Cost & Performance Dashboard:* Track and optimise agent costs and operations.
+- *Scheduled agents:* Maintain schedules for your agents.
+- *Debug faster:* Opentelemetry helps traicing failures across the entire workflows.
+- *From prototype to production:* Covers both parts, build agents visually and integrate to enterprise systems via OpenAI API specs.
+
 
 ## What can you build?
 
@@ -58,19 +61,18 @@ docker run -d --name chronos -p 3001:3000 chronos:local
 # http://localhost:3001
 ```
 
-For more advanced hosting examples, including vectorstores, Ollama, queue modes see [Docker compose examples](./chronos_app/docker/).
+For more configuration and advanced hosting examples, including localy hosted vectorstores, Ollama, queue modes - see [Docker compose examples](./chronos_app/docker/) section.
 
 ## Get involved
 
 - ⭐ Star this repo to support development  
-- Contribute via PRs; Sugest issues, features and use cases.  
+- Contribute via PRs; sugest issues, features and use cases.  
 
 ## Backlog
 
 Some of the upcoming capabilities:
 
 - Agents with webhooks for event‑driven workflows.
-- Cost & performance dashboard for monitoring usage and optimisation.
 - Versioning and publishing for agents.
 - SSO (single sign‑on) for user logins.
 - Additional tutorials on [intelligex.com](https://intelligex.com/) covering skill catalogues, deep agents, and data privacy.

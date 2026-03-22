@@ -7,6 +7,9 @@ import Loadable from '@/ui-component/loading/Loadable'
 import { RequireAuth } from '@/routes/RequireAuth'
 import { DefaultRedirect } from '@/routes/DefaultRedirect'
 
+// dashboard routing
+const Dashboard = Loadable(lazy(() => import('@/views/dashboard')))
+
 // agents routing
 const Agentflows = Loadable(lazy(() => import('@/views/agentflows')))
 
@@ -76,6 +79,14 @@ const MainRoutes = {
         {
             path: '/',
             element: <DefaultRedirect />
+        },
+        {
+            path: '/dashboard',
+            element: (
+                <RequireAuth permission={'dashboard:view'} display={'feat:dashboard'}>
+                    <Dashboard />
+                </RequireAuth>
+            )
         },
         {
             path: '/agentflows',
