@@ -140,12 +140,18 @@ export const ExecutionsListTable = ({ data, isLoading, onExecutionRowClick, onSe
 
     const sortedData = data
         ? [...data].sort((a, b) => {
-              if (orderBy === 'name') {
-                  return order === 'asc' ? (a.name || '').localeCompare(b.name || '') : (b.name || '').localeCompare(a.name || '')
+              if (orderBy === 'agentflowName') {
+                  return order === 'asc'
+                      ? (a.agentflow?.name || '').localeCompare(b.agentflow?.name || '')
+                      : (b.agentflow?.name || '').localeCompare(a.agentflow?.name || '')
               } else if (orderBy === 'updatedDate') {
                   return order === 'asc'
                       ? new Date(a.updatedDate) - new Date(b.updatedDate)
                       : new Date(b.updatedDate) - new Date(a.updatedDate)
+              } else if (orderBy === 'createdDate') {
+                  return order === 'asc'
+                      ? new Date(a.createdDate) - new Date(b.createdDate)
+                      : new Date(b.createdDate) - new Date(a.createdDate)
               }
               return 0
           })
@@ -184,7 +190,11 @@ export const ExecutionsListTable = ({ data, isLoading, onExecutionRowClick, onSe
                                 </TableSortLabel>
                             </StyledTableCell>
                             <StyledTableCell component='th' scope='row'>
-                                <TableSortLabel active={orderBy === 'name'} direction={order} onClick={() => handleRequestSort('name')}>
+                                <TableSortLabel
+                                    active={orderBy === 'agentflowName'}
+                                    direction={order}
+                                    onClick={() => handleRequestSort('agentflowName')}
+                                >
                                     Agentflow
                                 </TableSortLabel>
                             </StyledTableCell>

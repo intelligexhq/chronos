@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
 
 import {
     Box,
@@ -15,7 +16,9 @@ import {
     Chip,
     Switch,
     IconButton,
-    Tooltip
+    Tooltip,
+    useTheme,
+    TableSortLabel
 } from '@mui/material'
 import MainCard from '@/ui-component/cards/MainCard'
 import WebhookDialog from './WebhookDialog'
@@ -38,6 +41,8 @@ import ToolEmptySVG from '@/assets/images/tools_empty.svg'
 import { Button } from '@mui/material'
 
 const Webhooks = () => {
+    const theme = useTheme()
+    const customization = useSelector((state) => state.customization)
     const getAllWebhooksApi = useApi(webhooksApi.getAllWebhooks)
     const { error, setError } = useError()
     const dispatch = useDispatch()
@@ -56,6 +61,38 @@ const Webhooks = () => {
     const [currentPage, setCurrentPage] = useState(1)
     const [pageLimit, setPageLimit] = useState(DEFAULT_ITEMS_PER_PAGE)
     const [total, setTotal] = useState(0)
+
+    const [order, setOrder] = useState(localStorage.getItem('webhooks_order') || 'asc')
+    const [orderBy, setOrderBy] = useState(localStorage.getItem('webhooks_orderBy') || 'name')
+
+    /**
+     * Handles toggling sort order and sort column for the webhooks table.
+     * @param {string} property - The column property to sort by
+     */
+    const handleRequestSort = (property) => {
+        const isAsc = orderBy === property && order === 'asc'
+        const newOrder = isAsc ? 'desc' : 'asc'
+        setOrder(newOrder)
+        setOrderBy(property)
+        localStorage.setItem('webhooks_order', newOrder)
+        localStorage.setItem('webhooks_orderBy', property)
+    }
+
+    /**
+     * Sorts webhooks data by the selected column and direction.
+     * @param {Array} data - The filtered webhooks array
+     * @returns {Array} Sorted webhooks array
+     */
+    const sortWebhooks = (data) => {
+        return [...data].sort((a, b) => {
+            if (orderBy === 'name') {
+                return order === 'asc' ? (a.name || '').localeCompare(b.name || '') : (b.name || '').localeCompare(a.name || '')
+            } else if (orderBy === 'url') {
+                return order === 'asc' ? (a.url || '').localeCompare(b.url || '') : (b.url || '').localeCompare(a.url || '')
+            }
+            return 0
+        })
+    }
 
     const onChange = (page, pageLimit) => {
         setCurrentPage(page)
@@ -188,17 +225,40 @@ const Webhooks = () => {
                             <>
                                 <TableContainer component={Paper} variant='outlined'>
                                     <Table>
-                                        <TableHead>
+                                        <TableHead
+                                            sx={{
+                                                backgroundColor: customization.isDarkMode
+                                                    ? theme.palette.common.black
+                                                    : theme.palette.grey[100],
+                                                height: 56
+                                            }}
+                                        >
                                             <TableRow>
-                                                <TableCell>Name</TableCell>
-                                                <TableCell>URL</TableCell>
+                                                <TableCell>
+                                                    <TableSortLabel
+                                                        active={orderBy === 'name'}
+                                                        direction={order}
+                                                        onClick={() => handleRequestSort('name')}
+                                                    >
+                                                        Name
+                                                    </TableSortLabel>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <TableSortLabel
+                                                        active={orderBy === 'url'}
+                                                        direction={order}
+                                                        onClick={() => handleRequestSort('url')}
+                                                    >
+                                                        URL
+                                                    </TableSortLabel>
+                                                </TableCell>
                                                 <TableCell>Events</TableCell>
                                                 <TableCell>Enabled</TableCell>
                                                 <TableCell align='right'>Actions</TableCell>
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
-                                            {getAllWebhooksApi.data?.data?.filter(filterWebhooks).map((webhook) => (
+                                            {sortWebhooks(getAllWebhooksApi.data?.data?.filter(filterWebhooks) || []).map((webhook) => (
                                                 <TableRow key={webhook.id}>
                                                     <TableCell>{webhook.name}</TableCell>
                                                     <TableCell>

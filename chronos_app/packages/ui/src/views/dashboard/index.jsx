@@ -480,7 +480,7 @@ const CostDashboard = () => {
                 {/* Top Agents Table */}
                 <ChartCard title='Top Agents' loading={loading}>
                     {agents?.agents?.length > 0 ? (
-                        <Box sx={{ overflowX: 'auto' }}>
+                        <Box sx={{ overflowX: 'auto', pb: 1 }}>
                             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                                 <thead>
                                     <tr style={{ borderBottom: `1px solid ${theme.palette.divider}` }}>
@@ -494,10 +494,7 @@ const CostDashboard = () => {
                                 </thead>
                                 <tbody>
                                     {agents.agents.map((agent) => (
-                                        <tr
-                                            key={agent.agentflowId}
-                                            style={{ borderBottom: `1px solid ${alpha(theme.palette.divider, 0.5)}` }}
-                                        >
+                                        <tr key={agent.agentflowId} style={{ borderBottom: `1px solid ${theme.palette.divider}` }}>
                                             <td style={{ padding: '8px 12px' }}>
                                                 <Typography
                                                     variant='body2'
