@@ -107,12 +107,6 @@ body:
       render: shell
 
   - type: textarea
-    id: trace
-    attributes:
-      label: Trace ID (if observability enabled)
-      description: Helpful if you have `ENABLE_TRACING=true`.
-
-  - type: textarea
     id: extra
     attributes:
       label: Anything else?

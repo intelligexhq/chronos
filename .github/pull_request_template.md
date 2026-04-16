@@ -10,7 +10,6 @@ Fixes #<!-- issue number, if any -->
 - [ ] `feat` — new feature
 - [ ] `fix` — bug fix
 - [ ] `docs` — documentation only
-- [ ] `style` — formatting / no logic change
 - [ ] `test` — adding or fixing tests
 - [ ] `ops` — infra, Docker, CI
 - [ ] `chore` — tooling / misc
@@ -30,7 +29,7 @@ Fixes #<!-- issue number, if any -->
 - [ ] `pnpm lint` passes
 - [ ] `pnpm test` passes
 - [ ] Added/updated unit tests where applicable
-- [ ] Tested locally against SQLite / Postgres / MariaDB (circle any)
+- [ ] Tested locally against SQLite / Postgres
 
 ## Screenshots / recordings
 <!-- For UI changes, include before/after. Delete if N/A. -->
