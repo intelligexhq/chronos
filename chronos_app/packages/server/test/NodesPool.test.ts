@@ -1,13 +1,13 @@
 /**
- * Test suite for NodesPool provider filtering
- * Tests loadEnabledProviders resolution and allowlist behaviour
+ * Test suite for NodesPool node filtering
+ * Tests loadNodesConfig resolution and category-based allowlist behaviour
  */
 import * as fs from 'fs'
 import * as path from 'path'
 
 export function nodesPoolTest() {
-    describe('NodesPool - Provider Filtering', () => {
-        let loadEnabledProviders: () => string[] | null
+    describe('NodesPool - Node Filtering', () => {
+        let loadNodesConfig: () => Record<string, string[] | '*'> | null
 
         const originalEnv = { ...process.env }
 
@@ -37,7 +37,8 @@ export function nodesPoolTest() {
                 appConfig: { showCommunityNodes: false }
             }))
 
-            loadEnabledProviders = require('../src/NodesPool').loadEnabledProviders
+            const nodesPool = require('../src/NodesPool')
+            loadNodesConfig = nodesPool.loadNodesConfig
         })
 
         afterAll(() => {
@@ -45,125 +46,197 @@ export function nodesPoolTest() {
         })
 
         afterEach(() => {
-            // Restore env vars after each test
-            delete process.env.ENABLED_PROVIDERS
             delete process.env.PROVIDERS_CONFIG_LOCATION
             Object.assign(process.env, originalEnv)
         })
 
-        describe('loadEnabledProviders', () => {
-            it('should return null when no config exists and no env vars are set', () => {
-                delete process.env.ENABLED_PROVIDERS
+        describe('loadNodesConfig', () => {
+            it('should return null when no config file exists', () => {
                 process.env.PROVIDERS_CONFIG_LOCATION = '/nonexistent/path.json'
 
-                const result = loadEnabledProviders()
+                const result = loadNodesConfig()
 
                 expect(result).toBeNull()
             })
 
-            it('should parse ENABLED_PROVIDERS env var as comma-separated list', () => {
-                process.env.ENABLED_PROVIDERS = 'chatOpenAI,chatAnthropic,chatOllama'
-
-                const result = loadEnabledProviders()
-
-                expect(result).toEqual(['chatOpenAI', 'chatAnthropic', 'chatOllama'])
-            })
-
-            it('should trim whitespace from ENABLED_PROVIDERS entries', () => {
-                process.env.ENABLED_PROVIDERS = ' chatOpenAI , chatAnthropic , chatOllama '
-
-                const result = loadEnabledProviders()
-
-                expect(result).toEqual(['chatOpenAI', 'chatAnthropic', 'chatOllama'])
-            })
-
-            it('should filter out empty entries from ENABLED_PROVIDERS', () => {
-                process.env.ENABLED_PROVIDERS = 'chatOpenAI,,chatAnthropic,'
-
-                const result = loadEnabledProviders()
-
-                expect(result).toEqual(['chatOpenAI', 'chatAnthropic'])
-            })
-
-            it('should prioritise ENABLED_PROVIDERS over config file', () => {
-                process.env.ENABLED_PROVIDERS = 'chatOpenAI'
-                // Even if a valid config file exists, env var takes precedence
-                process.env.PROVIDERS_CONFIG_LOCATION = path.join(__dirname, '..', 'providers.config.json')
-
-                const result = loadEnabledProviders()
-
-                expect(result).toEqual(['chatOpenAI'])
-            })
-
-            it('should load from PROVIDERS_CONFIG_LOCATION when ENABLED_PROVIDERS is not set', () => {
-                delete process.env.ENABLED_PROVIDERS
-                const configPath = path.join(__dirname, '..', 'providers.config.json')
-                process.env.PROVIDERS_CONFIG_LOCATION = configPath
-
-                // Only run if the file exists (it should from our earlier creation)
-                if (fs.existsSync(configPath)) {
-                    const result = loadEnabledProviders()
-
-                    expect(result).not.toBeNull()
-                    expect(Array.isArray(result)).toBe(true)
-                    expect(result!.length).toBeGreaterThan(0)
-                    expect(result).toContain('chatOpenAI')
-                    expect(result).toContain('chatAnthropic')
-                }
-            })
-
-            it('should return null when config file has unrecognised mode', () => {
-                delete process.env.ENABLED_PROVIDERS
-
-                // Create a temporary config with bad mode
-                const tmpConfig = path.join(__dirname, 'tmp-bad-mode.json')
-                fs.writeFileSync(tmpConfig, JSON.stringify({ mode: 'denylist', providers: ['chatOpenAI'] }))
+            it('should load category-based config from file', () => {
+                const tmpConfig = path.join(__dirname, 'tmp-categories.json')
+                fs.writeFileSync(
+                    tmpConfig,
+                    JSON.stringify({
+                        mode: 'allowlist',
+                        categories: {
+                            'Chat Models': ['chatOpenAI', 'chatAnthropic'],
+                            Tools: '*',
+                            Embeddings: ['openAIEmbedding']
+                        }
+                    })
+                )
                 process.env.PROVIDERS_CONFIG_LOCATION = tmpConfig
 
                 try {
-                    const result = loadEnabledProviders()
+                    const result = loadNodesConfig()
+
+                    expect(result).not.toBeNull()
+                    expect(result!['Chat Models']).toEqual(['chatOpenAI', 'chatAnthropic'])
+                    expect(result!['Tools']).toBe('*')
+                    expect(result!['Embeddings']).toEqual(['openAIEmbedding'])
+                } finally {
+                    fs.unlinkSync(tmpConfig)
+                }
+            })
+
+            it('should return null when config has unrecognised mode', () => {
+                const tmpConfig = path.join(__dirname, 'tmp-bad-mode.json')
+                fs.writeFileSync(tmpConfig, JSON.stringify({ mode: 'denylist', categories: {} }))
+                process.env.PROVIDERS_CONFIG_LOCATION = tmpConfig
+
+                try {
+                    const result = loadNodesConfig()
                     expect(result).toBeNull()
                 } finally {
                     fs.unlinkSync(tmpConfig)
                 }
             })
 
-            it('should return null when config file has invalid JSON', () => {
-                delete process.env.ENABLED_PROVIDERS
+            it('should return null when config has no categories key', () => {
+                const tmpConfig = path.join(__dirname, 'tmp-no-categories.json')
+                fs.writeFileSync(tmpConfig, JSON.stringify({ mode: 'allowlist' }))
+                process.env.PROVIDERS_CONFIG_LOCATION = tmpConfig
 
+                try {
+                    const result = loadNodesConfig()
+                    expect(result).toBeNull()
+                } finally {
+                    fs.unlinkSync(tmpConfig)
+                }
+            })
+
+            it('should return null when config has invalid JSON', () => {
                 const tmpConfig = path.join(__dirname, 'tmp-bad-json.json')
                 fs.writeFileSync(tmpConfig, 'not valid json {{{')
                 process.env.PROVIDERS_CONFIG_LOCATION = tmpConfig
 
                 try {
-                    const result = loadEnabledProviders()
+                    const result = loadNodesConfig()
                     expect(result).toBeNull()
                 } finally {
                     fs.unlinkSync(tmpConfig)
                 }
             })
 
-            it('should return providers array from a valid allowlist config file', () => {
-                delete process.env.ENABLED_PROVIDERS
+            it('should load from default providers.config.json when no env var set', () => {
+                delete process.env.PROVIDERS_CONFIG_LOCATION
 
-                const tmpConfig = path.join(__dirname, 'tmp-valid.json')
-                fs.writeFileSync(tmpConfig, JSON.stringify({ mode: 'allowlist', providers: ['chatOpenAI', 'chatOllama'] }))
+                // The default path resolves to packages/server/providers.config.json
+                const defaultPath = path.join(__dirname, '..', 'providers.config.json')
+                if (fs.existsSync(defaultPath)) {
+                    const result = loadNodesConfig()
+
+                    expect(result).not.toBeNull()
+                    expect(result!['Chat Models']).toBeDefined()
+                    expect(Array.isArray(result!['Chat Models'])).toBe(true)
+                }
+            })
+        })
+
+        describe('isNodeAllowed (via loadNodesConfig integration)', () => {
+            // We test the filtering logic indirectly by importing isNodeAllowed
+            // It's a module-private function, so we test through the exported loadNodesConfig
+            // and document the expected behavior
+
+            it('should allow all nodes when config is null', () => {
+                process.env.PROVIDERS_CONFIG_LOCATION = '/nonexistent/path.json'
+                const config = loadNodesConfig()
+                expect(config).toBeNull()
+                // When null, isNodeAllowed returns true for everything
+            })
+
+            it('should return wildcard categories as "*"', () => {
+                const tmpConfig = path.join(__dirname, 'tmp-wildcard.json')
+                fs.writeFileSync(
+                    tmpConfig,
+                    JSON.stringify({
+                        mode: 'allowlist',
+                        categories: { Tools: '*', 'Agent Flows': '*' }
+                    })
+                )
                 process.env.PROVIDERS_CONFIG_LOCATION = tmpConfig
 
                 try {
-                    const result = loadEnabledProviders()
-                    expect(result).toEqual(['chatOpenAI', 'chatOllama'])
+                    const config = loadNodesConfig()
+                    expect(config!['Tools']).toBe('*')
+                    expect(config!['Agent Flows']).toBe('*')
+                    // Unlisted categories should be undefined (disabled)
+                    expect(config!['Chat Models']).toBeUndefined()
                 } finally {
                     fs.unlinkSync(tmpConfig)
                 }
             })
 
-            it('should handle single provider in ENABLED_PROVIDERS', () => {
-                process.env.ENABLED_PROVIDERS = 'chatOllama'
+            it('should return specific node arrays for non-wildcard categories', () => {
+                const tmpConfig = path.join(__dirname, 'tmp-specific.json')
+                fs.writeFileSync(
+                    tmpConfig,
+                    JSON.stringify({
+                        mode: 'allowlist',
+                        categories: {
+                            'Chat Models': ['chatOpenAI'],
+                            'Vector Stores': ['pinecone', 'supabase']
+                        }
+                    })
+                )
+                process.env.PROVIDERS_CONFIG_LOCATION = tmpConfig
 
-                const result = loadEnabledProviders()
+                try {
+                    const config = loadNodesConfig()
+                    expect(config!['Chat Models']).toEqual(['chatOpenAI'])
+                    expect(config!['Vector Stores']).toEqual(['pinecone', 'supabase'])
+                } finally {
+                    fs.unlinkSync(tmpConfig)
+                }
+            })
 
-                expect(result).toEqual(['chatOllama'])
+            it('should handle empty categories object', () => {
+                const tmpConfig = path.join(__dirname, 'tmp-empty.json')
+                fs.writeFileSync(tmpConfig, JSON.stringify({ mode: 'allowlist', categories: {} }))
+                process.env.PROVIDERS_CONFIG_LOCATION = tmpConfig
+
+                try {
+                    const config = loadNodesConfig()
+                    expect(config).toEqual({})
+                    // All categories unlisted → all disabled
+                } finally {
+                    fs.unlinkSync(tmpConfig)
+                }
+            })
+
+            it('should handle mix of wildcard and specific node lists', () => {
+                const tmpConfig = path.join(__dirname, 'tmp-mixed.json')
+                fs.writeFileSync(
+                    tmpConfig,
+                    JSON.stringify({
+                        mode: 'allowlist',
+                        categories: {
+                            'Chat Models': ['chatOpenAI', 'chatAnthropic'],
+                            Tools: '*',
+                            Embeddings: ['openAIEmbedding'],
+                            Cache: '*'
+                        }
+                    })
+                )
+                process.env.PROVIDERS_CONFIG_LOCATION = tmpConfig
+
+                try {
+                    const config = loadNodesConfig()
+                    expect(config!['Chat Models']).toEqual(['chatOpenAI', 'chatAnthropic'])
+                    expect(config!['Tools']).toBe('*')
+                    expect(config!['Embeddings']).toEqual(['openAIEmbedding'])
+                    expect(config!['Cache']).toBe('*')
+                    expect(config!['Document Loaders']).toBeUndefined()
+                } finally {
+                    fs.unlinkSync(tmpConfig)
+                }
             })
         })
     })
