@@ -1,0 +1,14 @@
+{
+    "mode": "allowlist",
+    "providers": [
+        "chatOpenAI",
+        "chatAnthropic",
+        "chatGoogleGenerativeAI",
+        "chatOllama",
+        "azureChatOpenAI",
+        "chatMistralAI",
+        "awsChatBedrock",
+        "chatOpenRouter",
+        "azureAIFoundry"
+    ]
+}

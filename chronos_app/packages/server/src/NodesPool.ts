@@ -2,10 +2,42 @@ import { IComponentNodes, IComponentCredentials } from './Interface'
 import path from 'path'
 import { Dirent } from 'fs'
 import { getNodeModulesPackagePath } from './utils'
-import { promises } from 'fs'
+import { existsSync, promises } from 'fs'
 import { ICommonObject } from 'chronos-components'
 import logger from './utils/logger'
 import { appConfig } from './AppConfig'
+
+/**
+ * Load the enabled providers allowlist.
+ * Resolution order (highest priority first):
+ *   1. ENABLED_PROVIDERS env var (comma-separated)
+ *   2. PROVIDERS_CONFIG_LOCATION env var → file/URL
+ *   3. providers.config.json next to the server package
+ *   4. null (all providers enabled)
+ */
+export const loadEnabledProviders = (): string[] | null => {
+    if (process.env.ENABLED_PROVIDERS) {
+        return process.env.ENABLED_PROVIDERS.split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+    }
+
+    const configPath = process.env.PROVIDERS_CONFIG_LOCATION || path.join(__dirname, '..', 'providers.config.json')
+
+    if (existsSync(configPath)) {
+        try {
+            const raw = JSON.parse(require('fs').readFileSync(configPath, 'utf8'))
+            if (raw.mode === 'allowlist' && Array.isArray(raw.providers)) {
+                return raw.providers as string[]
+            }
+            logger.warn(`⚠️ [server]: providers.config.json has unrecognised mode "${raw.mode}", allowing all providers`)
+        } catch (err) {
+            logger.error(`❌ [server]: Failed to parse providers config at ${configPath}:`, err)
+        }
+    }
+
+    return null
+}
 
 export class NodesPool {
     componentNodes: IComponentNodes = {}
@@ -18,6 +50,25 @@ export class NodesPool {
     async initialize() {
         await this.initializeNodes()
         await this.initializeCredentials()
+        this.validateProviderConfig()
+    }
+
+    /**
+     * Warn about provider names in the allowlist that don't match any registered Chat Model node.
+     */
+    private validateProviderConfig() {
+        const enabledProviders = loadEnabledProviders()
+        if (!enabledProviders) return
+
+        const registeredChatModels = Object.values(this.componentNodes)
+            .filter((n) => n.category === 'Chat Models')
+            .map((n) => n.name)
+
+        for (const name of enabledProviders) {
+            if (!registeredChatModels.includes(name)) {
+                logger.warn(`⚠️ [server]: Provider "${name}" in allowlist does not match any registered Chat Model node`)
+            }
+        }
     }
 
     /**
@@ -25,6 +76,10 @@ export class NodesPool {
      */
     private async initializeNodes() {
         const disabled_nodes = process.env.DISABLED_NODES ? process.env.DISABLED_NODES.split(',') : []
+        const enabled_providers = loadEnabledProviders()
+        if (enabled_providers) {
+            logger.info(`✅ [server]: Provider allowlist active — ${enabled_providers.length} providers enabled`)
+        }
         const packagePath = getNodeModulesPackagePath('chronos-components')
         const nodesPath = path.join(packagePath, 'dist', 'nodes')
         const nodeFiles = await this.getFiles(nodesPath)
@@ -67,8 +122,10 @@ export class NodesPool {
                             if (!isCommunityNodesAllowed && isAuthorPresent) conditionTwo = false
 
                             const isDisabled = disabled_nodes.includes(newNodeInstance.name)
+                            const isChatModel = newNodeInstance.category === 'Chat Models'
+                            const isAllowed = !enabled_providers || !isChatModel || enabled_providers.includes(newNodeInstance.name)
 
-                            if (conditionOne && conditionTwo && !isDisabled) {
+                            if (conditionOne && conditionTwo && !isDisabled && isAllowed) {
                                 this.componentNodes[newNodeInstance.name] = newNodeInstance
                             }
                         }
