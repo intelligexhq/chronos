@@ -54,6 +54,15 @@ export class AgentFlow implements IAgentFlow {
     @Column({ nullable: true })
     userId?: string
 
+    @Column({ nullable: true, type: 'text' })
+    publishedFlowData?: string
+
+    @Column({ nullable: true, type: 'uuid' })
+    publishedVersionId?: string
+
+    @Column({ nullable: true, type: 'int' })
+    currentVersion?: number
+
     @Column({ type: 'timestamp' })
     @CreateDateColumn()
     createdDate: Date

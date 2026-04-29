@@ -25,6 +25,7 @@ import { ExecutionMetrics } from './ExecutionMetrics'
 import { DailyMetrics } from './DailyMetrics'
 import { Webhook } from './Webhook'
 import { WebhookDelivery } from './WebhookDelivery'
+import { AgentflowVersion } from './AgentflowVersion'
 
 export const entities = {
     AgentFlow,
@@ -53,5 +54,6 @@ export const entities = {
     ExecutionMetrics,
     DailyMetrics,
     Webhook,
-    WebhookDelivery
+    WebhookDelivery,
+    AgentflowVersion
 }

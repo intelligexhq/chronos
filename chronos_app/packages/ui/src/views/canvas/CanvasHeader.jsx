@@ -8,11 +8,23 @@ import { useTheme } from '@mui/material/styles'
 import { Avatar, Box, ButtonBase, Typography, Stack, TextField, Button } from '@mui/material'
 
 // icons
-import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX, IconCode } from '@tabler/icons-react'
+import {
+    IconSettings,
+    IconChevronLeft,
+    IconDeviceFloppy,
+    IconPencil,
+    IconCheck,
+    IconX,
+    IconCode,
+    IconUpload,
+    IconHistory
+} from '@tabler/icons-react'
 
 // project imports
 import Settings from '@/views/settings'
 import SaveAgentflowDialog from '@/ui-component/dialog/SaveAgentflowDialog'
+import PublishAgentflowDialog from '@/ui-component/dialog/PublishAgentflowDialog'
+import AgentflowVersionsDialog from '@/ui-component/dialog/AgentflowVersionsDialog'
 import APICodeDialog from '@/views/agentflows/APICodeDialog'
 import ViewMessagesDialog from '@/ui-component/dialog/ViewMessagesDialog'
 import AgentflowConfigurationDialog from '@/ui-component/dialog/AgentflowConfigurationDialog'
@@ -23,6 +35,7 @@ import { Available } from '@/ui-component/rbac/available'
 
 // API
 import agentflowsApi from '@/api/agentflows'
+import agentflowVersionsApi from '@/api/agentflowVersions'
 
 // Hooks
 import useApi from '@/hooks/useApi'
@@ -58,6 +71,9 @@ const CanvasHeader = ({ agentflow, isAgentCanvas, isAgentflowV2, handleSaveFlow,
 
     const [exportAsTemplateDialogOpen, setExportAsTemplateDialogOpen] = useState(false)
     const [exportAsTemplateDialogProps, setExportAsTemplateDialogProps] = useState({})
+    const [publishDialogOpen, setPublishDialogOpen] = useState(false)
+    const [versionsDialogOpen, setVersionsDialogOpen] = useState(false)
+    const [isPublishing, setIsPublishing] = useState(false)
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
@@ -216,6 +232,54 @@ const CanvasHeader = ({ agentflow, isAgentCanvas, isAgentflowV2, handleSaveFlow,
     const onSaveAgentflowClick = () => {
         if (agentflow.id) handleSaveFlow(flowName)
         else setFlowDialogOpen(true)
+    }
+
+    const onPublishClick = () => {
+        if (!agentflow?.id) return
+        if (canvas.isDirty) {
+            enqueueSnackbar({
+                message: 'Save your changes before publishing.',
+                options: { variant: 'warning' }
+            })
+            return
+        }
+        setPublishDialogOpen(true)
+    }
+
+    const onConfirmPublish = async ({ notes }) => {
+        setIsPublishing(true)
+        try {
+            const response = await agentflowVersionsApi.publishAgentflow(agentflow.id, { notes })
+            const updatedAgentflow = {
+                ...agentflow,
+                publishedVersionId: response.data.id,
+                currentVersion: response.data.version,
+                publishedFlowData: agentflow.flowData
+            }
+            dispatch({ type: SET_AGENTFLOW, agentflow: updatedAgentflow })
+            enqueueSnackbar({
+                message: `Published as v${response.data.version}`,
+                options: { variant: 'success' }
+            })
+            setPublishDialogOpen(false)
+        } catch (err) {
+            enqueueSnackbar({
+                message: `Publish failed: ${err?.response?.data?.message ?? err.message}`,
+                options: { variant: 'error', persist: true, action: (key) => closeSnackbarAction(key) && null }
+            })
+        } finally {
+            setIsPublishing(false)
+        }
+    }
+
+    const onRolledBack = (version, updatedAgentflow) => {
+        if (updatedAgentflow) {
+            dispatch({ type: SET_AGENTFLOW, agentflow: { ...agentflow, ...updatedAgentflow } })
+        }
+        enqueueSnackbar({
+            message: `Rolled back to v${version.version}`,
+            options: { variant: 'success' }
+        })
     }
 
     const onConfirmSaveName = (flowName) => {
@@ -432,6 +496,50 @@ const CanvasHeader = ({ agentflow, isAgentCanvas, isAgentflowV2, handleSaveFlow,
                             </Avatar>
                         </ButtonBase>
                     </Available>
+                    {agentflow?.id && (
+                        <Available permission='agentflows:update'>
+                            <ButtonBase title='Publish' sx={{ borderRadius: '50%', mr: 2 }}>
+                                <Avatar
+                                    variant='rounded'
+                                    sx={{
+                                        ...theme.typography.commonAvatar,
+                                        ...theme.typography.mediumAvatar,
+                                        transition: 'all .2s ease-in-out',
+                                        background: theme.palette.success.light,
+                                        color: theme.palette.success.dark,
+                                        '&:hover': {
+                                            background: theme.palette.success.dark,
+                                            color: theme.palette.success.light
+                                        }
+                                    }}
+                                    color='inherit'
+                                    onClick={onPublishClick}
+                                >
+                                    <IconUpload stroke={1.5} size='1.3rem' />
+                                </Avatar>
+                            </ButtonBase>
+                            <ButtonBase title='Version history' sx={{ borderRadius: '50%', mr: 2 }}>
+                                <Avatar
+                                    variant='rounded'
+                                    sx={{
+                                        ...theme.typography.commonAvatar,
+                                        ...theme.typography.mediumAvatar,
+                                        transition: 'all .2s ease-in-out',
+                                        background: theme.palette.canvasHeader.settingsLight,
+                                        color: theme.palette.canvasHeader.settingsDark,
+                                        '&:hover': {
+                                            background: theme.palette.canvasHeader.settingsDark,
+                                            color: theme.palette.canvasHeader.settingsLight
+                                        }
+                                    }}
+                                    color='inherit'
+                                    onClick={() => setVersionsDialogOpen(true)}
+                                >
+                                    <IconHistory stroke={1.5} size='1.3rem' />
+                                </Avatar>
+                            </ButtonBase>
+                        </Available>
+                    )}
                     <ButtonBase ref={settingsRef} title='Settings' sx={{ borderRadius: '50%' }}>
                         <Avatar
                             variant='rounded'
@@ -497,6 +605,18 @@ const CanvasHeader = ({ agentflow, isAgentCanvas, isAgentflowV2, handleSaveFlow,
                 dialogProps={agentflowConfigurationDialogProps}
                 onCancel={() => setAgentflowConfigurationDialogOpen(false)}
                 isAgentCanvas={isAgentCanvas}
+            />
+            <PublishAgentflowDialog
+                show={publishDialogOpen && !isPublishing}
+                currentVersion={agentflow?.currentVersion}
+                onCancel={() => setPublishDialogOpen(false)}
+                onConfirm={onConfirmPublish}
+            />
+            <AgentflowVersionsDialog
+                show={versionsDialogOpen}
+                agentflow={agentflow}
+                onCancel={() => setVersionsDialogOpen(false)}
+                onRolledBack={onRolledBack}
             />
         </>
     )

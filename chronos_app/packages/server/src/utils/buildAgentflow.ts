@@ -78,6 +78,7 @@ import { generateTTSForResponseStream, shouldAutoPlayTTS } from './ttsUtils'
 import { getRunningExpressApp } from './getRunningExpressApp'
 import { validateFileMimeTypeAndExtensionMatch } from './fileValidation'
 import { validateFlowAPIKey } from './validateKey'
+import { assertDraftAccess, isDraftRequested } from './draftAccess'
 import { checkStorage, updatePredictionsUsage, updateStorageUsage } from './quotaUsage'
 import { CHRONOS_METRIC_COUNTERS, CHRONOS_COUNTER_STATUS, IMetricsProvider } from '../Interface.Metrics'
 import { OMIT_QUEUE_JOB_DATA } from './constants'
@@ -2757,6 +2758,21 @@ export const utilBuildAgentflow = async (req: Request, isInternal: boolean = fal
             if (!isKeyValidated) {
                 throw new InternalChronosError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
             }
+        }
+
+        // Resolve draft vs. published flowData (v1.5.0)
+        // Default to the published snapshot. Callers explicitly opt into the
+        // draft via X-Chronos-Draft: true; that path is auth-gated.
+        if (isDraftRequested(req)) {
+            await assertDraftAccess(req, agentflow, isInternal)
+            // agentflow.flowData already holds the draft — leave as-is.
+        } else if (agentflow.publishedFlowData) {
+            agentflow.flowData = agentflow.publishedFlowData
+        } else {
+            throw new InternalChronosError(
+                StatusCodes.CONFLICT,
+                `Agentflow ${agentflow.id} has no published version. Publish it first or send X-Chronos-Draft: true.`
+            )
         }
 
         // Open source: No workspace/organization needed
