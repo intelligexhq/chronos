@@ -1061,7 +1061,8 @@ const ChatMessage = ({ open, agentflowid, isAgentCanvas, isDialog, previews, set
             body: JSON.stringify(params),
             headers: {
                 'Content-Type': 'application/json',
-                'x-request-from': 'internal'
+                'x-request-from': 'internal',
+                'X-Chronos-Draft': 'true'
             },
             async onopen(response) {
                 if (response.ok && response.headers.get('content-type') === EventStreamContentType) {

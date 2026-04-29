@@ -4,6 +4,7 @@ import { AgentflowType, IReactFlowObject } from '../../Interface'
 import { UserContext } from '../../Interface.Auth'
 import { CHRONOS_COUNTER_STATUS, CHRONOS_METRIC_COUNTERS } from '../../Interface.Metrics'
 import { AgentFlow, EnumAgentflowType } from '../../database/entities/AgentFlow'
+import { AgentflowVersion } from '../../database/entities/AgentflowVersion'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
 import { UpsertHistory } from '../../database/entities/UpsertHistory'
@@ -90,6 +91,9 @@ const deleteAgentflow = async (agentflowId: string, userContext?: UserContext): 
 
         // Delete all upsert history
         await appServer.AppDataSource.getRepository(UpsertHistory).delete({ agentflowid: agentflowId })
+
+        // Delete all version snapshots
+        await appServer.AppDataSource.getRepository(AgentflowVersion).delete({ agentflowId })
 
         try {
             // Delete all uploads corresponding to this agentflow

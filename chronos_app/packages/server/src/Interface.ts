@@ -69,6 +69,25 @@ export interface IAgentFlow {
     category?: string
     type?: AgentflowType
     userId?: string
+    publishedFlowData?: string
+    publishedVersionId?: string
+    currentVersion?: number
+}
+
+export interface IAgentflowVersion {
+    id: string
+    agentflowId: string
+    version: number
+    flowData: string
+    chatbotConfig?: string
+    apiConfig?: string
+    analytic?: string
+    speechToText?: string
+    textToSpeech?: string
+    followUpPrompts?: string
+    notes?: string
+    publishedBy?: string
+    createdDate: Date
 }
 
 export interface IChatMessage {

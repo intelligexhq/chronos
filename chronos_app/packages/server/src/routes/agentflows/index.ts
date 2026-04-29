@@ -1,5 +1,6 @@
 import express from 'express'
 import agentflowsController from '../../controllers/agentflows'
+import agentflowVersionsController from '../../controllers/agentflow-versions'
 import { checkAnyPermission } from '../../utils/openSourceStubs'
 const router = express.Router()
 
@@ -22,6 +23,16 @@ router.get(
     '/has-changed/:id/:lastUpdatedDateTime',
     checkAnyPermission('agentflows:update'),
     agentflowsController.checkIfAgentflowHasChanged
+)
+
+// VERSIONING (v1.5.0)
+router.post('/:id/publish', checkAnyPermission('agentflows:update'), agentflowVersionsController.publishAgentflow)
+router.post('/:id/rollback/:version', checkAnyPermission('agentflows:update'), agentflowVersionsController.rollbackAgentflow)
+router.get('/:id/versions', checkAnyPermission('agentflows:view,agentflows:update'), agentflowVersionsController.getAgentflowVersions)
+router.get(
+    '/:id/versions/:version',
+    checkAnyPermission('agentflows:view,agentflows:update'),
+    agentflowVersionsController.getAgentflowVersion
 )
 
 export default router
