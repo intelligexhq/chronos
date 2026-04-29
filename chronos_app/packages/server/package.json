@@ -1,6 +1,6 @@
 {
     "name": "chronos",
-    "version": "1.2.1",
+    "version": "1.5.0",
     "description": "Chronos Server",
     "scripts": {
         "build": "tsc",
