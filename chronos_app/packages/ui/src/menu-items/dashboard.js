@@ -77,6 +77,15 @@ const dashboard = {
             type: 'group',
             children: [
                 {
+                    id: 'agents',
+                    title: 'Agents',
+                    type: 'item',
+                    url: '/agents',
+                    icon: icons.IconRobot,
+                    breadcrumbs: true,
+                    permission: 'agents:view'
+                },
+                {
                     id: 'mcp-servers',
                     title: 'MCP Servers',
                     type: 'item',
