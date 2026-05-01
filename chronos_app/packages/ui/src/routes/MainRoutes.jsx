@@ -25,6 +25,13 @@ const Schedules = Loadable(lazy(() => import('@/views/schedules')))
 // webhooks routing
 const Webhooks = Loadable(lazy(() => import('@/views/webhooks')))
 
+// mcp-servers routing
+const MCPServers = Loadable(lazy(() => import('@/views/mcp-servers')))
+
+// agents routing (registered agents — separate from agentflows)
+const Agents = Loadable(lazy(() => import('@/views/agents')))
+const AgentDetail = Loadable(lazy(() => import('@/views/agents/AgentDetail')))
+
 // skills routing
 const Skills = Loadable(lazy(() => import('@/views/skills')))
 
@@ -136,6 +143,30 @@ const MainRoutes = {
             element: (
                 <RequireAuth permission={'webhooks:view'} display={'feat:webhooks'}>
                     <Webhooks />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/mcp-servers',
+            element: (
+                <RequireAuth permission={'mcp-servers:view'}>
+                    <MCPServers />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/agents',
+            element: (
+                <RequireAuth permission={'agents:view'}>
+                    <Agents />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/agents/:id',
+            element: (
+                <RequireAuth permission={'agents:view'}>
+                    <AgentDetail />
                 </RequireAuth>
             )
         },

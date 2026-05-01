@@ -1,10 +1,11 @@
 import { v4 as uuidv4 } from 'uuid'
 import { StatusCodes } from 'http-status-codes'
+import { Agent } from '../../database/entities/Agent'
 import { AgentFlow } from '../../database/entities/AgentFlow'
 import { InternalChronosError } from '../../errors/internalChronosError'
 import { getErrorMessage } from '../../errors/utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { IMessage } from '../../Interface'
+import { AgentRuntimeType, IMessage } from '../../Interface'
 
 // OpenAI-compatible types
 
@@ -54,7 +55,10 @@ interface OpenAIModelObject {
 }
 
 /**
- * Resolve an agentflow by model ID (UUID).
+ * Resolve an agentflow by model ID (UUID). Retained for back-compat; new
+ * call sites should use `resolveAgentTarget`, which also accepts an
+ * `Agent.slug` and returns either an AgentFlow target or an Agent target
+ * (HTTP runtime).
  */
 const resolveAgentflow = async (modelId: string): Promise<AgentFlow> => {
     const appServer = getRunningExpressApp()
@@ -66,6 +70,59 @@ const resolveAgentflow = async (modelId: string): Promise<AgentFlow> => {
         throw new InternalChronosError(StatusCodes.BAD_REQUEST, `Model '${modelId}' is not an agentflow. Only AGENTFLOW type is supported.`)
     }
     return agentflow
+}
+
+/**
+ * Result shape for `resolveAgentTarget`. The OpenAI controller branches on
+ * `kind`: AgentFlow targets follow the existing transform/dispatch path;
+ * Agent targets (always HTTP in v1.6) are handed straight to the HTTP
+ * runtime — the agent already speaks OpenAI, so no transform is applied.
+ */
+export type AgentTarget = { kind: 'agentflow'; agentflow: AgentFlow } | { kind: 'agent'; agent: Agent }
+
+/**
+ * Resolve an OpenAI `model` field to an invocation target.
+ *
+ * Matches locked decision #6: try `AgentFlow` UUID first (preserves v1.1
+ * behaviour). On miss, try `Agent.slug`. For BUILT_IN agents, follow
+ * `builtinAgentflowId` to the underlying AgentFlow so the existing OpenAI
+ * controller path is reused. For HTTP agents, return the Agent itself —
+ * the controller will dispatch via `HttpAgentRuntime`.
+ */
+const resolveAgentTarget = async (modelId: string): Promise<AgentTarget> => {
+    const appServer = getRunningExpressApp()
+    const agentflowRepo = appServer.AppDataSource.getRepository(AgentFlow)
+    const directAgentflow = await agentflowRepo.findOneBy({ id: modelId })
+    if (directAgentflow) {
+        if (directAgentflow.type !== 'AGENTFLOW') {
+            throw new InternalChronosError(
+                StatusCodes.BAD_REQUEST,
+                `Model '${modelId}' is not an agentflow. Only AGENTFLOW type is supported.`
+            )
+        }
+        return { kind: 'agentflow', agentflow: directAgentflow }
+    }
+
+    const agent = await appServer.AppDataSource.getRepository(Agent).findOneBy({ slug: modelId })
+    if (!agent) {
+        throw new InternalChronosError(StatusCodes.NOT_FOUND, `Model '${modelId}' not found`)
+    }
+    if (!agent.enabled) {
+        throw new InternalChronosError(StatusCodes.CONFLICT, `Agent '${modelId}' is disabled`)
+    }
+
+    if (agent.runtimeType === AgentRuntimeType.BUILT_IN) {
+        if (!agent.builtinAgentflowId) {
+            throw new InternalChronosError(StatusCodes.NOT_FOUND, `BUILT_IN agent '${modelId}' has no underlying agentflow`)
+        }
+        const linked = await agentflowRepo.findOneBy({ id: agent.builtinAgentflowId })
+        if (!linked) {
+            throw new InternalChronosError(StatusCodes.NOT_FOUND, `Agentflow ${agent.builtinAgentflowId} not found`)
+        }
+        return { kind: 'agentflow', agentflow: linked }
+    }
+
+    return { kind: 'agent', agent }
 }
 
 /**
@@ -209,6 +266,7 @@ const getModel = async (modelId: string): Promise<OpenAIModelObject> => {
 
 export default {
     resolveAgentflow,
+    resolveAgentTarget,
     transformMessages,
     transformResponse,
     buildStreamChunk,

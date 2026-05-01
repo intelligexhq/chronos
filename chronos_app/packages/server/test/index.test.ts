@@ -111,6 +111,13 @@ import { openaiServiceTest } from './services/openai.service.test'
 import { webhooksServiceTest } from './services/webhooks.service.test'
 import { webhookDispatcherServiceTest } from './services/webhook-dispatcher.service.test'
 import { agentflowVersionsServiceTest } from './services/agentflow-versions.service.test'
+import { agentsServiceTest } from './services/agents.service.test'
+import { mcpServersServiceTest } from './services/mcp-servers.service.test'
+import { agentDispatcherServiceTest } from './services/agent-dispatcher.service.test'
+import { agentRuntimeHttpServiceTest } from './services/agent-runtime-http.service.test'
+import { mcpGatewayServiceTest } from './services/mcp-gateway.service.test'
+import { agentCallbackAuthMiddlewareTest } from './middlewares/agent-callback-auth.test'
+import { agentCallbacksRouteTest } from './routes/v1/agent-callbacks.route.test'
 import { nodesPoolTest } from './NodesPool.test'
 import { apiKeyTest } from './utils/api-key.util.test'
 import { sanitizeUtilTest } from './utils/sanitize.util.test'
@@ -145,6 +152,8 @@ import { cachePoolTest } from './CachePool.test'
 import { abortControllerPoolTest } from './AbortControllerPool.test'
 import { simpleIdentityManagerTest } from './SimpleIdentityManager.test'
 import { schedulePollerTest } from './schedulers/schedule-poller.test'
+import { agentHealthPollerTest } from './schedulers/agent-health-poller.test'
+import { mcpServerHealthPollerTest } from './schedulers/mcp-server-health-poller.test'
 
 // extend test timeout to 6 minutes for long setups (increase as tests grow)
 jest.setTimeout(360000)
@@ -221,6 +230,7 @@ describe('Routes Test', () => {
     adminAgentflowsRouteTest()
     schedulesRouteTest()
     dashboardRouteTest()
+    agentCallbacksRouteTest()
 })
 
 describe('Services Test', () => {
@@ -265,7 +275,16 @@ describe('Services Test', () => {
     webhooksServiceTest()
     webhookDispatcherServiceTest()
     agentflowVersionsServiceTest()
+    agentsServiceTest()
+    mcpServersServiceTest()
+    agentDispatcherServiceTest()
+    agentRuntimeHttpServiceTest()
+    mcpGatewayServiceTest()
     nodesPoolTest()
+})
+
+describe('Middlewares Test', () => {
+    agentCallbackAuthMiddlewareTest()
 })
 
 describe('Utils Test', () => {
@@ -317,4 +336,6 @@ describe('Identity Test', () => {
 
 describe('Schedulers Test', () => {
     schedulePollerTest()
+    agentHealthPollerTest()
+    mcpServerHealthPollerTest()
 })
