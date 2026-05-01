@@ -17,4 +17,7 @@ router.delete('/:id', checkPermission('agents:delete'), agentsController.deleteA
 router.post('/:id/regenerate-callback-token', checkPermission('agents:update'), agentsController.regenerateCallbackToken)
 router.post('/:id/test-connection', checkPermission('agents:update'), agentsController.testAgentConnection)
 
+router.post('/:id/invoke', checkPermission('agents:invoke'), agentsController.invokeAgent)
+router.post('/:id/chat/completions', checkPermission('agents:invoke'), agentsController.chatCompletions)
+
 export default router

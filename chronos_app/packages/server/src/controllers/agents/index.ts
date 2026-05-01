@@ -1,7 +1,9 @@
 import { NextFunction, Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { InternalChronosError } from '../../errors/internalChronosError'
+import agentDispatcher from '../../services/agent-dispatcher'
 import agentsService from '../../services/agents'
+import openaiController from '../openai'
 import { getPageAndLimitParams } from '../../utils/pagination'
 
 const createAgent = async (req: Request, res: Response, next: NextFunction) => {
@@ -119,6 +121,28 @@ const testAgentConnection = async (req: Request, res: Response, next: NextFuncti
     }
 }
 
+const invokeAgent = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (!req.params.id) {
+            throw new InternalChronosError(StatusCodes.PRECONDITION_FAILED, `Error: agentsController.invokeAgent - id not provided!`)
+        }
+        const result = await agentDispatcher.dispatch(req, res, req.params.id)
+        if (result !== undefined && !res.headersSent) {
+            return res.json(result)
+        }
+    } catch (error) {
+        next(error)
+    }
+}
+
+const chatCompletions = async (req: Request, res: Response, next: NextFunction) => {
+    if (!req.params.id) {
+        return next(new InternalChronosError(StatusCodes.PRECONDITION_FAILED, `Error: agentsController.chatCompletions - id not provided!`))
+    }
+    req.body = { ...req.body, model: req.params.id }
+    return openaiController.chatCompletions(req, res, next)
+}
+
 export default {
     createAgent,
     updateAgent,
@@ -127,5 +151,7 @@ export default {
     getAgentById,
     toggleAgent,
     regenerateCallbackToken,
-    testAgentConnection
+    testAgentConnection,
+    invokeAgent,
+    chatCompletions
 }

@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { StatusCodes } from 'http-status-codes'
 import predictionsService from '../../services/predictions'
 import openaiService from '../../services/openai'
+import httpAgentRuntime from '../../services/agent-runtime-http'
 import { InternalChronosError } from '../../errors/internalChronosError'
 import { getErrorMessage } from '../../errors/utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
@@ -27,8 +28,16 @@ const chatCompletions = async (req: Request, res: Response, next: NextFunction) 
             throw new InternalChronosError(StatusCodes.BAD_REQUEST, "'messages' must be a non-empty array")
         }
 
-        // Resolve the agentflow
-        const agentflow = await openaiService.resolveAgentflow(model)
+        // Resolve the model. UUID hits an AgentFlow directly (v1.1 behaviour).
+        // On miss, falls back to Agent.slug — BUILT_IN agents transparently
+        // route through the AgentFlow path; HTTP agents are dispatched via
+        // the HTTP runtime, which is already OpenAI-shaped (no transform).
+        const target = await openaiService.resolveAgentTarget(model)
+        if (target.kind === 'agent') {
+            await httpAgentRuntime.invoke(target.agent, req.body, req, res)
+            return
+        }
+        const agentflow = target.agentflow
 
         // Transform OpenAI messages to Chronos format
         const { question, history, systemMessage } = openaiService.transformMessages(messages)

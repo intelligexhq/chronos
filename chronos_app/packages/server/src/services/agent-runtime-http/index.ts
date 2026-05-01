@@ -1,0 +1,286 @@
+import { Request, Response } from 'express'
+import { StatusCodes } from 'http-status-codes'
+import { v4 as uuidv4 } from 'uuid'
+import { Agent } from '../../database/entities/Agent'
+import { Credential } from '../../database/entities/Credential'
+import { Execution } from '../../database/entities/Execution'
+import { ExecutionMetrics } from '../../database/entities/ExecutionMetrics'
+import { ExecutionState } from '../../Interface'
+import { InternalChronosError } from '../../errors/internalChronosError'
+import { getErrorMessage } from '../../errors/utils'
+import { decryptCredentialData } from '../../utils'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import logger from '../../utils/logger'
+
+const DEFAULT_HTTP_TIMEOUT_MS = 60000
+
+/**
+ * Resolves outbound auth credentials into a header pair, supporting both
+ * inline secrets and `Credential`-vault references.
+ *
+ * Supported shapes:
+ *   { type: 'bearer', token: '...' }
+ *   { type: 'bearer', credentialId: '...', tokenField?: 'apiKey' }
+ *   { type: 'header', name: 'X-Token', value: '...' }
+ *   { type: 'header', name: 'X-Token', credentialId: '...', valueField?: 'apiKey' }
+ */
+const resolveOutboundAuth = async (outboundAuth?: string): Promise<Record<string, string>> => {
+    if (!outboundAuth) return {}
+    let parsed: any
+    try {
+        parsed = typeof outboundAuth === 'string' ? JSON.parse(outboundAuth) : outboundAuth
+    } catch {
+        return {}
+    }
+    if (!parsed || typeof parsed !== 'object') return {}
+
+    const fetchSecret = async (credentialId: string, field?: string): Promise<string | undefined> => {
+        const appServer = getRunningExpressApp()
+        const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({ id: credentialId })
+        if (!credential) return undefined
+        const decrypted = await decryptCredentialData(credential.encryptedData)
+        const key = field ?? Object.keys(decrypted)[0]
+        const value = key ? decrypted[key] : undefined
+        return typeof value === 'string' ? value : undefined
+    }
+
+    if (parsed.type === 'bearer') {
+        const token = parsed.token ?? (parsed.credentialId ? await fetchSecret(parsed.credentialId, parsed.tokenField) : undefined)
+        if (!token) return {}
+        return { Authorization: `Bearer ${token}` }
+    }
+
+    if (parsed.type === 'header' && typeof parsed.name === 'string') {
+        const value = parsed.value ?? (parsed.credentialId ? await fetchSecret(parsed.credentialId, parsed.valueField) : undefined)
+        if (!value) return {}
+        return { [parsed.name]: value }
+    }
+
+    return {}
+}
+
+/**
+ * Writes an Execution row to mark the start of an HTTP-agent invocation.
+ * `agentflowId` is the Agent.id so dashboard queries can correlate executions
+ * back to the registered agent (locked decision #4 — single uniform shape).
+ */
+const writeStartExecution = async (agent: Agent, sessionId: string, executionData: object): Promise<Execution | null> => {
+    try {
+        const appServer = getRunningExpressApp()
+        const execution = appServer.AppDataSource.getRepository(Execution).create({
+            agentflowId: agent.id,
+            state: 'INPROGRESS' as ExecutionState,
+            sessionId,
+            executionData: JSON.stringify(executionData)
+        })
+        return await appServer.AppDataSource.getRepository(Execution).save(execution)
+    } catch (error) {
+        logger.warn(`[HttpAgentRuntime] Failed to record start execution for agent ${agent.id}: ${getErrorMessage(error)}`)
+        return null
+    }
+}
+
+/**
+ * Updates the Execution row to a terminal state and writes the matching
+ * ExecutionMetrics row. Token counts are zero in v1.6 — HTTP agents do not
+ * surface Chronos-format token instrumentation.
+ */
+const writeFinishExecution = async (
+    execution: Execution | null,
+    agent: Agent,
+    state: ExecutionState,
+    durationMs: number,
+    finalPayload: object
+): Promise<void> => {
+    if (!execution) return
+    try {
+        const appServer = getRunningExpressApp()
+        const repo = appServer.AppDataSource.getRepository(Execution)
+        execution.state = state
+        execution.executionData = JSON.stringify(finalPayload)
+        await repo.save(execution)
+
+        const metricsRepo = appServer.AppDataSource.getRepository(ExecutionMetrics)
+        const metrics = metricsRepo.create({
+            agentflowId: agent.id,
+            executionId: execution.id,
+            state: state === 'FINISHED' ? 'FINISHED' : 'ERROR',
+            durationMs,
+            triggerType: 'api'
+        })
+        await metricsRepo.save(metrics)
+    } catch (error) {
+        logger.warn(`[HttpAgentRuntime] Failed to record finish execution for agent ${agent.id}: ${getErrorMessage(error)}`)
+    }
+}
+
+/**
+ * Reads runtime config (timeoutMs, requestHeaders) from the agent's stored
+ * runtimeConfig blob. Defaults applied when keys are missing.
+ */
+const parseRuntimeConfig = (agent: Agent): { timeoutMs: number; requestHeaders: Record<string, string>; healthEndpoint?: string } => {
+    let cfg: any = {}
+    if (agent.runtimeConfig) {
+        try {
+            cfg = JSON.parse(agent.runtimeConfig)
+        } catch {
+            cfg = {}
+        }
+    }
+    return {
+        timeoutMs: typeof cfg.timeoutMs === 'number' ? cfg.timeoutMs : DEFAULT_HTTP_TIMEOUT_MS,
+        requestHeaders: cfg.requestHeaders && typeof cfg.requestHeaders === 'object' ? cfg.requestHeaders : {},
+        healthEndpoint: cfg.healthEndpoint
+    }
+}
+
+/**
+ * Builds the absolute callback URL the agent should hit for tool invocations.
+ * The MCP gateway (Group D) consumes these calls. v1.6 ships the URL even
+ * though the gateway is not live yet — registered HTTP agents can already
+ * see the contract surface.
+ */
+const buildCallbackUrl = (req: Request, agentId: string): string => {
+    const httpProtocol = req.get('x-forwarded-proto') || req.protocol
+    const baseURL = `${httpProtocol}://${req.get('host')}`
+    return `${baseURL}/api/v1/agent-callbacks/${agentId}/tools/invoke`
+}
+
+const joinUrl = (base: string, path: string): string => {
+    if (!base) return path
+    return base.endsWith('/') ? base.slice(0, -1) + path : base + path
+}
+
+/**
+ * Pipe an upstream `Response.body` (Web ReadableStream) chunk-by-chunk to the
+ * Express response. Flush after each chunk so SSE consumers see tokens in
+ * near-real-time even when an intermediate proxy buffers small writes.
+ */
+const pipeStreamingBody = async (upstream: globalThis.Response, res: Response): Promise<void> => {
+    if (!upstream.body) {
+        res.end()
+        return
+    }
+    const reader = upstream.body.getReader()
+    try {
+        let done = false
+        while (!done) {
+            const chunk = await reader.read()
+            done = chunk.done
+            if (!done && chunk.value && chunk.value.length > 0) {
+                res.write(Buffer.from(chunk.value))
+                ;(res as any).flush?.()
+            }
+        }
+    } finally {
+        try {
+            reader.releaseLock()
+        } catch {
+            /* noop */
+        }
+        if (!res.writableEnded) res.end()
+    }
+}
+
+/**
+ * Invoke an HTTP-runtime agent. Forwards an OpenAI-style chat completions
+ * request to `agent.serviceEndpoint/v1/chat/completions`, with outbound auth,
+ * Chronos extension headers, and optional SSE pass-through. Records an
+ * Execution + ExecutionMetrics row keyed by `agent.id`.
+ */
+const invoke = async (agent: Agent, openaiRequest: any, req: Request, res: Response): Promise<void> => {
+    if (!agent.serviceEndpoint) {
+        throw new InternalChronosError(StatusCodes.BAD_REQUEST, 'HTTP agent has no serviceEndpoint configured')
+    }
+
+    const { timeoutMs, requestHeaders } = parseRuntimeConfig(agent)
+    const authHeaders = await resolveOutboundAuth(agent.outboundAuth)
+    const callId = uuidv4()
+    const callbackUrl = buildCallbackUrl(req, agent.id)
+    const sessionId = (req.headers['x-chat-id'] as string) || openaiRequest?.x_chronos_chat_id || uuidv4()
+
+    const forwardBody = {
+        ...openaiRequest,
+        x_chronos_callback_url: callbackUrl,
+        x_chronos_call_id: callId
+    }
+
+    const headers: Record<string, string> = {
+        'content-type': 'application/json',
+        accept: openaiRequest?.stream === true ? 'text/event-stream' : 'application/json',
+        'x-chronos-call-id': callId,
+        'x-chronos-callback-url': callbackUrl,
+        ...requestHeaders,
+        ...authHeaders
+    }
+
+    const startedAt = Date.now()
+    const execution = await writeStartExecution(agent, sessionId, { callId, request: openaiRequest })
+
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), timeoutMs)
+    const url = joinUrl(agent.serviceEndpoint, '/v1/chat/completions')
+
+    let upstream: globalThis.Response
+    try {
+        upstream = await fetch(url, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(forwardBody),
+            signal: controller.signal
+        })
+    } catch (error) {
+        clearTimeout(timer)
+        const isAbort = (error as any)?.name === 'AbortError'
+        await writeFinishExecution(execution, agent, 'ERROR' as ExecutionState, Date.now() - startedAt, {
+            error: getErrorMessage(error),
+            aborted: isAbort
+        })
+        if (isAbort) {
+            throw new InternalChronosError(StatusCodes.GATEWAY_TIMEOUT, `HTTP agent ${agent.slug} timed out after ${timeoutMs}ms`)
+        }
+        throw new InternalChronosError(StatusCodes.BAD_GATEWAY, `HTTP agent ${agent.slug} unreachable: ${getErrorMessage(error)}`)
+    }
+    clearTimeout(timer)
+
+    if (!upstream.ok) {
+        const text = await upstream.text().catch(() => '')
+        await writeFinishExecution(execution, agent, 'ERROR' as ExecutionState, Date.now() - startedAt, {
+            statusCode: upstream.status,
+            body: text.slice(0, 4000)
+        })
+        throw new InternalChronosError(
+            StatusCodes.BAD_GATEWAY,
+            `HTTP agent ${agent.slug} returned ${upstream.status}: ${text.slice(0, 500)}`
+        )
+    }
+
+    if (openaiRequest?.stream === true) {
+        res.setHeader('Content-Type', upstream.headers.get('content-type') || 'text/event-stream')
+        res.setHeader('Cache-Control', 'no-cache')
+        res.setHeader('Connection', 'keep-alive')
+        res.setHeader('X-Accel-Buffering', 'no')
+        res.setHeader('X-Chat-Id', sessionId)
+        res.flushHeaders()
+        try {
+            await pipeStreamingBody(upstream, res)
+            await writeFinishExecution(execution, agent, 'FINISHED' as ExecutionState, Date.now() - startedAt, { streamed: true })
+        } catch (error) {
+            await writeFinishExecution(execution, agent, 'ERROR' as ExecutionState, Date.now() - startedAt, {
+                error: getErrorMessage(error)
+            })
+            if (!res.writableEnded) res.end()
+        }
+        return
+    }
+
+    const payload = await upstream.json().catch(() => ({}))
+    res.setHeader('X-Chat-Id', sessionId)
+    await writeFinishExecution(execution, agent, 'FINISHED' as ExecutionState, Date.now() - startedAt, { response: payload })
+    res.json(payload)
+}
+
+export default {
+    invoke,
+    resolveOutboundAuth
+}
