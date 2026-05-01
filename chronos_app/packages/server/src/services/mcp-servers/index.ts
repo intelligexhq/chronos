@@ -1,0 +1,366 @@
+import { StatusCodes } from 'http-status-codes'
+import { MCPServer } from '../../database/entities/MCPServer'
+import { InternalChronosError } from '../../errors/internalChronosError'
+import { getErrorMessage } from '../../errors/utils'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { MCPServerStatus, MCPServerTransport } from '../../Interface'
+
+const DEFAULT_MCP_TIMEOUT_MS = 30000
+
+const isMCPServersEnabled = (): boolean => process.env.ENABLE_MCP_SERVERS === 'true'
+
+const assertMCPServersEnabled = (): void => {
+    if (!isMCPServersEnabled()) {
+        throw new InternalChronosError(
+            StatusCodes.SERVICE_UNAVAILABLE,
+            'MCP servers are not enabled. Set ENABLE_MCP_SERVERS=true to enable them.'
+        )
+    }
+}
+
+/**
+ * Validates a URL is HTTP/HTTPS and rejects loopback / RFC1918 / link-local
+ * targets unless `ALLOW_LOOPBACK_AGENTS=true`. Same SSRF posture as the Agent
+ * service — an MCP server URL is just another outbound target the platform
+ * proxies traffic to on behalf of agents.
+ */
+const validateOutboundUrl = (raw: string, fieldName: string): void => {
+    let parsed: URL
+    try {
+        parsed = new URL(raw)
+    } catch {
+        throw new InternalChronosError(StatusCodes.BAD_REQUEST, `${fieldName} must be a valid HTTP or HTTPS URL`)
+    }
+    if (!['http:', 'https:'].includes(parsed.protocol)) {
+        throw new InternalChronosError(StatusCodes.BAD_REQUEST, `${fieldName} must use http or https`)
+    }
+
+    if (process.env.ALLOW_LOOPBACK_AGENTS === 'true') return
+
+    const host = parsed.hostname.toLowerCase()
+    if (
+        host === 'localhost' ||
+        host.endsWith('.localhost') ||
+        host.endsWith('.local') ||
+        host === '0.0.0.0' ||
+        host === '::' ||
+        host === '::1' ||
+        host.startsWith('127.') ||
+        host.startsWith('10.') ||
+        host.startsWith('192.168.') ||
+        host.startsWith('169.254.') ||
+        /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(host) ||
+        /^fe80:/i.test(host) ||
+        /^fc[0-9a-f]{2}:/i.test(host) ||
+        /^fd[0-9a-f]{2}:/i.test(host)
+    ) {
+        throw new InternalChronosError(
+            StatusCodes.BAD_REQUEST,
+            `${fieldName} cannot point at loopback or private addresses. Set ALLOW_LOOPBACK_AGENTS=true for local development.`
+        )
+    }
+}
+
+const slugifyName = (name: string): string => {
+    return (
+        (name || 'mcp-server')
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '')
+            .slice(0, 60) || 'mcp-server'
+    )
+}
+
+const ensureUniqueSlug = async (slug: string, excludeId?: string): Promise<string> => {
+    const appServer = getRunningExpressApp()
+    const repo = appServer.AppDataSource.getRepository(MCPServer)
+    let candidate = slug
+    for (let n = 1; n <= 1000; n++) {
+        const existing = await repo.findOneBy({ slug: candidate })
+        if (!existing || existing.id === excludeId) return candidate
+        candidate = `${slug}-${n}`
+    }
+    throw new InternalChronosError(StatusCodes.CONFLICT, `Could not find a unique slug after 1000 attempts (base: ${slug})`)
+}
+
+const stringifyJsonField = (value: unknown): string | undefined => {
+    if (value === undefined || value === null) return undefined
+    if (typeof value === 'string') return value
+    return JSON.stringify(value)
+}
+
+/**
+ * Validates transport-specific required fields. `streamable-http` and `sse`
+ * require a URL. `stdio` is reserved in the schema (locked decision #8) and
+ * rejected at the service layer until v1.8.
+ */
+const assertTransportContract = (transport: MCPServerTransport, body: any): void => {
+    if (transport === MCPServerTransport.STDIO) {
+        throw new InternalChronosError(
+            StatusCodes.NOT_IMPLEMENTED,
+            'stdio transport is reserved and not implemented in v1.6. Use streamable-http or sse.'
+        )
+    }
+    if (transport === MCPServerTransport.STREAMABLE_HTTP || transport === MCPServerTransport.SSE) {
+        if (!body.url) {
+            throw new InternalChronosError(StatusCodes.BAD_REQUEST, `url is required for ${transport} transport`)
+        }
+        validateOutboundUrl(body.url, 'url')
+    }
+}
+
+const createMCPServer = async (requestBody: any): Promise<MCPServer> => {
+    try {
+        assertMCPServersEnabled()
+        const appServer = getRunningExpressApp()
+
+        if (!requestBody.name) {
+            throw new InternalChronosError(StatusCodes.BAD_REQUEST, 'name is required')
+        }
+        if (!requestBody.transport) {
+            throw new InternalChronosError(StatusCodes.BAD_REQUEST, 'transport is required')
+        }
+
+        const transport = requestBody.transport as MCPServerTransport
+        if (!Object.values(MCPServerTransport).includes(transport)) {
+            throw new InternalChronosError(
+                StatusCodes.BAD_REQUEST,
+                `Invalid transport. Allowed: ${Object.values(MCPServerTransport).join(', ')}`
+            )
+        }
+
+        assertTransportContract(transport, requestBody)
+
+        const requestedSlug = requestBody.slug ? slugifyName(requestBody.slug) : slugifyName(requestBody.name)
+        const slug = await ensureUniqueSlug(requestedSlug)
+
+        const newServer = new MCPServer()
+        newServer.name = requestBody.name
+        newServer.slug = slug
+        newServer.description = requestBody.description ?? undefined
+        newServer.transport = transport
+        newServer.url = requestBody.url ?? undefined
+        newServer.command = stringifyJsonField(requestBody.command)
+        newServer.outboundAuth = stringifyJsonField(requestBody.outboundAuth)
+        newServer.allowedTools = stringifyJsonField(requestBody.allowedTools)
+        newServer.requestHeaders = stringifyJsonField(requestBody.requestHeaders)
+        newServer.timeoutMs = requestBody.timeoutMs ?? DEFAULT_MCP_TIMEOUT_MS
+        newServer.status = MCPServerStatus.UNKNOWN
+        newServer.enabled = requestBody.enabled !== false
+        newServer.userId = requestBody.userId || undefined
+
+        const saved = appServer.AppDataSource.getRepository(MCPServer).create(newServer)
+        return await appServer.AppDataSource.getRepository(MCPServer).save(saved)
+    } catch (error) {
+        if (error instanceof InternalChronosError) throw error
+        throw new InternalChronosError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: mcpServersService.createMCPServer - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+const updateMCPServer = async (id: string, body: any): Promise<MCPServer> => {
+    try {
+        assertMCPServersEnabled()
+        const appServer = getRunningExpressApp()
+        const repo = appServer.AppDataSource.getRepository(MCPServer)
+        const server = await repo.findOneBy({ id })
+        if (!server) {
+            throw new InternalChronosError(StatusCodes.NOT_FOUND, `MCP server ${id} not found`)
+        }
+
+        if (body.transport && body.transport !== server.transport) {
+            const transport = body.transport as MCPServerTransport
+            if (!Object.values(MCPServerTransport).includes(transport)) {
+                throw new InternalChronosError(
+                    StatusCodes.BAD_REQUEST,
+                    `Invalid transport. Allowed: ${Object.values(MCPServerTransport).join(', ')}`
+                )
+            }
+            assertTransportContract(transport, { url: body.url ?? server.url })
+            server.transport = transport
+        }
+
+        if (body.url) {
+            validateOutboundUrl(body.url, 'url')
+            server.url = body.url
+        }
+
+        if (body.slug && body.slug !== server.slug) {
+            server.slug = await ensureUniqueSlug(slugifyName(body.slug), server.id)
+        }
+
+        const updatable: Array<keyof MCPServer> = ['name', 'description', 'enabled', 'timeoutMs']
+        for (const key of updatable) {
+            if (body[key] !== undefined) (server as any)[key] = body[key]
+        }
+
+        const jsonFields: Array<keyof MCPServer> = ['command', 'outboundAuth', 'allowedTools', 'requestHeaders']
+        for (const key of jsonFields) {
+            if (body[key] !== undefined) (server as any)[key] = stringifyJsonField(body[key])
+        }
+
+        return await repo.save(server)
+    } catch (error) {
+        if (error instanceof InternalChronosError) throw error
+        throw new InternalChronosError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: mcpServersService.updateMCPServer - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+const deleteMCPServer = async (id: string): Promise<any> => {
+    try {
+        assertMCPServersEnabled()
+        const appServer = getRunningExpressApp()
+        const server = await appServer.AppDataSource.getRepository(MCPServer).findOneBy({ id })
+        if (!server) {
+            throw new InternalChronosError(StatusCodes.NOT_FOUND, `MCP server ${id} not found`)
+        }
+        return await appServer.AppDataSource.getRepository(MCPServer).delete({ id })
+    } catch (error) {
+        if (error instanceof InternalChronosError) throw error
+        throw new InternalChronosError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: mcpServersService.deleteMCPServer - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+const getAllMCPServers = async (page: number = -1, limit: number = -1, filters: { transport?: string; status?: string } = {}) => {
+    try {
+        const appServer = getRunningExpressApp()
+        const queryBuilder = appServer.AppDataSource.getRepository(MCPServer)
+            .createQueryBuilder('mcp_server')
+            .orderBy('mcp_server.updatedDate', 'DESC')
+
+        if (filters.transport) queryBuilder.andWhere('mcp_server.transport = :transport', { transport: filters.transport })
+        if (filters.status) queryBuilder.andWhere('mcp_server.status = :status', { status: filters.status })
+
+        if (page > 0 && limit > 0) {
+            queryBuilder.skip((page - 1) * limit)
+            queryBuilder.take(limit)
+        }
+        const [data, total] = await queryBuilder.getManyAndCount()
+
+        if (page > 0 && limit > 0) {
+            return { data, total }
+        }
+        return data
+    } catch (error) {
+        throw new InternalChronosError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: mcpServersService.getAllMCPServers - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+const getMCPServerById = async (id: string): Promise<MCPServer> => {
+    try {
+        const appServer = getRunningExpressApp()
+        const server = await appServer.AppDataSource.getRepository(MCPServer).findOneBy({ id })
+        if (!server) {
+            throw new InternalChronosError(StatusCodes.NOT_FOUND, `MCP server ${id} not found`)
+        }
+        return server
+    } catch (error) {
+        if (error instanceof InternalChronosError) throw error
+        throw new InternalChronosError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: mcpServersService.getMCPServerById - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+const getMCPServerBySlug = async (slug: string): Promise<MCPServer | null> => {
+    try {
+        const appServer = getRunningExpressApp()
+        return await appServer.AppDataSource.getRepository(MCPServer).findOneBy({ slug })
+    } catch (error) {
+        throw new InternalChronosError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: mcpServersService.getMCPServerBySlug - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+const toggleMCPServer = async (id: string, enabled: boolean): Promise<MCPServer> => {
+    try {
+        assertMCPServersEnabled()
+        const appServer = getRunningExpressApp()
+        const repo = appServer.AppDataSource.getRepository(MCPServer)
+        const server = await repo.findOneBy({ id })
+        if (!server) {
+            throw new InternalChronosError(StatusCodes.NOT_FOUND, `MCP server ${id} not found`)
+        }
+        server.enabled = enabled
+        if (!enabled) server.status = MCPServerStatus.DISABLED
+        else if (server.status === MCPServerStatus.DISABLED) server.status = MCPServerStatus.UNKNOWN
+        return await repo.save(server)
+    } catch (error) {
+        if (error instanceof InternalChronosError) throw error
+        throw new InternalChronosError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: mcpServersService.toggleMCPServer - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+/**
+ * Lightweight reachability probe. v1.6 issues a plain HTTP GET against the
+ * configured URL and reports the HTTP status. The full MCP `tools/list`
+ * round-trip lands with the gateway in Group D.
+ */
+const testMCPServerConnection = async (id: string): Promise<any> => {
+    try {
+        assertMCPServersEnabled()
+        const appServer = getRunningExpressApp()
+        const server = await appServer.AppDataSource.getRepository(MCPServer).findOneBy({ id })
+        if (!server) {
+            throw new InternalChronosError(StatusCodes.NOT_FOUND, `MCP server ${id} not found`)
+        }
+        if (server.transport === MCPServerTransport.STDIO) {
+            throw new InternalChronosError(StatusCodes.NOT_IMPLEMENTED, 'stdio transport is not supported in v1.6')
+        }
+        if (!server.url) {
+            throw new InternalChronosError(StatusCodes.BAD_REQUEST, 'MCP server has no url configured')
+        }
+        const timeoutMs = server.timeoutMs ?? DEFAULT_MCP_TIMEOUT_MS
+        const controller = new AbortController()
+        const timer = setTimeout(() => controller.abort(), timeoutMs)
+        try {
+            const startedAt = Date.now()
+            const response = await fetch(server.url, { method: 'GET', signal: controller.signal })
+            clearTimeout(timer)
+            return {
+                success: response.ok,
+                statusCode: response.status,
+                latencyMs: Date.now() - startedAt,
+                message: response.ok ? 'MCP server endpoint reachable' : `MCP server endpoint returned HTTP ${response.status}`
+            }
+        } catch (fetchError) {
+            clearTimeout(timer)
+            return { success: false, statusCode: null, message: `MCP server unreachable: ${getErrorMessage(fetchError)}` }
+        }
+    } catch (error) {
+        if (error instanceof InternalChronosError) throw error
+        throw new InternalChronosError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: mcpServersService.testMCPServerConnection - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+export default {
+    isMCPServersEnabled,
+    createMCPServer,
+    updateMCPServer,
+    deleteMCPServer,
+    getAllMCPServers,
+    getMCPServerById,
+    getMCPServerBySlug,
+    toggleMCPServer,
+    testMCPServerConnection
+}

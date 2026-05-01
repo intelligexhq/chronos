@@ -112,6 +112,7 @@ import { webhooksServiceTest } from './services/webhooks.service.test'
 import { webhookDispatcherServiceTest } from './services/webhook-dispatcher.service.test'
 import { agentflowVersionsServiceTest } from './services/agentflow-versions.service.test'
 import { agentsServiceTest } from './services/agents.service.test'
+import { mcpServersServiceTest } from './services/mcp-servers.service.test'
 import { nodesPoolTest } from './NodesPool.test'
 import { apiKeyTest } from './utils/api-key.util.test'
 import { sanitizeUtilTest } from './utils/sanitize.util.test'
@@ -267,6 +268,7 @@ describe('Services Test', () => {
     webhookDispatcherServiceTest()
     agentflowVersionsServiceTest()
     agentsServiceTest()
+    mcpServersServiceTest()
     nodesPoolTest()
 })
 

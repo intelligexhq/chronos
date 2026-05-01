@@ -42,6 +42,7 @@ import statsRouter from './stats'
 import schedulesRouter from './schedules'
 import webhooksRouter from './webhooks'
 import agentsRouter from './agents'
+import mcpServersRouter from './mcp-servers'
 import skillsRouter from './skills'
 import toolsRouter from './tools'
 import upsertHistoryRouter from './upsert-history'
@@ -107,6 +108,7 @@ router.use('/stats', statsRouter)
 router.use('/schedules', schedulesRouter)
 router.use('/webhooks', webhooksRouter)
 router.use('/agents', agentsRouter)
+router.use('/mcp-servers', mcpServersRouter)
 router.use('/skills', skillsRouter)
 router.use('/tools', toolsRouter)
 router.use('/variables', variablesRouter)
