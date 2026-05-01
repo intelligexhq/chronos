@@ -308,6 +308,47 @@ export interface IAgent {
     updatedDate: Date
 }
 
+export enum MCPServerTransport {
+    STREAMABLE_HTTP = 'streamable-http',
+    SSE = 'sse',
+    STDIO = 'stdio'
+}
+
+export enum MCPServerStatus {
+    HEALTHY = 'HEALTHY',
+    UNHEALTHY = 'UNHEALTHY',
+    UNKNOWN = 'UNKNOWN',
+    DISABLED = 'DISABLED'
+}
+
+/**
+ * MCPServer registry entry. Represents a registered MCP server reachable by
+ * the platform's MCP gateway. Agents address tools as `<slug>.<tool>`; the
+ * gateway resolves the namespace, enforces the intersection of
+ * `Agent.allowedTools` and `MCPServer.allowedTools`, and proxies the call.
+ * v1.6.0 supports `streamable-http` and `sse`; `stdio` is reserved.
+ */
+export interface IMCPServer {
+    id: string
+    name: string
+    slug: string
+    description?: string
+    transport: MCPServerTransport
+    url?: string
+    command?: string
+    outboundAuth?: string
+    allowedTools?: string
+    requestHeaders?: string
+    timeoutMs?: number
+    status: MCPServerStatus
+    enabled: boolean
+    lastHealthCheckAt?: Date
+    lastHealthError?: string
+    userId?: string
+    createdDate: Date
+    updatedDate: Date
+}
+
 export interface IComponentNodes {
     [key: string]: INode
 }
@@ -486,6 +527,8 @@ export enum AdminScope {
     WEBHOOKS_WRITE = 'webhooks:write',
     AGENTS_READ = 'agents:read',
     AGENTS_WRITE = 'agents:write',
+    MCP_SERVERS_READ = 'mcp-servers:read',
+    MCP_SERVERS_WRITE = 'mcp-servers:write',
     ADMIN_FULL = 'admin:full'
 }
 

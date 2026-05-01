@@ -4,6 +4,7 @@ import { AddDashboardMetrics1800000000002 } from './1800000000002-AddDashboardMe
 import { AddWebhooks1800000000003 } from './1800000000003-AddWebhooks'
 import { AddAgentflowVersioning1800000000004 } from './1800000000004-AddAgentflowVersioning'
 import { AddAgentRegistry1800000000005 } from './1800000000005-AddAgentRegistry'
+import { AddMCPServerRegistry1800000000006 } from './1800000000006-AddMCPServerRegistry'
 
 export const sqliteMigrations = [
     ConsolidatedBaseline1800000000000,
@@ -11,5 +12,6 @@ export const sqliteMigrations = [
     AddDashboardMetrics1800000000002,
     AddWebhooks1800000000003,
     AddAgentflowVersioning1800000000004,
-    AddAgentRegistry1800000000005
+    AddAgentRegistry1800000000005,
+    AddMCPServerRegistry1800000000006
 ]

@@ -1,0 +1,76 @@
+/* eslint-disable */
+import { Entity, Column, Index, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm'
+import { IMCPServer, MCPServerStatus, MCPServerTransport } from '../../Interface'
+
+/**
+ * MCPServer registry entry.
+ *
+ * Registered MCP server (transport + url/command + auth + allowedTools) used
+ * by the platform's MCP gateway. Agents reach tools through the gateway and
+ * never call MCP servers directly. The `slug` is used as the namespace prefix
+ * in tool names: tools surface to agents as `<slug>.<tool>` (e.g.
+ * `postgres.query`). v1.6.0 supports `streamable-http` and `sse` transports;
+ * `stdio` is reserved in the schema but rejected at the service layer until
+ * v1.8 ships the connection-pool model it needs.
+ */
+@Entity()
+@Index('IDX_mcp_server_slug', ['slug'], { unique: true })
+export class MCPServer implements IMCPServer {
+    @PrimaryGeneratedColumn('uuid')
+    id: string
+
+    @Column({ type: 'varchar' })
+    name: string
+
+    @Column({ type: 'varchar' })
+    slug: string
+
+    @Column({ nullable: true, type: 'text' })
+    description?: string
+
+    @Index()
+    @Column({ type: 'varchar', length: 20 })
+    transport: MCPServerTransport
+
+    @Column({ nullable: true, type: 'varchar' })
+    url?: string
+
+    @Column({ nullable: true, type: 'text' })
+    command?: string
+
+    @Column({ nullable: true, type: 'text' })
+    outboundAuth?: string
+
+    @Column({ nullable: true, type: 'text' })
+    allowedTools?: string
+
+    @Column({ nullable: true, type: 'text' })
+    requestHeaders?: string
+
+    @Column({ nullable: true, type: 'int' })
+    timeoutMs?: number
+
+    @Column({ type: 'varchar', length: 20, default: MCPServerStatus.UNKNOWN })
+    status: MCPServerStatus
+
+    @Index()
+    @Column({ type: 'boolean', default: true })
+    enabled: boolean
+
+    @Column({ nullable: true })
+    lastHealthCheckAt?: Date
+
+    @Column({ nullable: true, type: 'text' })
+    lastHealthError?: string
+
+    @Column({ nullable: true, type: 'varchar' })
+    userId?: string
+
+    @Column({ type: 'timestamp' })
+    @CreateDateColumn()
+    createdDate: Date
+
+    @Column({ type: 'timestamp' })
+    @UpdateDateColumn()
+    updatedDate: Date
+}
