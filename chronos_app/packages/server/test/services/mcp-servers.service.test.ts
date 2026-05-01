@@ -261,5 +261,57 @@ export function mcpServersServiceTest() {
                 expect(result).toEqual([{ id: 's' }])
             })
         })
+
+        // ─── listMCPServerTools (live tools/list) ──────────────────────
+
+        describe('listMCPServerTools', () => {
+            const baseServer = (overrides: any = {}) => ({
+                id: 's-1',
+                slug: 'postgres',
+                transport: 'streamable-http',
+                url: 'https://mcp.example.com',
+                enabled: true,
+                ...overrides
+            })
+
+            it('returns 404 when server not found', async () => {
+                mockRepository.findOneBy.mockResolvedValue(null)
+                await expect(mcpServersService.listMCPServerTools('missing')).rejects.toMatchObject({ statusCode: 404 })
+            })
+
+            it('returns 409 when server is disabled', async () => {
+                mockRepository.findOneBy.mockResolvedValue(baseServer({ enabled: false }))
+                await expect(mcpServersService.listMCPServerTools('s-1')).rejects.toMatchObject({ statusCode: 409 })
+            })
+
+            it('returns 501 for stdio transport', async () => {
+                mockRepository.findOneBy.mockResolvedValue(baseServer({ transport: 'stdio' }))
+                await expect(mcpServersService.listMCPServerTools('s-1')).rejects.toMatchObject({ statusCode: 501 })
+            })
+
+            it('returns 400 when server has no url', async () => {
+                mockRepository.findOneBy.mockResolvedValue(baseServer({ url: undefined }))
+                await expect(mcpServersService.listMCPServerTools('s-1')).rejects.toMatchObject({ statusCode: 400 })
+            })
+
+            it('returns 503 when gateway is not configured', async () => {
+                mockRepository.findOneBy.mockResolvedValue(baseServer())
+                mockAppServer.mcpGateway = undefined
+                await expect(mcpServersService.listMCPServerTools('s-1')).rejects.toMatchObject({ statusCode: 503 })
+            })
+
+            it('delegates to gateway.listLiveTools and returns the catalog', async () => {
+                const server = baseServer()
+                mockRepository.findOneBy.mockResolvedValue(server)
+                const gatewayMock = {
+                    listLiveTools: jest.fn().mockResolvedValue([{ name: 'query', description: 'sql', inputSchema: {} }])
+                }
+                mockAppServer.mcpGateway = gatewayMock
+                const tools = await mcpServersService.listMCPServerTools('s-1')
+                expect(gatewayMock.listLiveTools).toHaveBeenCalledWith(server)
+                expect(tools).toEqual([{ name: 'query', description: 'sql', inputSchema: {} }])
+                mockAppServer.mcpGateway = undefined
+            })
+        })
     })
 }

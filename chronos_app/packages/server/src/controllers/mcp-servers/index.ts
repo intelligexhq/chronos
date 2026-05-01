@@ -121,6 +121,21 @@ const testMCPServerConnection = async (req: Request, res: Response, next: NextFu
     }
 }
 
+const listMCPServerTools = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (!req.params.id) {
+            throw new InternalChronosError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: mcpServersController.listMCPServerTools - id not provided!`
+            )
+        }
+        const tools = await mcpServersService.listMCPServerTools(req.params.id)
+        return res.json({ tools })
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     createMCPServer,
     updateMCPServer,
@@ -128,5 +143,6 @@ export default {
     getAllMCPServers,
     getMCPServerById,
     toggleMCPServer,
-    testMCPServerConnection
+    testMCPServerConnection,
+    listMCPServerTools
 }

@@ -12,5 +12,6 @@ router.put('/:id', requireScope(AdminScope.MCP_SERVERS_WRITE), adminMCPServersCo
 router.delete('/:id', requireScope(AdminScope.MCP_SERVERS_WRITE), adminMCPServersController.deleteMCPServer)
 router.patch('/:id/toggle', requireScope(AdminScope.MCP_SERVERS_WRITE), adminMCPServersController.toggleMCPServer)
 router.post('/:id/test-connection', requireScope(AdminScope.MCP_SERVERS_WRITE), adminMCPServersController.testMCPServerConnection)
+router.get('/:id/tools', requireScope(AdminScope.MCP_SERVERS_READ), adminMCPServersController.listMCPServerTools)
 
 export default router

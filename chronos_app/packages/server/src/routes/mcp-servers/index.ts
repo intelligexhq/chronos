@@ -15,5 +15,6 @@ router.patch('/:id/toggle', checkPermission('mcp-servers:update'), mcpServersCon
 router.delete('/:id', checkPermission('mcp-servers:delete'), mcpServersController.deleteMCPServer)
 
 router.post('/:id/test-connection', checkPermission('mcp-servers:update'), mcpServersController.testMCPServerConnection)
+router.get('/:id/tools', checkPermission('mcp-servers:view'), mcpServersController.listMCPServerTools)
 
 export default router

@@ -90,6 +90,18 @@ const testMCPServerConnection = async (req: Request, res: Response, next: NextFu
     }
 }
 
+const listMCPServerTools = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (!req.params.id) {
+            throw new InternalChronosError(StatusCodes.BAD_REQUEST, 'MCP server id is required')
+        }
+        const tools = await mcpServersService.listMCPServerTools(req.params.id)
+        return res.json({ success: true, data: { tools } })
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     getAllMCPServers,
     getMCPServerById,
@@ -97,5 +109,6 @@ export default {
     updateMCPServer,
     deleteMCPServer,
     toggleMCPServer,
-    testMCPServerConnection
+    testMCPServerConnection,
+    listMCPServerTools
 }

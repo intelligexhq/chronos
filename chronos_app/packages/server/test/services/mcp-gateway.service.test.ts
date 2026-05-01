@@ -49,7 +49,8 @@ export function mcpGatewayServiceTest() {
                 SSEClientTransport: mockSSETransportCtor
             }))
             jest.doMock('@modelcontextprotocol/sdk/types.js', () => ({
-                CallToolResultSchema: { __schema: 'CallToolResult' }
+                CallToolResultSchema: { __schema: 'CallToolResult' },
+                ListToolsResultSchema: { __schema: 'ListToolsResult' }
             }))
             jest.doMock('../../src/services/agent-runtime-http', () => ({
                 __esModule: true,
@@ -243,6 +244,55 @@ export function mcpGatewayServiceTest() {
                 await gateway.stop()
                 expect(gateway.poolSize()).toBe(0)
                 expect(mockClientInstance.close).toHaveBeenCalled()
+            })
+        })
+
+        // ─── listLiveTools ─────────────────────────────────────────────
+
+        describe('listLiveTools', () => {
+            it('opens a pooled client, calls tools/list, and maps the catalog', async () => {
+                mockClientInstance.request.mockResolvedValueOnce({
+                    tools: [
+                        { name: 'query', description: 'run sql', inputSchema: { type: 'object' } },
+                        { name: 'list_tables', description: undefined, inputSchema: { type: 'object' } }
+                    ]
+                })
+                const gateway = new MCPGateway({ appDataSource: mockAppDataSource })
+                const tools = await gateway.listLiveTools(baseServer())
+                expect(mockClientInstance.request).toHaveBeenCalledWith(
+                    { method: 'tools/list', params: {} },
+                    { __schema: 'ListToolsResult' },
+                    { timeout: 5000 }
+                )
+                expect(tools).toEqual([
+                    { name: 'query', description: 'run sql', inputSchema: { type: 'object' } },
+                    { name: 'list_tables', description: undefined, inputSchema: { type: 'object' } }
+                ])
+            })
+
+            it('reuses a pooled client across listLiveTools and invoke', async () => {
+                mockMCPServerRepo.findOneBy.mockResolvedValue(baseServer())
+                mockClientInstance.request.mockResolvedValueOnce({ tools: [{ name: 'query' }] })
+                const gateway = new MCPGateway({ appDataSource: mockAppDataSource })
+                await gateway.listLiveTools(baseServer())
+                await gateway.invoke(baseAgent(), 'postgres.query', {})
+                expect(mockClientCtor).toHaveBeenCalledTimes(1)
+                expect(mockClientInstance.connect).toHaveBeenCalledTimes(1)
+            })
+
+            it('maps tools/list error to 502 and evicts the pooled client', async () => {
+                mockClientInstance.request.mockRejectedValueOnce(new Error('rpc broken'))
+                const gateway = new MCPGateway({ appDataSource: mockAppDataSource })
+                await expect(gateway.listLiveTools(baseServer())).rejects.toMatchObject({ statusCode: 502 })
+                expect(gateway.poolSize()).toBe(0)
+                expect(mockClientInstance.close).toHaveBeenCalled()
+            })
+
+            it('returns an empty array when the server reports no tools field', async () => {
+                mockClientInstance.request.mockResolvedValueOnce({})
+                const gateway = new MCPGateway({ appDataSource: mockAppDataSource })
+                const tools = await gateway.listLiveTools(baseServer())
+                expect(tools).toEqual([])
             })
         })
 

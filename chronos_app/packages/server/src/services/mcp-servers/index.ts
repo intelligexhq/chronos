@@ -353,6 +353,44 @@ const testMCPServerConnection = async (id: string): Promise<any> => {
     }
 }
 
+/**
+ * Calls `tools/list` on the registered MCP server through the gateway's pooled
+ * client. Returns the live catalog (operator tooling for the registry UI).
+ * Requires `ENABLE_MCP_SERVERS=true` (gateway is wired in `App.initDatabase`).
+ */
+const listMCPServerTools = async (id: string): Promise<any[]> => {
+    try {
+        assertMCPServersEnabled()
+        const appServer = getRunningExpressApp()
+        const server = await appServer.AppDataSource.getRepository(MCPServer).findOneBy({ id })
+        if (!server) {
+            throw new InternalChronosError(StatusCodes.NOT_FOUND, `MCP server ${id} not found`)
+        }
+        if (!server.enabled) {
+            throw new InternalChronosError(StatusCodes.CONFLICT, `MCP server ${server.slug} is disabled`)
+        }
+        if (server.transport === MCPServerTransport.STDIO) {
+            throw new InternalChronosError(StatusCodes.NOT_IMPLEMENTED, 'stdio transport is not supported in v1.6')
+        }
+        if (!server.url) {
+            throw new InternalChronosError(StatusCodes.BAD_REQUEST, 'MCP server has no url configured')
+        }
+        if (!appServer.mcpGateway) {
+            throw new InternalChronosError(
+                StatusCodes.SERVICE_UNAVAILABLE,
+                'MCP gateway is not enabled. Set ENABLE_MCP_SERVERS=true to enable it.'
+            )
+        }
+        return await appServer.mcpGateway.listLiveTools(server)
+    } catch (error) {
+        if (error instanceof InternalChronosError) throw error
+        throw new InternalChronosError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: mcpServersService.listMCPServerTools - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 export default {
     isMCPServersEnabled,
     createMCPServer,
@@ -362,5 +400,6 @@ export default {
     getMCPServerById,
     getMCPServerBySlug,
     toggleMCPServer,
-    testMCPServerConnection
+    testMCPServerConnection,
+    listMCPServerTools
 }

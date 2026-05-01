@@ -1,7 +1,7 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js'
-import { CallToolResultSchema } from '@modelcontextprotocol/sdk/types.js'
+import { CallToolResultSchema, ListToolsResultSchema } from '@modelcontextprotocol/sdk/types.js'
 import { DataSource } from 'typeorm'
 import { StatusCodes } from 'http-status-codes'
 import { Agent } from '../../database/entities/Agent'
@@ -30,6 +30,12 @@ export interface AllowedToolDescriptor {
     name: string
     server: string
     tool: string
+}
+
+export interface LiveToolDescriptor {
+    name: string
+    description?: string
+    inputSchema?: unknown
 }
 
 /**
@@ -184,6 +190,49 @@ export class MCPGateway {
             }
         }
         return result
+    }
+
+    /**
+     * Calls `tools/list` on the live MCP server using a pooled client and
+     * returns the discovered catalog. Operator-tooling for the registry UI;
+     * not on the agent → callback hot path. Errors map to 502 BAD_GATEWAY
+     * and evict the pooled client so the next call reconnects fresh.
+     */
+    public async listLiveTools(server: MCPServer): Promise<LiveToolDescriptor[]> {
+        const startedAt = Date.now()
+        const entry = await this.getOrOpen(server)
+        const timeout = typeof server.timeoutMs === 'number' ? server.timeoutMs : DEFAULT_TOOL_CALL_TIMEOUT_MS
+        try {
+            const result = await entry.client.request({ method: 'tools/list', params: {} }, ListToolsResultSchema, { timeout })
+            entry.lastUsedAt = Date.now()
+            const tools = Array.isArray((result as any).tools) ? (result as any).tools : []
+            logger.info({
+                event: 'mcp.tools.list',
+                server: server.slug,
+                count: tools.length,
+                durationMs: Date.now() - startedAt
+            })
+            return tools.map((t: any) => ({
+                name: t?.name,
+                description: t?.description,
+                inputSchema: t?.inputSchema
+            }))
+        } catch (error) {
+            this.pool.delete(server.id)
+            entry.client.close().catch(() => {
+                /* noop */
+            })
+            logger.warn({
+                event: 'mcp.tools.list.error',
+                server: server.slug,
+                durationMs: Date.now() - startedAt,
+                error: getErrorMessage(error)
+            })
+            throw new InternalChronosError(
+                StatusCodes.BAD_GATEWAY,
+                `Failed to list tools for MCP server ${server.slug}: ${getErrorMessage(error)}`
+            )
+        }
     }
 
     /** Test seam — number of currently pooled MCP clients. */
