@@ -50,7 +50,6 @@ docker compose -f docker-compose-workers.yml up
 # scale workers if needed
 docker compose -f docker-compose-workers.yml up --scale chronos-worker=3
 # if enable you will see BullMQ dashboard at http://localhost:3001/admin/queues
-
 ```
 
 *Vector database mode for document embeddings example:*

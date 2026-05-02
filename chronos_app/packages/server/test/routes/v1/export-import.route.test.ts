@@ -292,15 +292,15 @@ export function exportImportRouteTest() {
                 expect(response.body.Variable).toBeDefined()
             })
 
-            it('should export agentflowv2', async () => {
+            it('should export agentflow', async () => {
                 const response = await supertest(getRunningExpressApp().app)
                     .post('/api/v1/export-import/export')
-                    .send({ agentflowv2: true })
+                    .send({ agentflow: true })
                     .set('Authorization', `Bearer ${authToken}`)
                     .set('x-request-from', 'internal')
 
                 expect([200]).toContain(response.status)
-                expect(response.body.AgentFlowV2).toBeDefined()
+                expect(response.body.Agentflow).toBeDefined()
             })
 
             it('should export document stores', async () => {
@@ -373,7 +373,7 @@ export function exportImportRouteTest() {
                 const response = await supertest(getRunningExpressApp().app)
                     .post('/api/v1/export-import/export')
                     .send({
-                        agentflowv2: true,
+                        agentflow: true,
                         chat_message: true,
                         chat_feedback: true,
                         custom_template: true,

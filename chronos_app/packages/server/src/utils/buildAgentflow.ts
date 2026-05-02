@@ -1405,8 +1405,8 @@ const executeNode = async ({
                     reject: 'Reject'
                 },
                 elements: [
-                    { type: 'agentflowv2-approve-button', label: 'Proceed' },
-                    { type: 'agentflowv2-reject-button', label: 'Reject' }
+                    { type: 'agentflowcanvas-approve-button', label: 'Proceed' },
+                    { type: 'agentflowcanvas-reject-button', label: 'Reject' }
                 ],
                 data: {
                     nodeId,
@@ -1452,8 +1452,8 @@ const executeNode = async ({
                     reject: 'Reject'
                 },
                 elements: [
-                    { type: 'agentflowv2-approve-button', label: 'Proceed' },
-                    { type: 'agentflowv2-reject-button', label: 'Reject' }
+                    { type: 'agentflowcanvas-approve-button', label: 'Proceed' },
+                    { type: 'agentflowcanvas-reject-button', label: 'Reject' }
                 ],
                 data: {
                     nodeId,

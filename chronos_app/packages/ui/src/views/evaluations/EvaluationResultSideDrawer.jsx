@@ -14,7 +14,7 @@ import {
     TableRow,
     TableBody
 } from '@mui/material'
-import { IconHierarchy, IconUsersGroup } from '@tabler/icons-react'
+import { IconHierarchy } from '@tabler/icons-react'
 
 import { useSelector } from 'react-redux'
 import { evaluators as evaluatorsOptions, numericOperators } from '../evaluators/evaluatorConstant'
@@ -36,15 +36,7 @@ const EvaluationResultSideDrawer = ({ show, dialogProps, onClickFunction }) => {
         return ''
     }
 
-    const getFlowIcon = (index) => {
-        if (index === undefined) {
-            return <IconHierarchy size={24} />
-        }
-        if (dialogProps.additionalConfig.agentflowTypes?.[index] === 'Agentflow v2') {
-            return <IconUsersGroup size={20} />
-        }
-        return <IconHierarchy size={20} />
-    }
+    const getFlowIcon = (index) => (index === undefined ? <IconHierarchy size={24} /> : <IconHierarchy size={20} />)
 
     return (
         <SwipeableDrawer sx={{ zIndex: 2000 }} anchor='right' open={show} onClose={() => onClickFunction()} onOpen={onOpen}>

@@ -28,7 +28,7 @@ import toolsService from '../tools'
 import variableService from '../variables'
 
 type ExportInput = {
-    agentflowv2: boolean
+    agentflow: boolean
     chat_message: boolean
     chat_feedback: boolean
     custom_template: boolean
@@ -40,7 +40,7 @@ type ExportInput = {
 }
 
 type ExportData = {
-    AgentFlowV2: AgentFlow[]
+    Agentflow: AgentFlow[]
     ChatMessage: ChatMessage[]
     ChatMessageFeedback: ChatMessageFeedback[]
     CustomTemplate: CustomTemplate[]
@@ -55,7 +55,7 @@ type ExportData = {
 const convertExportInput = (body: any): ExportInput => {
     try {
         if (!body || typeof body !== 'object') throw new Error('Invalid ExportInput object in request body')
-        if (body.agentflowv2 && typeof body.agentflowv2 !== 'boolean') throw new Error('Invalid agentflowv2 property in ExportInput object')
+        if (body.agentflow && typeof body.agentflow !== 'boolean') throw new Error('Invalid agentflow property in ExportInput object')
         if (body.chat_message && typeof body.chat_message !== 'boolean')
             throw new Error('Invalid chat_message property in ExportInput object')
         if (body.chat_feedback && typeof body.chat_feedback !== 'boolean')
@@ -80,9 +80,9 @@ const convertExportInput = (body: any): ExportInput => {
 const FileDefaultName = 'ExportData.json'
 const exportData = async (exportInput: ExportInput, activeWorkspaceId: string): Promise<{ FileDefaultName: string } & ExportData> => {
     try {
-        let AgentFlowV2: AgentFlow[] | { data: AgentFlow[]; total: number } =
-            exportInput.agentflowv2 === true ? await agentflowService.getAllAgentflows('AGENTFLOW') : []
-        AgentFlowV2 = 'data' in AgentFlowV2 ? AgentFlowV2.data : AgentFlowV2
+        let Agentflow: AgentFlow[] | { data: AgentFlow[]; total: number } =
+            exportInput.agentflow === true ? await agentflowService.getAllAgentflows('AGENTFLOW') : []
+        Agentflow = 'data' in Agentflow ? Agentflow.data : Agentflow
 
         let allAgentflow: AgentFlow[] | { data: AgentFlow[]; total: number } =
             exportInput.chat_message === true || exportInput.chat_feedback === true ? await agentflowService.getAllAgentflows() : []
@@ -124,7 +124,7 @@ const exportData = async (exportInput: ExportInput, activeWorkspaceId: string): 
 
         return {
             FileDefaultName,
-            AgentFlowV2,
+            Agentflow,
             ChatMessage,
             ChatMessageFeedback,
             CustomTemplate,
@@ -174,7 +174,7 @@ async function replaceDuplicateIdsForChatMessage(
         const chatmessageAgentflowIds = chatMessages.map((chatMessage) => {
             return { id: chatMessage.agentflowid, qty: 0 }
         })
-        const originalDataAgentflowIds = [...originalData.AgentFlowV2.map((agentFlowV2) => agentFlowV2.id)]
+        const originalDataAgentflowIds = [...originalData.Agentflow.map((agentflow) => agentflow.id)]
         chatmessageAgentflowIds.forEach((item) => {
             if (originalDataAgentflowIds.includes(item.id)) {
                 item.qty += 1
@@ -297,7 +297,7 @@ async function replaceDuplicateIdsForChatMessageFeedback(
         const feedbackAgentflowIds = chatMessageFeedbacks.map((feedback) => {
             return { id: feedback.agentflowid, qty: 0 }
         })
-        const originalDataAgentflowIds = [...originalData.AgentFlowV2.map((agentFlowV2) => agentFlowV2.id)]
+        const originalDataAgentflowIds = [...originalData.Agentflow.map((agentflow) => agentflow.id)]
         feedbackAgentflowIds.forEach((item) => {
             if (originalDataAgentflowIds.includes(item.id)) {
                 item.qty += 1
@@ -568,7 +568,7 @@ async function saveBatch(manager: EntityManager, entity: any, items: any[], batc
 
 const importData = async (importData: ExportData, orgId: string, activeWorkspaceId: string, subscriptionId: string) => {
     // Initialize missing properties with empty arrays to avoid "undefined" errors
-    importData.AgentFlowV2 = importData.AgentFlowV2 || []
+    importData.Agentflow = importData.Agentflow || []
     importData.ChatMessage = importData.ChatMessage || []
     importData.ChatMessageFeedback = importData.ChatMessageFeedback || []
     importData.CustomTemplate = importData.CustomTemplate || []
@@ -585,18 +585,18 @@ const importData = async (importData: ExportData, orgId: string, activeWorkspace
         await queryRunner.connect()
 
         try {
-            if (importData.AgentFlowV2.length > 0) {
-                importData.AgentFlowV2 = reduceSpaceForAgentflowFlowData(importData.AgentFlowV2)
-                importData.AgentFlowV2 = insertWorkspaceId(importData.AgentFlowV2, activeWorkspaceId)
+            if (importData.Agentflow.length > 0) {
+                importData.Agentflow = reduceSpaceForAgentflowFlowData(importData.Agentflow)
+                importData.Agentflow = insertWorkspaceId(importData.Agentflow, activeWorkspaceId)
                 const existingAgentflowCount = await agentflowsService.getAllAgentflowsCountByOrganization('AGENTFLOW', orgId)
-                const newAgentflowCount = importData.AgentFlowV2.length
+                const newAgentflowCount = importData.Agentflow.length
                 await checkUsageLimit(
                     'flows',
                     subscriptionId,
                     getRunningExpressApp().usageCacheManager,
                     existingAgentflowCount + newAgentflowCount
                 )
-                importData = await replaceDuplicateIdsForAgentFlow(queryRunner, importData, importData.AgentFlowV2)
+                importData = await replaceDuplicateIdsForAgentFlow(queryRunner, importData, importData.Agentflow)
             }
             if (importData.ChatMessage.length > 0) {
                 importData = await replaceDuplicateIdsForChatMessage(queryRunner, importData, importData.ChatMessage, activeWorkspaceId)
@@ -639,7 +639,7 @@ const importData = async (importData: ExportData, orgId: string, activeWorkspace
 
             await queryRunner.startTransaction()
 
-            if (importData.AgentFlowV2.length > 0) await queryRunner.manager.save(AgentFlow, importData.AgentFlowV2)
+            if (importData.Agentflow.length > 0) await queryRunner.manager.save(AgentFlow, importData.Agentflow)
             if (importData.ChatMessage.length > 0) await saveBatch(queryRunner.manager, ChatMessage, importData.ChatMessage)
             if (importData.ChatMessageFeedback.length > 0)
                 await queryRunner.manager.save(ChatMessageFeedback, importData.ChatMessageFeedback)

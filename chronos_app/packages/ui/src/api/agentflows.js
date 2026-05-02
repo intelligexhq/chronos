@@ -16,7 +16,7 @@ const getAllowAgentflowUploads = (id) => client.get(`/agentflows-uploads/${id}`)
 
 const getHasAgentflowChanged = (id, lastUpdatedDateTime) => client.get(`/agentflows/has-changed/${id}/${lastUpdatedDateTime}`)
 
-const generateAgentflow = (body) => client.post(`/agentflowv2-generator/generate`, body)
+const generateAgentflow = (body) => client.post(`/agentflow-generator/generate`, body)
 
 export default {
     getAllAgentflows,

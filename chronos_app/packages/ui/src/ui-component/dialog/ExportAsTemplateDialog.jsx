@@ -44,11 +44,7 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
     useEffect(() => {
         if (dialogProps.agentflow) {
             setName(dialogProps.agentflow.name)
-            if (dialogProps.agentflow.type === 'AGENTFLOW') {
-                setFlowType('AgentflowV2')
-            } else if (dialogProps.agentflow.type === 'MULTIAGENT') {
-                setFlowType('Agentflow')
-            }
+            setFlowType('Agentflow')
         }
 
         if (dialogProps.tool) {

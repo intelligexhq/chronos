@@ -9,7 +9,7 @@ import { getRunningExpressApp } from '../src/utils/getRunningExpressApp'
 import { authRouteTest } from './routes/v1/auth.route.test'
 import { pingRouteTest } from './routes/v1/ping.route.test'
 import { predictionsRouteTest } from './routes/v1/predictions.route.test'
-import { agentflowv2GeneratorRouteTest } from './routes/v1/agentflowv2-generator.route.test'
+import { agentflowGeneratorRouteTest } from './routes/v1/agentflow-generator.route.test'
 import { settingsRouteTest } from './routes/v1/settings.route.test'
 import { versionsRouteTest } from './routes/v1/versions.route.test'
 import { statsRouteTest } from './routes/v1/stats.route.test'
@@ -72,7 +72,7 @@ import { schedulesServiceTest } from './services/schedules.service.test'
 import { metricsCollectorServiceTest } from './services/metrics-collector.service.test'
 import { metricsAggregatorServiceTest } from './services/metrics-aggregator.service.test'
 import { agentflowsServiceTest } from './services/agentflows.service.test'
-import { agentflowv2GeneratorServiceTest } from './services/agentflowv2-generator.service.test'
+import { agentflowGeneratorServiceTest } from './services/agentflow-generator.service.test'
 import { skillsServiceTest } from './services/skills.service.test'
 import { toolsServiceTest } from './services/tools.service.test'
 import { credentialsServiceTest } from './services/credentials.service.test'
@@ -173,7 +173,7 @@ describe('Routes Test', () => {
     pingRouteTest()
     authRouteTest()
     predictionsRouteTest()
-    agentflowv2GeneratorRouteTest()
+    agentflowGeneratorRouteTest()
     settingsRouteTest()
     versionsRouteTest()
     statsRouteTest()
@@ -236,7 +236,7 @@ describe('Routes Test', () => {
 describe('Services Test', () => {
     schedulesServiceTest()
     agentflowsServiceTest()
-    agentflowv2GeneratorServiceTest()
+    agentflowGeneratorServiceTest()
     skillsServiceTest()
     toolsServiceTest()
     credentialsServiceTest()

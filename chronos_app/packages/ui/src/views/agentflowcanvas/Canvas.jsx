@@ -28,7 +28,7 @@ import StickyNote from './StickyNote'
 import CanvasHeader from '@/views/canvas/CanvasHeader'
 import AddNodes from '@/views/canvas/AddNodes'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
-import EditNodeDialog from '@/views/agentflowsv2/EditNodeDialog'
+import EditNodeDialog from '@/views/agentflowcanvas/EditNodeDialog'
 import ChatPopUp from '@/views/chatmessage/ChatPopUp'
 import ValidationPopUp from '@/views/chatmessage/ValidationPopUp'
 import { flowContext } from '@/store/context/ReactFlowContext'
@@ -51,7 +51,7 @@ import {
     initNode,
     updateOutdatedNodeData,
     updateOutdatedNodeEdge,
-    isValidConnectionAgentflowV2
+    isValidConnectionAgentflow
 } from '@/utils/genericHelper'
 import useNotifier from '@/utils/useNotifier'
 import { usePrompt } from '@/utils/usePrompt'
@@ -115,7 +115,7 @@ const AgentflowCanvas = () => {
     // ==============================|| Events & Actions ||============================== //
 
     const onConnect = (params) => {
-        if (!isValidConnectionAgentflowV2(params, reactFlowInstance)) {
+        if (!isValidConnectionAgentflow(params, reactFlowInstance)) {
             return
         }
 
@@ -696,7 +696,6 @@ const AgentflowCanvas = () => {
                             handleDeleteFlow={handleDeleteFlow}
                             handleLoadFlow={handleLoadFlow}
                             isAgentCanvas={true}
-                            isAgentflowV2={true}
                         />
                     </Toolbar>
                 </AppBar>
@@ -766,7 +765,6 @@ const AgentflowCanvas = () => {
                                 {isBackgroundEnabled && <Background color='#aaa' gap={16} />}
                                 <AddNodes
                                     isAgentCanvas={true}
-                                    isAgentflowv2={true}
                                     nodesData={getNodesApi.data}
                                     node={selectedNode}
                                     onFlowGenerated={triggerConfetti}

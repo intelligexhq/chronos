@@ -47,7 +47,7 @@ import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackba
 
 // ==============================|| CANVAS HEADER ||============================== //
 
-const CanvasHeader = ({ agentflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
+const CanvasHeader = ({ agentflow, isAgentCanvas, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
     const theme = useTheme()
     const dispatch = useDispatch()
     const navigate = useNavigate()
@@ -77,9 +77,9 @@ const CanvasHeader = ({ agentflow, isAgentCanvas, isAgentflowV2, handleSaveFlow,
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
-    const [savePermission, setSavePermission] = useState(isAgentCanvas ? 'agentflows:create' : 'agentflows:create')
+    const [savePermission, setSavePermission] = useState('agentflows:create')
 
-    const title = isAgentCanvas ? 'Agents' : 'Agentflow'
+    const title = 'Agentflow'
 
     const updateAgentflowApi = useApi(agentflowsApi.updateAgentflow)
     const canvas = useSelector((state) => state.canvas)
@@ -93,7 +93,7 @@ const CanvasHeader = ({ agentflow, isAgentCanvas, isAgentflowV2, handleSaveFlow,
             setViewMessagesDialogProps({
                 title: 'View Messages',
                 agentflow: agentflow,
-                isAgentflow: isAgentflowV2 ? false : true
+                isAgentflow: false
             })
             setViewMessagesDialogOpen(true)
         } else if (setting === 'viewLeads') {
@@ -217,8 +217,7 @@ const CanvasHeader = ({ agentflow, isAgentCanvas, isAgentflowV2, handleSaveFlow,
             agentflowApiKeyId: agentflow.apikeyid,
             isFormDataRequired,
             isSessionMemory,
-            isAgentCanvas,
-            isAgentflowV2
+            isAgentCanvas
         })
         setAPIDialogOpen(true)
     }
@@ -621,8 +620,7 @@ CanvasHeader.propTypes = {
     handleSaveFlow: PropTypes.func,
     handleDeleteFlow: PropTypes.func,
     handleLoadFlow: PropTypes.func,
-    isAgentCanvas: PropTypes.bool,
-    isAgentflowV2: PropTypes.bool
+    isAgentCanvas: PropTypes.bool
 }
 
 export default CanvasHeader

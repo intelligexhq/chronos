@@ -220,8 +220,6 @@ const Agentflows = () => {
                                 </Box>
                             ) : (
                                 <FlowListTable
-                                    isAgentCanvas={true}
-                                    isAgentflowV2={true}
                                     data={getAllAgentflows.data?.data}
                                     images={images}
                                     icons={icons}

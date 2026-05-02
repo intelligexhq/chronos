@@ -827,7 +827,7 @@ const ChatMessage = ({ open, agentflowid, isAgentCanvas, isDialog, previews, set
             allMessages[allMessages.length - 1].action = null
             return allMessages
         })
-        if (elem.type.includes('agentflowv2')) {
+        if (elem.type.includes('agentflowcanvas')) {
             const type = elem.type.includes('approve') ? 'proceed' : 'reject'
             setFeedbackType(type)
 
@@ -2666,7 +2666,7 @@ const ChatMessage = ({ open, agentflowid, isAgentCanvas, isDialog, previews, set
                                                     return (
                                                         <>
                                                             {(elem.type === 'approve-button' && elem.label === 'Yes') ||
-                                                            elem.type === 'agentflowv2-approve-button' ? (
+                                                            elem.type === 'agentflowcanvas-approve-button' ? (
                                                                 <Button
                                                                     sx={{
                                                                         width: 'max-content',
@@ -2682,7 +2682,7 @@ const ChatMessage = ({ open, agentflowid, isAgentCanvas, isDialog, previews, set
                                                                     {elem.label}
                                                                 </Button>
                                                             ) : (elem.type === 'reject-button' && elem.label === 'No') ||
-                                                              elem.type === 'agentflowv2-reject-button' ? (
+                                                              elem.type === 'agentflowcanvas-reject-button' ? (
                                                                 <Button
                                                                     sx={{
                                                                         width: 'max-content',

@@ -21,8 +21,7 @@ import {
     Switch,
     StepLabel,
     IconButton,
-    FormControlLabel,
-    Checkbox
+    FormControlLabel
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
@@ -57,7 +56,6 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const theme = useTheme()
     useNotifier()
 
-    const getAllAgentflowsV2Api = useApi(agentflowsApi.getAllAgentflows)
     const getAllAgentflowsApi = useApi(agentflowsApi.getAllAgentflows)
 
     const getAllDatasetsApi = useApi(datasetsApi.getAllDatasets)
@@ -67,7 +65,6 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const [agentflow, setAgentflow] = useState([])
     const [dataset, setDataset] = useState('')
     const [datasetAsOneConversation, setDatasetAsOneConversation] = useState(false)
-    const [flowTypes, setFlowTypes] = useState([])
 
     const [flows, setFlows] = useState([])
     const [datasets, setDatasets] = useState([])
@@ -223,7 +220,6 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     useEffect(() => {
         getNodesByCategoryApi.request('Chat Models')
         if (flows.length === 0) {
-            getAllAgentflowsV2Api.request()
             getAllAgentflowsApi.request('AGENTFLOW')
         }
         if (datasets.length === 0) {
@@ -234,17 +230,14 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     }, [])
 
     useEffect(() => {
-        if (getAllAgentflowsV2Api.data && getAllAgentflowsApi.data) {
+        if (getAllAgentflowsApi.data) {
             try {
-                const agentFlowsV2 = populateFlowNames(getAllAgentflowsV2Api.data, 'Agentflow v2')
-                const agentFlows = populateFlowNames(getAllAgentflowsApi.data, 'Agentflow')
-                setFlows([...agentFlowsV2, ...agentFlows])
-                setFlowTypes(['Agentflow v2', 'Agentflow'])
+                setFlows(populateFlowNames(getAllAgentflowsApi.data, 'Agentflow'))
             } catch (e) {
                 console.error(e)
             }
         }
-    }, [getAllAgentflowsV2Api.data, getAllAgentflowsApi.data])
+    }, [getAllAgentflowsApi.data])
 
     useEffect(() => {
         if (getNodesByCategoryApi.data) {
@@ -338,16 +331,6 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         setSelectedModel('')
         setCredentialId('')
         if (llm !== 'no_grading') getModelsApi.request(llm, { loadMethod: 'listModels' })
-    }
-
-    const onChangeFlowType = (flowType) => {
-        const selected = flowType.target.checked
-        const flowTypeValue = flowType.target.value
-        if (selected) {
-            setFlowTypes([...flowTypes, flowTypeValue])
-        } else {
-            setFlowTypes(flowTypes.filter((f) => f !== flowTypeValue))
-        }
     }
 
     const populateFlowNames = (data, type) => {
@@ -510,27 +493,13 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                                 />
                             </Box>
                             <Box>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <Typography variant='overline'>
-                                        Select your flows to Evaluate
-                                        <span style={{ color: 'red' }}>&nbsp;*</span>
-                                    </Typography>
-                                    <Typography variant='overline'>
-                                        <Checkbox defaultChecked size='small' label='All' value='Agentflow' onChange={onChangeFlowType} />{' '}
-                                        Agentflows
-                                        <Checkbox
-                                            defaultChecked
-                                            size='small'
-                                            label='All'
-                                            value='Agentflow v2'
-                                            onChange={onChangeFlowType}
-                                        />{' '}
-                                        Agentflows (v2)
-                                    </Typography>
-                                </div>
+                                <Typography variant='overline'>
+                                    Select your flows to Evaluate
+                                    <span style={{ color: 'red' }}>&nbsp;*</span>
+                                </Typography>
                                 <MultiDropdown
                                     name={'agentflow1'}
-                                    options={flows.filter((f) => flowTypes.includes(f.type))}
+                                    options={flows}
                                     onSelect={(newValue) => setAgentflow(newValue)}
                                     value={agentflow ?? 'choose an option'}
                                 />

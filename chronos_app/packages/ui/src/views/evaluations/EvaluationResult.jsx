@@ -25,7 +25,7 @@ import {
 import { useTheme } from '@mui/material/styles'
 import moment from 'moment'
 import PaidIcon from '@mui/icons-material/Paid'
-import { IconHierarchy, IconUsersGroup } from '@tabler/icons-react'
+import { IconHierarchy } from '@tabler/icons-react'
 import LLMIcon from '@mui/icons-material/ModelTraining'
 import AlarmIcon from '@mui/icons-material/AlarmOn'
 import TokensIcon from '@mui/icons-material/AutoAwesomeMotion'
@@ -341,15 +341,7 @@ const EvalEvaluationRows = () => {
         }
     }
 
-    const getFlowIcon = (index) => {
-        if (index === undefined) {
-            return <IconHierarchy size={17} />
-        }
-        if (additionalConfig.agentflowTypes?.[index] === 'Agentflow v2') {
-            return <IconUsersGroup size={17} />
-        }
-        return <IconHierarchy size={17} />
-    }
+    const getFlowIcon = () => <IconHierarchy size={17} />
     return (
         <>
             <MainCard>

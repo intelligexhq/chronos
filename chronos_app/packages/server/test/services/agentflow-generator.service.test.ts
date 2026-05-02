@@ -49,14 +49,14 @@ const AgentFlowV2Type = z
         nodes: z.array(NodeType),
         edges: z.array(EdgeType)
     })
-    .describe('Generate Agentflowv2 nodes and edges')
+    .describe('Generate Agentflow nodes and edges')
 
 /**
- * Test suite for agentflowv2 generator service
+ * Test suite for agentflow generator service
  * Tests the Zod schema validation for agentflow data structures
  */
-export function agentflowv2GeneratorServiceTest() {
-    describe('Agentflowv2 Generator Service', () => {
+export function agentflowGeneratorServiceTest() {
+    describe('Agentflow Generator Service', () => {
         describe('NodeType Schema Validation', () => {
             it('should validate a minimal valid node', () => {
                 const validNode = {

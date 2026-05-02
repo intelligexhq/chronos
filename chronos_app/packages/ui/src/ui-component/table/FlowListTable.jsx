@@ -46,9 +46,7 @@ const StyledTableRow = styled(TableRow)(() => ({
     }
 }))
 
-const getLocalStorageKeyName = (name, isAgentCanvas) => {
-    return (isAgentCanvas ? 'agentcanvas' : 'agentflowcanvas') + '_' + name
-}
+const getLocalStorageKeyName = (name) => `agentflowcanvas_${name}`
 
 export const FlowListTable = ({
     data,
@@ -58,20 +56,18 @@ export const FlowListTable = ({
     filterFunction,
     updateFlowsApi,
     setError,
-    isAgentCanvas,
-    isAgentflowV2,
     currentPage,
     pageLimit
 }) => {
     const { hasPermission } = useAuth()
-    const isActionsAvailable = isAgentCanvas
-        ? hasPermission('agentflows:update,agentflows:delete,agentflows:config,agentflows:domains,templates:flowexport,agentflows:export')
-        : hasPermission('agentflows:update,agentflows:delete,agentflows:config,agentflows:domains,templates:flowexport,agentflows:export')
+    const isActionsAvailable = hasPermission(
+        'agentflows:update,agentflows:delete,agentflows:config,agentflows:domains,templates:flowexport,agentflows:export'
+    )
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
-    const localStorageKeyOrder = getLocalStorageKeyName('order', isAgentCanvas)
-    const localStorageKeyOrderBy = getLocalStorageKeyName('orderBy', isAgentCanvas)
+    const localStorageKeyOrder = getLocalStorageKeyName('order')
+    const localStorageKeyOrderBy = getLocalStorageKeyName('orderBy')
 
     const [order, setOrder] = useState(localStorage.getItem(localStorageKeyOrder) || 'desc')
     const [orderBy, setOrderBy] = useState(localStorage.getItem(localStorageKeyOrderBy) || 'updatedDate')
@@ -342,8 +338,6 @@ export const FlowListTable = ({
                                                     alignItems='center'
                                                 >
                                                     <FlowListMenu
-                                                        isAgentCanvas={isAgentCanvas}
-                                                        isAgentflowV2={isAgentflowV2}
                                                         agentflow={row}
                                                         setError={setError}
                                                         updateFlowsApi={updateFlowsApi}
@@ -372,8 +366,6 @@ FlowListTable.propTypes = {
     filterFunction: PropTypes.func,
     updateFlowsApi: PropTypes.object,
     setError: PropTypes.func,
-    isAgentCanvas: PropTypes.bool,
-    isAgentflowV2: PropTypes.bool,
     currentPage: PropTypes.number,
     pageLimit: PropTypes.number
 }

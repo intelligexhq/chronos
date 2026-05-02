@@ -16,7 +16,7 @@ import AgentFlowEdge from './AgentFlowEdge'
 import IterationNode from './IterationNode'
 import TemplateCanvasHeader from '@/views/templates/TemplateCanvasHeader'
 import StickyNote from './StickyNote'
-import EditNodeDialog from '@/views/agentflowsv2/EditNodeDialog'
+import EditNodeDialog from '@/views/agentflowcanvas/EditNodeDialog'
 import { flowContext } from '@/store/context/ReactFlowContext'
 
 // icons

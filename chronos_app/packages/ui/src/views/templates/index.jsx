@@ -62,8 +62,8 @@ import { gridSpacing } from '@/store/constant'
 import { useError } from '@/store/context/ErrorContext'
 
 const badges = ['POPULAR', 'NEW']
-const types = ['AgentflowV2', 'Tool', 'Skill']
-const typeDisplayNames = { AgentflowV2: 'Agentflow', Tool: 'Tool', Skill: 'Skill' }
+const types = ['Agentflow', 'Tool', 'Skill']
+const typeDisplayNames = { Agentflow: 'Agentflow', Tool: 'Tool', Skill: 'Skill' }
 const MenuProps = {
     PaperProps: {
         style: {
@@ -340,11 +340,7 @@ const Templates = () => {
     }
 
     const goToCanvas = (selectedAgentflow) => {
-        if (selectedAgentflow.type === 'AgentflowV2') {
-            navigate(`/v2/template/${selectedAgentflow.id}`, { state: selectedAgentflow })
-        } else {
-            navigate(`/template/${selectedAgentflow.id}`, { state: selectedAgentflow })
-        }
+        navigate(`/template/${selectedAgentflow.id}`, { state: selectedAgentflow })
     }
 
     useEffect(() => {
@@ -699,7 +695,7 @@ const Templates = () => {
                                                                 >
                                                                     {(data.type === 'Agentflow' ||
                                                                         data.type === 'Agentflow' ||
-                                                                        data.type === 'AgentflowV2') && (
+                                                                        data.type === 'Agentflow') && (
                                                                         <ItemCard
                                                                             onClick={() => goToCanvas(data)}
                                                                             data={data}
@@ -718,7 +714,7 @@ const Templates = () => {
                                                             {!data.badge &&
                                                                 (data.type === 'Agentflow' ||
                                                                     data.type === 'Agentflow' ||
-                                                                    data.type === 'AgentflowV2') && (
+                                                                    data.type === 'Agentflow') && (
                                                                     <ItemCard
                                                                         onClick={() => goToCanvas(data)}
                                                                         data={data}
@@ -838,7 +834,7 @@ const Templates = () => {
                                                                 >
                                                                     {(data.type === 'Agentflow' ||
                                                                         data.type === 'Agentflow' ||
-                                                                        data.type === 'AgentflowV2') && (
+                                                                        data.type === 'Agentflow') && (
                                                                         <ItemCard
                                                                             onClick={() => goToCanvas(data)}
                                                                             data={data}
@@ -857,7 +853,7 @@ const Templates = () => {
                                                             {!data.badge &&
                                                                 (data.type === 'Agentflow' ||
                                                                     data.type === 'Agentflow' ||
-                                                                    data.type === 'AgentflowV2') && (
+                                                                    data.type === 'Agentflow') && (
                                                                     <ItemCard
                                                                         onClick={() => goToCanvas(data)}
                                                                         data={data}

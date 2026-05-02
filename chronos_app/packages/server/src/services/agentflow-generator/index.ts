@@ -4,14 +4,14 @@ import { getErrorMessage } from '../../errors/utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import path from 'path'
 import * as fs from 'fs'
-import { generateAgentflowv2 as generateAgentflowv2_json } from 'chronos-components'
+import { generateAgentflow as generateAgentflow_json } from 'chronos-components'
 import { z } from 'zod'
 import { sysPrompt } from './prompt'
 import { databaseEntities } from '../../utils'
 import logger from '../../utils/logger'
 import { MODE } from '../../Interface'
 
-// Define the Zod schema for Agentflowv2 data structure
+// Define the Zod schema for Agentflow data structure
 const NodeType = z.object({
     id: z.string(),
     type: z.string(),
@@ -50,19 +50,19 @@ const EdgeType = z.object({
     id: z.string()
 })
 
-const AgentFlowV2Type = z
+const AgentFlowSchemaType = z
     .object({
         description: z.string().optional(),
         usecases: z.array(z.string()).optional(),
         nodes: z.array(NodeType),
         edges: z.array(EdgeType)
     })
-    .describe('Generate Agentflowv2 nodes and edges')
+    .describe('Generate Agentflow nodes and edges')
 
 // Type for the templates array
-type AgentFlowV2Template = z.infer<typeof AgentFlowV2Type>
+type AgentFlowSchemaTemplate = z.infer<typeof AgentFlowSchemaType>
 
-const getAllAgentFlow2Nodes = async () => {
+const getAllAgentFlowNodes = async () => {
     const appServer = getRunningExpressApp()
     const nodes = appServer.nodesPool.componentNodes
     const agentFlow2Nodes = []
@@ -99,13 +99,13 @@ const getAllToolNodes = async () => {
     return JSON.stringify(toolNodes, null, 2)
 }
 
-const getAllAgentflowv2Templates = async () => {
-    const templates: AgentFlowV2Template[] = []
-    let templateDir = path.join(__dirname, '..', '..', '..', 'templates', 'agentflowsv2')
+const getAllAgentflowTemplates = async () => {
+    const templates: AgentFlowSchemaTemplate[] = []
+    let templateDir = path.join(__dirname, '..', '..', '..', 'templates', 'agentflows')
     let jsonsInDir = fs.readdirSync(templateDir).filter((file) => path.extname(file) === '.json')
     jsonsInDir.forEach((file) => {
         try {
-            const filePath = path.join(__dirname, '..', '..', '..', 'templates', 'agentflowsv2', file)
+            const filePath = path.join(__dirname, '..', '..', '..', 'templates', 'agentflows', file)
             const fileData = fs.readFileSync(filePath)
             const fileDataObj = JSON.parse(fileData.toString())
             // get rid of the node.data, remain all other properties
@@ -126,7 +126,7 @@ const getAllAgentflowv2Templates = async () => {
             }
 
             // Validate template against schema
-            const validatedTemplate = AgentFlowV2Type.parse(template)
+            const validatedTemplate = AgentFlowSchemaType.parse(template)
             templates.push({
                 ...validatedTemplate,
                 // @ts-ignore
@@ -140,7 +140,7 @@ const getAllAgentflowv2Templates = async () => {
 
     // Format templates into the requested string format
     let formattedTemplates = ''
-    templates.forEach((template: AgentFlowV2Template, index: number) => {
+    templates.forEach((template: AgentFlowSchemaTemplate, index: number) => {
         formattedTemplates += `Example ${index + 1}: <<${(template as any).title}>> - ${template.description}\n`
         formattedTemplates += `"nodes": [\n`
 
@@ -181,11 +181,11 @@ const getAllAgentflowv2Templates = async () => {
     return formattedTemplates
 }
 
-const generateAgentflowv2 = async (question: string, selectedChatModel: Record<string, any>) => {
+const generateAgentflow = async (question: string, selectedChatModel: Record<string, any>) => {
     try {
-        const agentFlow2Nodes = await getAllAgentFlow2Nodes()
+        const agentFlow2Nodes = await getAllAgentFlowNodes()
         const toolNodes = await getAllToolNodes()
-        const marketplaceTemplates = await getAllAgentflowv2Templates()
+        const marketplaceTemplates = await getAllAgentflowTemplates()
 
         const prompt = sysPrompt
             .replace('{agentFlow2Nodes}', agentFlow2Nodes)
@@ -208,11 +208,11 @@ const generateAgentflowv2 = async (question: string, selectedChatModel: Record<s
                 selectedChatModel,
                 isAgentFlowGenerator: true
             })
-            logger.debug(`[server]: Generated Agentflowv2 Job added to queue: ${job.id}`)
+            logger.debug(`[server]: Generated Agentflow Job added to queue: ${job.id}`)
             const queueEvents = predictionQueue.getQueueEvents()
             response = await job.waitUntilFinished(queueEvents)
         } else {
-            response = await generateAgentflowv2_json(
+            response = await generateAgentflow_json(
                 { prompt, componentNodes: getRunningExpressApp().nodesPool.componentNodes, toolNodes, selectedChatModel },
                 question,
                 options
@@ -223,12 +223,12 @@ const generateAgentflowv2 = async (question: string, selectedChatModel: Record<s
             // Try to parse and validate the response if it's a string
             if (typeof response === 'string') {
                 const parsedResponse = JSON.parse(response)
-                const validatedResponse = AgentFlowV2Type.parse(parsedResponse)
+                const validatedResponse = AgentFlowSchemaType.parse(parsedResponse)
                 return validatedResponse
             }
             // If response is already an object
             else if (typeof response === 'object') {
-                const validatedResponse = AgentFlowV2Type.parse(response)
+                const validatedResponse = AgentFlowSchemaType.parse(response)
                 return validatedResponse
             }
             // Unexpected response type
@@ -244,10 +244,10 @@ const generateAgentflowv2 = async (question: string, selectedChatModel: Record<s
             } as any // Type assertion to avoid type errors
         }
     } catch (error) {
-        throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: generateAgentflowv2 - ${getErrorMessage(error)}`)
+        throw new InternalChronosError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: generateAgentflow - ${getErrorMessage(error)}`)
     }
 }
 
 export default {
-    generateAgentflowv2
+    generateAgentflow
 }

@@ -45,7 +45,7 @@ import { TabPanel } from '@/ui-component/tabs/TabPanel'
 import { TabsList } from '@/ui-component/tabs/TabsList'
 import { ArrayRenderer } from '@/ui-component/array/ArrayRenderer'
 import { Tab } from '@/ui-component/tabs/Tab'
-import { ConfigInput } from '@/views/agentflowsv2/ConfigInput'
+import { ConfigInput } from '@/views/agentflowcanvas/ConfigInput'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 import DocStoreInputHandler from '@/views/docstore/DocStoreInputHandler'
 
@@ -1038,7 +1038,7 @@ const NodeInputHandler = ({
 
                         {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') &&
                             (inputParam?.acceptVariable &&
-                            (window.location.href.includes('/canvas/') || window.location.href.includes('/v2/template/')) ? (
+                            (window.location.href.includes('/canvas/') || window.location.href.includes('/template/')) ? (
                                 <RichInput
                                     key={data.inputs[inputParam.name]}
                                     placeholder={inputParam.placeholder}
