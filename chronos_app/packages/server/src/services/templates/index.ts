@@ -69,10 +69,10 @@ const getAllTemplates = async () => {
             templates.push(template)
         })*/
 
-        templateDir = path.join(__dirname, '..', '..', '..', 'templates', 'agentflowsv2')
+        templateDir = path.join(__dirname, '..', '..', '..', 'templates', 'agentflows')
         jsonsInDir = fs.readdirSync(templateDir).filter((file) => path.extname(file) === '.json')
         jsonsInDir.forEach((file) => {
-            const filePath = path.join(__dirname, '..', '..', '..', 'templates', 'agentflowsv2', file)
+            const filePath = path.join(__dirname, '..', '..', '..', 'templates', 'agentflows', file)
             const fileData = fs.readFileSync(filePath)
             const fileDataObj = JSON.parse(fileData.toString())
             const template = {
@@ -83,7 +83,7 @@ const getAllTemplates = async () => {
                 framework: fileDataObj?.framework,
                 usecases: fileDataObj?.usecases,
                 categories: getCategories(fileDataObj),
-                type: 'AgentflowV2',
+                type: 'Agentflow',
                 description: fileDataObj?.description || ''
             }
             templates.push(template)
@@ -111,11 +111,11 @@ const getAllTemplates = async () => {
         }
 
         const sortedTemplates = templates.sort((a, b) => {
-            // Prioritize AgentflowV2 templates first
-            if (a.type === 'AgentflowV2' && b.type !== 'AgentflowV2') {
+            // Prioritize Agentflow templates first
+            if (a.type === 'Agentflow' && b.type !== 'Agentflow') {
                 return -1
             }
-            if (b.type === 'AgentflowV2' && a.type !== 'AgentflowV2') {
+            if (b.type === 'Agentflow' && a.type !== 'Agentflow') {
                 return 1
             }
             // Put Tool templates last

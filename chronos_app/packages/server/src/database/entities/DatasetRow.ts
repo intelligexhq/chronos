@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn, Index } from 'typeorm'
-import { IAssistant, IDataset, IDatasetRow } from '../../Interface'
+import { IDatasetRow } from '../../Interface'
 
 @Entity()
 export class DatasetRow implements IDatasetRow {

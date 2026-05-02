@@ -45,7 +45,7 @@ import { TabPanel } from '@/ui-component/tabs/TabPanel'
 import { TabsList } from '@/ui-component/tabs/TabsList'
 import { ArrayRenderer } from '@/ui-component/array/ArrayRenderer'
 import { Tab } from '@/ui-component/tabs/Tab'
-import { ConfigInput } from '@/views/agentflowsv2/ConfigInput'
+import { ConfigInput } from '@/views/agentflowcanvas/ConfigInput'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 import DocStoreInputHandler from '@/views/docstore/DocStoreInputHandler'
 
@@ -78,7 +78,7 @@ import useNotifier from '@/utils/useNotifier'
 import { baseURL, CHRONOS_CREDENTIAL_ID } from '@/store/constant'
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
 
-const EDITABLE_OPTIONS = ['selectedTool', 'selectedAssistant']
+const EDITABLE_OPTIONS = ['selectedTool']
 
 const CustomWidthTooltip = styled(({ className, ...props }) => <Tooltip {...props} classes={{ popper: className }} />)({
     [`& .${tooltipClasses.tooltip}`]: {
@@ -488,14 +488,6 @@ const NodeInputHandler = ({
                 confirmButtonName: 'Save',
                 toolId: inputValue
             })
-        } else if (inputParamName === 'selectedAssistant') {
-            setAsyncOptionEditDialogProps({
-                title: 'Edit Assistant',
-                type: 'EDIT',
-                cancelButtonName: 'Cancel',
-                confirmButtonName: 'Save',
-                assistantId: inputValue
-            })
         }
         setAsyncOptionEditDialog(inputParamName)
     }
@@ -504,13 +496,6 @@ const NodeInputHandler = ({
         if (inputParamName === 'selectedTool') {
             setAsyncOptionEditDialogProps({
                 title: 'Add New Tool',
-                type: 'ADD',
-                cancelButtonName: 'Cancel',
-                confirmButtonName: 'Add'
-            })
-        } else if (inputParamName === 'selectedAssistant') {
-            setAsyncOptionEditDialogProps({
-                title: 'Add New Assistant',
                 type: 'ADD',
                 cancelButtonName: 'Cancel',
                 confirmButtonName: 'Add'
@@ -1053,7 +1038,7 @@ const NodeInputHandler = ({
 
                         {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') &&
                             (inputParam?.acceptVariable &&
-                            (window.location.href.includes('v2/agentcanvas') || window.location.href.includes('v2/template')) ? (
+                            (window.location.href.includes('/canvas/') || window.location.href.includes('/template/')) ? (
                                 <RichInput
                                     key={data.inputs[inputParam.name]}
                                     placeholder={inputParam.placeholder}
@@ -1362,7 +1347,7 @@ const NodeInputHandler = ({
                 onCancel={() => setPromptGeneratorDialogOpen(false)}
                 onConfirm={(generatedInstruction) => {
                     try {
-                        if (inputParam?.acceptVariable && window.location.href.includes('v2/agentcanvas')) {
+                        if (inputParam?.acceptVariable && window.location.href.includes('/canvas/')) {
                             const htmlContent = markdownConverter.makeHtml(generatedInstruction)
                             data.inputs[inputParam.name] = htmlContent
                         } else {

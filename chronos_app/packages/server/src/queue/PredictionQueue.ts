@@ -9,7 +9,7 @@ import { BaseQueue } from './BaseQueue'
 import { RedisOptions } from 'bullmq'
 import { UsageCacheManager } from '../UsageCacheManager'
 import logger from '../utils/logger'
-import { generateAgentflowv2 as generateAgentflowv2_json } from 'chronos-components'
+import { generateAgentflow as generateAgentflow_json } from 'chronos-components'
 import { databaseEntities } from '../utils'
 import { executeCustomNodeFunction } from '../utils/executeCustomNodeFunction'
 
@@ -22,7 +22,7 @@ interface PredictionQueueOptions {
     usageCacheManager: UsageCacheManager
 }
 
-interface IGenerateAgentflowv2Params extends IExecuteFlowParams {
+interface IGenerateAgentflowParams extends IExecuteFlowParams {
     prompt: string
     componentNodes: IComponentNodes
     toolNodes: IComponentNodes
@@ -62,7 +62,7 @@ export class PredictionQueue extends BaseQueue {
         return this.queue
     }
 
-    async processJob(data: IExecuteFlowParams | IGenerateAgentflowv2Params) {
+    async processJob(data: IExecuteFlowParams | IGenerateAgentflowParams) {
         if (this.appDataSource) data.appDataSource = this.appDataSource
         if (this.telemetry) data.telemetry = this.telemetry
         if (this.cachePool) data.cachePool = this.cachePool
@@ -72,13 +72,13 @@ export class PredictionQueue extends BaseQueue {
 
         if (Object.prototype.hasOwnProperty.call(data, 'isAgentFlowGenerator')) {
             logger.info(`Generating Agentflow...`)
-            const { prompt, componentNodes, toolNodes, selectedChatModel, question } = data as IGenerateAgentflowv2Params
+            const { prompt, componentNodes, toolNodes, selectedChatModel, question } = data as IGenerateAgentflowParams
             const options: Record<string, any> = {
                 appDataSource: this.appDataSource,
                 databaseEntities: databaseEntities,
                 logger: logger
             }
-            return await generateAgentflowv2_json({ prompt, componentNodes, toolNodes, selectedChatModel }, question, options)
+            return await generateAgentflow_json({ prompt, componentNodes, toolNodes, selectedChatModel }, question, options)
         }
 
         if (Object.prototype.hasOwnProperty.call(data, 'isExecuteCustomFunction')) {

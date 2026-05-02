@@ -85,15 +85,11 @@ const Agentflows = () => {
     }
 
     const addNew = () => {
-        navigate('/v2/agentcanvas')
+        navigate('/canvas')
     }
 
     const goToCanvas = (selectedAgentflow) => {
-        if (selectedAgentflow.type === 'AGENTFLOW') {
-            navigate(`/v2/agentcanvas/${selectedAgentflow.id}`)
-        } else {
-            navigate(`/agentcanvas/${selectedAgentflow.id}`)
-        }
+        navigate(`/canvas/${selectedAgentflow.id}`)
     }
 
     useEffect(() => {
@@ -224,8 +220,6 @@ const Agentflows = () => {
                                 </Box>
                             ) : (
                                 <FlowListTable
-                                    isAgentCanvas={true}
-                                    isAgentflowV2={true}
                                     data={getAllAgentflows.data?.data}
                                     images={images}
                                     icons={icons}

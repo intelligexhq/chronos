@@ -302,7 +302,7 @@ const ProfileSection = ({ handleLogout }) => {
 
     const onExport = (data) => {
         const body = {}
-        if (data.includes('Agentflows')) body.agentflowv2 = true
+        if (data.includes('Agentflows')) body.agentflow = true
         if (data.includes('Chat Messages')) body.chat_message = true
         if (data.includes('Chat Feedbacks')) body.chat_feedback = true
         if (data.includes('Custom Templates')) body.custom_template = true

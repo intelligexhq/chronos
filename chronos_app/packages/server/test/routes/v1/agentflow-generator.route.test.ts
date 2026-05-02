@@ -16,12 +16,12 @@ async function getAuthToken(): Promise<string> {
 }
 
 /**
- * Test suite for agentflowv2 generator routes
- * Tests the agentflow generation endpoint at /api/v1/agentflowv2-generator/*
+ * Test suite for agentflow generator routes
+ * Tests the agentflow generation endpoint at /api/v1/agentflow-generator/*
  */
-export function agentflowv2GeneratorRouteTest() {
-    describe('Agentflowv2 Generator Route', () => {
-        const baseRoute = '/api/v1/agentflowv2-generator'
+export function agentflowGeneratorRouteTest() {
+    describe('Agentflow Generator Route', () => {
+        const baseRoute = '/api/v1/agentflow-generator'
 
         describe(`POST ${baseRoute}/generate`, () => {
             it('should return error when question is missing', async () => {

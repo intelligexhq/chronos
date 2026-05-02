@@ -44,7 +44,7 @@ import { SET_COMPONENT_NODES } from '@/store/actions'
 
 // ==============================|| ADD NODES||============================== //
 
-const AddNodes = ({ nodesData, node, isAgentCanvas: _isAgentCanvas, isAgentflowv2, onFlowGenerated }) => {
+const AddNodes = ({ nodesData, node, isAgentCanvas: _isAgentCanvas, onFlowGenerated }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const dispatch = useDispatch()
@@ -290,25 +290,23 @@ const AddNodes = ({ nodesData, node, isAgentCanvas: _isAgentCanvas, isAgentflowv
             >
                 {open ? <IconMinus /> : <IconPlus />}
             </StyledFab>
-            {isAgentflowv2 && (
-                <StyledFab
-                    sx={{
-                        left: 40,
-                        top: 20,
-                        background: 'linear-gradient(45deg, #FF6B6B 30%, #FF8E53 90%)',
-                        '&:hover': {
-                            background: 'linear-gradient(45deg, #FF8E53 30%, #FF6B6B 90%)'
-                        }
-                    }}
-                    onClick={handleOpenDialog}
-                    size='small'
-                    color='primary'
-                    aria-label='generate'
-                    title='Generate Agentflow'
-                >
-                    <IconSparkles />
-                </StyledFab>
-            )}
+            <StyledFab
+                sx={{
+                    left: 40,
+                    top: 20,
+                    background: 'linear-gradient(45deg, #FF6B6B 30%, #FF8E53 90%)',
+                    '&:hover': {
+                        background: 'linear-gradient(45deg, #FF8E53 30%, #FF6B6B 90%)'
+                    }
+                }}
+                onClick={handleOpenDialog}
+                size='small'
+                color='primary'
+                aria-label='generate'
+                title='Generate Agentflow'
+            >
+                <IconSparkles />
+            </StyledFab>
 
             <AgentflowGeneratorDialog
                 show={openDialog}
@@ -590,8 +588,7 @@ AddNodes.propTypes = {
     nodesData: PropTypes.array,
     node: PropTypes.object,
     onFlowGenerated: PropTypes.func,
-    isAgentCanvas: PropTypes.bool,
-    isAgentflowv2: PropTypes.bool
+    isAgentCanvas: PropTypes.bool
 }
 
 export default memo(AddNodes)

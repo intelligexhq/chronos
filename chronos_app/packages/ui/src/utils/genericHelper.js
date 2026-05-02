@@ -448,7 +448,7 @@ export const isValidConnection = (connection, reactFlowInstance) => {
     return false
 }
 
-export const isValidConnectionAgentflowV2 = (connection, reactFlowInstance) => {
+export const isValidConnectionAgentflow = (connection, reactFlowInstance) => {
     const source = connection.source
     const target = connection.target
 

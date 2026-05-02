@@ -16,7 +16,7 @@ import { UsageCacheManager } from './UsageCacheManager'
 
 export type MessageType = 'apiMessage' | 'userMessage'
 
-export type AgentflowType = 'ASSISTANT' | 'AGENTFLOW'
+export type AgentflowType = 'AGENTFLOW'
 
 export type ExecutionState = 'INPROGRESS' | 'FINISHED' | 'ERROR' | 'TERMINATED' | 'TIMEOUT' | 'STOPPED'
 
@@ -142,15 +142,6 @@ export interface ISkill {
     color: string
     iconSrc?: string
     content: string
-    updatedDate: Date
-    createdDate: Date
-}
-
-export interface IAssistant {
-    id: string
-    details: string
-    credential: string
-    iconSrc?: string
     updatedDate: Date
     createdDate: Date
 }

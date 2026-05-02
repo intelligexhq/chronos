@@ -3,8 +3,7 @@ import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedCol
 import { AgentflowType, IAgentFlow } from '../../Interface'
 
 export enum EnumAgentflowType {
-    AGENTFLOW = 'AGENTFLOW',
-    ASSISTANT = 'ASSISTANT'
+    AGENTFLOW = 'AGENTFLOW'
 }
 
 @Entity()

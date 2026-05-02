@@ -54,7 +54,7 @@ const NodesEdgesType = z
         nodes: z.array(NodeType).describe('Array of nodes in the workflow'),
         edges: z.array(EdgeType).describe('Array of edges connecting the nodes')
     })
-    .describe('Generate Agentflowv2 nodes and edges')
+    .describe('Generate Agentflow nodes and edges')
 
 interface NodePosition {
     x: number
@@ -148,7 +148,7 @@ interface OutputAnchor {
     name: string
 }
 
-export const generateAgentflowv2 = async (config: Record<string, any>, question: string, options: ICommonObject) => {
+export const generateAgentflow = async (config: Record<string, any>, question: string, options: ICommonObject) => {
     try {
         const result = await generateNodesEdges(config, question, options)
 
@@ -160,7 +160,7 @@ export const generateAgentflowv2 = async (config: Record<string, any>, question:
 
         return { nodes: updatedNodes, edges: updatedEdges }
     } catch (error) {
-        logger.error(`Error generating AgentflowV2: ${error}`)
+        logger.error(`Error generating Agentflow: ${error}`)
         return { error: error.message || 'Unknown error occurred' }
     }
 }
@@ -348,7 +348,7 @@ const _generateSelectedTools = async (config: Record<string, any>, question: str
             return { error: 'No JSON found in response', content: responseContent }
         }
     } catch (error) {
-        logger.error(`Error generating AgentflowV2: ${error}`)
+        logger.error(`Error generating Agentflow: ${error}`)
         return { error: error.message || 'Unknown error occurred' }
     }
 }
@@ -404,7 +404,7 @@ const generateNodesEdges = async (config: Record<string, any>, question: string,
             return { error: 'No JSON found in response', content: responseContent }
         }
     } catch (error) {
-        logger.error(`Error generating AgentflowV2: ${error}`)
+        logger.error(`Error generating Agentflow: ${error}`)
         return { error: error.message || 'Unknown error occurred' }
     }
 }
@@ -448,7 +448,7 @@ const generateNodesData = (result: Record<string, any>, config: Record<string, a
 
         return { nodes, edges: result.edges }
     } catch (error) {
-        logger.error(`Error generating AgentflowV2: ${error}`)
+        logger.error(`Error generating Agentflow: ${error}`)
         return { error: error.message || 'Unknown error occurred' }
     }
 }

@@ -49,7 +49,6 @@ import { AgentFlow } from '../database/entities/AgentFlow'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { Credential } from '../database/entities/Credential'
 import { Tool } from '../database/entities/Tool'
-import { Assistant } from '../database/entities/Assistant'
 import { Lead } from '../database/entities/Lead'
 import { DataSource } from 'typeorm'
 import { CachePool } from '../CachePool'
@@ -100,7 +99,6 @@ export const databaseEntities: IDatabaseEntity = {
     Tool: Tool,
     Credential: Credential,
     Lead: Lead,
-    Assistant: Assistant,
     Variable: Variable,
     DocumentStore: DocumentStore,
     DocumentStoreFileChunk: DocumentStoreFileChunk,
@@ -768,7 +766,7 @@ export const clearSessionMemory = async (
     isClearFromViewMessageDialog?: string
 ) => {
     for (const node of reactFlowNodes) {
-        if (node.data.category !== 'Memory' && node.data.type !== 'OpenAIAssistant') continue
+        if (node.data.category !== 'Memory') continue
 
         // Only clear specific session memory from View Message Dialog UI
         if (isClearFromViewMessageDialog && memoryType && node.data.label !== memoryType) continue
@@ -780,21 +778,13 @@ export const clearSessionMemory = async (
 
         // SessionId always take priority first because it is the sessionId used for 3rd party memory node
         if (sessionId && node.data.inputs) {
-            if (node.data.type === 'OpenAIAssistant') {
-                await newNodeInstance.clearChatMessages(node.data, options, { type: 'threadId', id: sessionId })
-            } else {
-                node.data.inputs.sessionId = sessionId
-                const initializedInstance: ChronosMemory = await newNodeInstance.init(node.data, '', options)
-                await initializedInstance.clearChatMessages(sessionId)
-            }
+            node.data.inputs.sessionId = sessionId
+            const initializedInstance: ChronosMemory = await newNodeInstance.init(node.data, '', options)
+            await initializedInstance.clearChatMessages(sessionId)
         } else if (chatId && node.data.inputs) {
-            if (node.data.type === 'OpenAIAssistant') {
-                await newNodeInstance.clearChatMessages(node.data, options, { type: 'chatId', id: chatId })
-            } else {
-                node.data.inputs.sessionId = chatId
-                const initializedInstance: ChronosMemory = await newNodeInstance.init(node.data, '', options)
-                await initializedInstance.clearChatMessages(chatId)
-            }
+            node.data.inputs.sessionId = chatId
+            const initializedInstance: ChronosMemory = await newNodeInstance.init(node.data, '', options)
+            await initializedInstance.clearChatMessages(chatId)
         }
     }
 }

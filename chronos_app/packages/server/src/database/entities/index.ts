@@ -3,7 +3,6 @@ import { ChatMessage } from './ChatMessage'
 import { ChatMessageFeedback } from './ChatMessageFeedback'
 import { Credential } from './Credential'
 import { Tool } from './Tool'
-import { Assistant } from './Assistant'
 import { Variable } from './Variable'
 import { DocumentStore } from './DocumentStore'
 import { DocumentStoreFileChunk } from './DocumentStoreFileChunk'
@@ -35,7 +34,6 @@ export const entities = {
     ChatMessageFeedback,
     Credential,
     Tool,
-    Assistant,
     Variable,
     UpsertHistory,
     DocumentStore,
