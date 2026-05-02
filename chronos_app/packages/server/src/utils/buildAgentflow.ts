@@ -2679,33 +2679,24 @@ export const executeFlow = async ({
         }
     }
 
-    // Only Agentflow V2 is supported
-    if (agentflow.type === 'AGENTFLOW') {
-        return executeAgentFlow({
-            componentNodes,
-            incomingInput,
-            agentflow,
-            chatId,
-            evaluationRunId,
-            appDataSource,
-            telemetry,
-            cachePool,
-            usageCacheManager,
-            sseStreamer,
-            baseURL,
-            isInternal,
-            uploadedFilesContent,
-            fileUploads,
-            signal,
-            isTool
-        })
-    }
-
-    // Deprecated flow types
-    throw new InternalChronosError(
-        StatusCodes.GONE,
-        `Flow type '${agentflow.type}' is deprecated. Only Agentflow V2 (type AGENTFLOW) is supported. Please migrate your flow.`
-    )
+    return executeAgentFlow({
+        componentNodes,
+        incomingInput,
+        agentflow,
+        chatId,
+        evaluationRunId,
+        appDataSource,
+        telemetry,
+        cachePool,
+        usageCacheManager,
+        sseStreamer,
+        baseURL,
+        isInternal,
+        uploadedFilesContent,
+        fileUploads,
+        signal,
+        isTool
+    })
 }
 
 /**
@@ -2726,7 +2717,6 @@ export const utilBuildAgentflow = async (req: Request, isInternal: boolean = fal
         throw new InternalChronosError(StatusCodes.NOT_FOUND, `Agentflow ${agentflowid} not found`)
     }
 
-    const isAgentFlow = agentflow.type === 'AGENTFLOW'
     const httpProtocol = req.get('x-forwarded-proto') || req.protocol
     const baseURL = `${httpProtocol}://${req.get('host')}`
     const incomingInput: IncomingInput = req.body || {} // Ensure incomingInput is never undefined
@@ -2737,17 +2727,6 @@ export const utilBuildAgentflow = async (req: Request, isInternal: boolean = fal
     const isEvaluation: boolean = req.headers['X-Chronos-Evaluation'] || req.body.evaluation
     let evaluationRunId = ''
     evaluationRunId = req.body.evaluationRunId
-    if (isEvaluation && agentflow.type !== 'AGENTFLOW' && req.body.evaluationRunId) {
-        // this is needed for the collection of token metrics for non-agent flows,
-        // for agentflows the execution trace has the info needed
-        const newEval = {
-            evaluation: {
-                status: true,
-                evaluationRunId
-            }
-        }
-        agentflow.analytic = JSON.stringify(newEval)
-    }
 
     let _organizationId = ''
 
@@ -2811,7 +2790,7 @@ export const utilBuildAgentflow = async (req: Request, isInternal: boolean = fal
                 throw new Error('Job execution failed')
             }
             await updatePredictionsUsage(orgId, subscriptionId, workspaceId, appServer.usageCacheManager)
-            incrementSuccessMetricCounter(appServer.metricsProvider, isInternal, isAgentFlow)
+            incrementSuccessMetricCounter(appServer.metricsProvider, isInternal)
             return result
         } else {
             // Add abort controller to the pool
@@ -2823,13 +2802,13 @@ export const utilBuildAgentflow = async (req: Request, isInternal: boolean = fal
 
             appServer.abortControllerPool.remove(abortControllerId)
             await updatePredictionsUsage(orgId, subscriptionId, workspaceId, appServer.usageCacheManager)
-            incrementSuccessMetricCounter(appServer.metricsProvider, isInternal, isAgentFlow)
+            incrementSuccessMetricCounter(appServer.metricsProvider, isInternal)
             return result
         }
     } catch (e) {
         logger.error(`[Agentflow Engine] Error in agentflow ${agentflow.id} (chatId: ${chatId}): ${getErrorMessage(e)}`)
         appServer.abortControllerPool.remove(`${agentflow.id}_${chatId}`)
-        incrementFailedMetricCounter(appServer.metricsProvider, isInternal, isAgentFlow)
+        incrementFailedMetricCounter(appServer.metricsProvider, isInternal)
         if (e instanceof InternalChronosError && e.statusCode === StatusCodes.UNAUTHORIZED) {
             throw e
         } else {
@@ -2841,7 +2820,7 @@ export const utilBuildAgentflow = async (req: Request, isInternal: boolean = fal
 /**
  * Increment success metric counter
  */
-const incrementSuccessMetricCounter = (metricsProvider: IMetricsProvider, isInternal: boolean, _isAgentFlow: boolean) => {
+const incrementSuccessMetricCounter = (metricsProvider: IMetricsProvider, isInternal: boolean) => {
     metricsProvider?.incrementCounter(
         isInternal ? CHRONOS_METRIC_COUNTERS.AGENTFLOW_PREDICTION_INTERNAL : CHRONOS_METRIC_COUNTERS.AGENTFLOW_PREDICTION_EXTERNAL,
         { status: CHRONOS_COUNTER_STATUS.SUCCESS }
@@ -2851,7 +2830,7 @@ const incrementSuccessMetricCounter = (metricsProvider: IMetricsProvider, isInte
 /**
  * Increment failed metric counter
  */
-const incrementFailedMetricCounter = (metricsProvider: IMetricsProvider, isInternal: boolean, _isAgentFlow: boolean) => {
+const incrementFailedMetricCounter = (metricsProvider: IMetricsProvider, isInternal: boolean) => {
     metricsProvider?.incrementCounter(
         isInternal ? CHRONOS_METRIC_COUNTERS.AGENTFLOW_PREDICTION_INTERNAL : CHRONOS_METRIC_COUNTERS.AGENTFLOW_PREDICTION_EXTERNAL,
         { status: CHRONOS_COUNTER_STATUS.FAILURE }

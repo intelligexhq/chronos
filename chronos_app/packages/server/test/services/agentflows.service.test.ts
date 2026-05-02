@@ -60,10 +60,6 @@ export function agentflowsServiceTest() {
                 expect(() => validateAgentflowType(EnumAgentflowType.AGENTFLOW)).not.toThrow()
             })
 
-            it('should not throw error for valid ASSISTANT type', () => {
-                expect(() => validateAgentflowType(EnumAgentflowType.ASSISTANT)).not.toThrow()
-            })
-
             it('should throw error for invalid agentflow type', () => {
                 expect(() => validateAgentflowType('INVALID_TYPE' as any)).toThrow(AgentflowErrorMessage.INVALID_AGENTFLOW_TYPE)
             })

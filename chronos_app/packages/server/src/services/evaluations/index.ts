@@ -19,7 +19,6 @@ import { calculateCost, formatCost } from './CostCalculator'
 import { runAdditionalEvaluators } from './EvaluatorRunner'
 import evaluatorsService from '../evaluator'
 import { LLMEvaluationRunner } from './LLMEvaluationRunner'
-import { Assistant } from '../../database/entities/Assistant'
 
 const runAgain = async (id: string, baseURL: string, orgId: string) => {
     try {
@@ -469,15 +468,7 @@ const isOutdated = async (id: string) => {
         }
         const agentflowIds = evaluation.agentflowId ? JSON.parse(evaluation.agentflowId) : []
         const agentflowNames = evaluation.agentflowName ? JSON.parse(evaluation.agentflowName) : []
-        const agentflowTypes = evaluation.additionalConfig ? JSON.parse(evaluation.additionalConfig).agentflowTypes : []
         for (let i = 0; i < agentflowIds.length; i++) {
-            // check for backward compatibility, as previous versions did not the types in additionalConfig
-            if (agentflowTypes && agentflowTypes.length >= 0) {
-                if (agentflowTypes[i] === 'Custom Assistant') {
-                    // if the agentflow type is custom assistant, then we should NOT check in the agentflows table
-                    continue
-                }
-            }
             const agentflow = await appServer.AppDataSource.getRepository(AgentFlow).findOneBy({
                 id: agentflowIds[i]
             })
@@ -494,38 +485,9 @@ const isOutdated = async (id: string) => {
                     returnObj.agentflows.push({
                         agentflowName: agentflowNames[i],
                         agentflowId: agentflowIds[i],
-                        agentflowType: agentflow.type === 'AGENTFLOW' ? 'Agentflow v2' : 'Agentflow',
+                        agentflowType: 'Agentflow',
                         isOutdated: true
                     })
-                }
-            }
-        }
-        if (agentflowTypes && agentflowTypes.length > 0) {
-            for (let i = 0; i < agentflowIds.length; i++) {
-                if (agentflowTypes[i] !== 'Custom Assistant') {
-                    // if the agentflow type is NOT custom assistant, then bail out for this item
-                    continue
-                }
-                const assistant = await appServer.AppDataSource.getRepository(Assistant).findOneBy({
-                    id: agentflowIds[i]
-                })
-                if (!assistant) {
-                    returnObj.errors.push({
-                        message: `Custom Assistant ${agentflowNames[i]} not found`,
-                        id: agentflowIds[i]
-                    })
-                    isOutdated = true
-                } else {
-                    const assistantLastUpdated = assistant.updatedDate.getTime()
-                    if (assistantLastUpdated > evaluationRunDate) {
-                        isOutdated = true
-                        returnObj.agentflows.push({
-                            agentflowName: agentflowNames[i],
-                            agentflowId: agentflowIds[i],
-                            agentflowType: 'Custom Assistant',
-                            isOutdated: true
-                        })
-                    }
                 }
             }
         }

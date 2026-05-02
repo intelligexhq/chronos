@@ -66,9 +66,6 @@ const resolveAgentflow = async (modelId: string): Promise<AgentFlow> => {
     if (!agentflow) {
         throw new InternalChronosError(StatusCodes.NOT_FOUND, `Model '${modelId}' not found`)
     }
-    if (agentflow.type !== 'AGENTFLOW') {
-        throw new InternalChronosError(StatusCodes.BAD_REQUEST, `Model '${modelId}' is not an agentflow. Only AGENTFLOW type is supported.`)
-    }
     return agentflow
 }
 
@@ -94,12 +91,6 @@ const resolveAgentTarget = async (modelId: string): Promise<AgentTarget> => {
     const agentflowRepo = appServer.AppDataSource.getRepository(AgentFlow)
     const directAgentflow = await agentflowRepo.findOneBy({ id: modelId })
     if (directAgentflow) {
-        if (directAgentflow.type !== 'AGENTFLOW') {
-            throw new InternalChronosError(
-                StatusCodes.BAD_REQUEST,
-                `Model '${modelId}' is not an agentflow. Only AGENTFLOW type is supported.`
-            )
-        }
         return { kind: 'agentflow', agentflow: directAgentflow }
     }
 
