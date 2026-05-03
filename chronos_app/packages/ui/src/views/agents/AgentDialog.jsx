@@ -636,7 +636,7 @@ const AgentDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                                 )}
                             </Box>
                             <Box>
-                                <Stack direction='row' justifyContent='space-between' alignItems='center'>
+                                <Stack direction='row' justifyContent='space-between' alignItems='center' sx={{ mb: 1 }}>
                                     <Typography variant='overline'>Allowed Tools</Typography>
                                     <Tooltip title='Aggregate tools/list across all enabled MCP servers'>
                                         <span>

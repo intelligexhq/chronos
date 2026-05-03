@@ -1,6 +1,6 @@
 # Chronos example apps — end-to-end Agent + MCP Gateway demo
 
-A turnkey docker-compose stack that exercises the v1.6 [Agent Registry](../../../docs/agent-registry.md) and [MCP Gateway](../../../docs/mcp-gateway.md) end-to-end:
+A turnkey docker-compose stack that exercises the Chronos [Agent Registry](../../../docs/agent-registry.md) and [MCP Gateway](../../../docs/mcp-gateway.md) end-to-end:
 
 - **Chronos** with `ENABLE_AGENTS=true` + `ENABLE_MCP_SERVERS=true`.
 - **Postgres** as the database.
@@ -9,18 +9,18 @@ A turnkey docker-compose stack that exercises the v1.6 [Agent Registry](../../..
 
 ## Why this exists
 
-There is no off-the-shelf "Chronos-aware agent" image — the callback dance (`x_chronos_callback_url`, `x_chronos_call_id`, Bearer to `/agent-callbacks/.../tools/invoke`) is Chronos-specific. The example agent here is the runnable reference; copy it as a starting point for your own agents.
+Examples to show "Chronos-aware agent" image — the callback dance (`x_chronos_callback_url`, `x_chronos_call_id`, Bearer to `/agent-callbacks/.../tools/invoke`) is Chronos-specific. The example agent here is the runnable reference; copy it as a starting point for your own agents.
 
-In production, the MCP server side is generic — Chronos works with any MCP server speaking `streamable-http` or `sse`. You would register real MCP servers (Postgres, GitHub, Slack, etc.) — the v1.8 release adds maintained reference servers for those.
+In Chronos, the MCP server side is generic — Chronos works with any MCP server speaking `streamable-http` or `sse`. You would register real MCP servers (Postgres, GitHub, Slack, etc.) — the Chronos v1.8 release (in backlog) adds maintained reference servers for those.
 
 ### Why an in-tree MCP server
 
-The first cut of this demo used `mcp/everything` (the official MCP authors' reference image). It turns out unsuitable as a turnkey demo:
+The first cut of this demo used `mcp/everything` (the official MCP authors' reference image). It turned out to be not very flexible:
 
-1. The image's `dist/` ships only `index.js` (stdio) and `sse.js` (SSE) — no `streamableHttp.js`. v1.6 supports SSE so this isn't a deal-breaker on its own.
-2. The SSE bootstrap schedules MCP demo notifications on a timer (showcasing capabilities like resource-list-changed events). Those notifications fire after ~10–20 seconds and call `Server.notification()`, which throws `Error: Not connected` if no MCP client has opened the SSE stream yet — and the process crashes. Operators registering through the UI can't connect within that window.
+1. The image's `dist/` ships only `index.js` (stdio) and `sse.js` (SSE) — no `streamableHttp.js`. Chronos v1.6 supports SSE so this isn't a deal-breaker on its own.
+2. The SSE bootstrap schedules MCP demo notifications on a timer (showcasing capabilities like resource-list-changed events). Those notifications fire after ~10–20 seconds and call `Server.notification()`, which throws `Error: Not connected` if no MCP client has opened the SSE stream yet — and the process crashes. Demo registering through the UI can't connect within that window.
 
-Both are quirks of an *example* image not designed for unattended startup. Rather than work around them, the demo ships a 50-line streamable-http server in `./mcp/` that uses the same `@modelcontextprotocol/sdk` we depend on elsewhere. No demo timers, no flaky bootstraps.
+Both are quirks of an *example* image not designed for unattended startup. Rather than work around them, in Chronos examples we provide a lean `streamable-http` server in `./mcp/` that uses the same `@modelcontextprotocol/sdk` we depend on elsewhere. No demo timers, no flaky bootstraps.
 
 ## One-time setup
 
@@ -35,12 +35,15 @@ docker build -f Dockerfile.local -t chronos:local ..
 
 ```bash
 cd chronos_app/docker/examples
-docker compose up # docker compose up --build
+docker compose up
+# docker compose up --build
+# docker compose up -d --no-deps chronos
 ```
 
 ### Example smoke test
 ```bash
-cd chronos_app/docker/examples                                                                                                                                         
+cd chronos_app/docker/examples
+# this will run automated test of registering mcp server + external http OpenAI spec agent, configure it to use mcp service and run the simple agent call to measure if end to end agent -> mcp server -> tool run is succesfull.                                                                                                                                          
 docker compose -f docker-compose.smoke.yml up --build --abort-on-container-exit --exit-code-from smoke-runner
 ```
 
@@ -145,7 +148,7 @@ docker compose down --volumes   # also drop the .postgres_data and .chronos volu
 
 ## Smoke test (`docker-compose.smoke.yml`)
 
-Sibling stack that asserts the v1.6 protocol works end-to-end without operator interaction. It boots Chronos + Postgres + a self-contained `smoke-runner` container that:
+Sibling stack that asserts the Chronos works end-to-end without operator interaction. It boots Chronos + Postgres + a self-contained `smoke-runner` container that:
 
 - runs an embedded Streamable-HTTP MCP server with one tool, `add(a, b) → a+b`
 - runs an agent `/health` stub so registration + the health poller are both happy
