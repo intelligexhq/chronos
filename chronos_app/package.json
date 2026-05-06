@@ -2,6 +2,7 @@
     "name": "chronos",
     "version": "1.6.0",
     "releaseDate": "2026-05-03",
+    "description": "Chronos by Intelligex — self-hosted control plane for AI agents and MCP tools.",
     "private": true,
     "homepage": "https://intelligex.com/chronos",
     "workspaces": [
@@ -64,7 +65,7 @@
             "@typescript-eslint/type-utils": "^8.0.0",
             "zod": "3.25.1",
             "zod-to-json-schema": "3.25.1",
-            "axios": "1.12.0",
+            "axios": "1.16.0",
             "body-parser": "2.0.2",
             "braces": "3.0.3",
             "cross-spawn": "7.0.6",

@@ -1,11 +1,11 @@
-# Chronos – self-hosted control plane for AI agents and MCP tools
+# Chronos by Intelligex – self-hosted control plane for AI agents and MCP tools
 
 ![Build Status](https://github.com/intelligexhq/chronos/actions/workflows/validate.yml/badge.svg)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE.md)
 [![Node Version](https://img.shields.io/badge/node-%3E%3D24-brightgreen)](chronos_app/.nvmrc)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-> Author agents visually on the built-in canvas, or register external agents from any framework — broker every tool through one audited MCP gateway.
+> Create agents visually on the built-in canvas, or register external agents from any framework — broker every tool through one audited MCP gateway.
 
 <div align="center" style="padding-bottom: 35px;">
   <img src="./resources/chronos_main_page.gif" width="600" />
@@ -63,14 +63,28 @@ What's coming next, in rough priority order:
   credential refresh, a browseable tool catalogue.
   - **Replatforming** — package boundaries that clarify control plane vs. runtime vs. enterprise plug-points. The vision for v2.x of Chronos.
 
+## Key concepts
+
+Concept-level overviews of the Chronos control plane:
+
+- [Chronos Agent registry](https://intelligex.com/chronos/agent-registry) — how canvas-built and external HTTP agents share one agent registry.
+- [Chronos MCP registry](https://intelligex.com/chronos/mcp-registry) — the credential-brokered and audited Chronos MCP gateway.
+- [Chronos schedules](https://intelligex.com/chronos/schedules) — recurring agent runs on a cron type schedules. In-process or queue-backed.
+- [Chronos data management](https://intelligex.com/chronos/data-management) — how Chronos manages data and what data ownership means.
+- [Chronos governance](https://intelligex.com/chronos/governance) — SSO, RBAC, audit and budgets.
+
 ## Tutorials
 
-These guides will get you started with running Chronos and building agents:
+Hands-on guides for running Chronos and managing agents.
 
-- [Chronos visual agent builder – up and running in a local environment](https://intelligex.com/chronos/chronos-visual-ai-agent-builder-up-and-running)
-- [Chronos visual agent builder – advanced Docker Compose examples](https://intelligex.com/chronos/hosting-chronos-advanced-examples)
-- [Chronos visual agent builder – build your first agent](https://intelligex.com/chronos/chronos-build-your-first-agent-flow)
+- [Chronos self-hosted quickstart](https://intelligex.com/chronos/chronos-self-hosted-quickstart)
+- [Chronos self-hosted – advanced docker compose examples](https://intelligex.com/chronos/hosting-chronos-advanced-examples)
+- [Build your first canvas agent in Chronos](https://intelligex.com/chronos/chronos-build-first-canvas-agent)
 - [Build a RAG agent with Qdrant and Ollama](https://intelligex.com/chronos/build-rag-for-your-documents-with-local-embeddings)
+- [Register an HTTP agent in Chronos](https://intelligex.com/chronos/chronos-register-http-agent)
+- [Register an MCP server in Chronos](https://intelligex.com/chronos/chronos-register-mcp-server)
+- [Schedule agent runs in Chronos](https://intelligex.com/chronos/chronos-schedule-agent-runs)
+- [Rotate the Chronos agent callback token](https://intelligex.com/chronos/chronos-rotate-agent-callback-token)
 - [How and where Chronos stores data](https://intelligex.com/chronos/how-chronos-agent-builder-stores-data)
 
 ## License
@@ -79,8 +93,9 @@ Source code in this repository is made available under the [Apache License Versi
 
 ## Need assistance?
 
-We provide [professional services](https://intelligex.com/about) to help you deploy, customise, and operate Chronos in your organisation’s environment:
+We provide [professional services](https://intelligex.com/about) to help you deploy, customise, and integrate Chronos in your organisation environment:
 
-- Architecture and deployment in your infra (on‑prem or cloud).
-- Custom agent development and integrations.
-- Training and best practices for teams.
+- Architecture and deployment in environments you own (private or public clouds).
+- Custom agent builds and integrations of existing agents.
+- Maintaining MCP tool registries. Metering, managing and auditing MCP tools / internal API usage.
+- Training and best practice blueprints for teams who build and maintain agents.
