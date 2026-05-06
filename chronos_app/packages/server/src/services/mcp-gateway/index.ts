@@ -10,6 +10,7 @@ import { MCPServerStatus, MCPServerTransport } from '../../Interface'
 import { InternalChronosError } from '../../errors/internalChronosError'
 import { getErrorMessage } from '../../errors/utils'
 import logger from '../../utils/logger'
+import auditService from '../audit'
 import httpAgentRuntime from '../agent-runtime-http'
 
 const DEFAULT_IDLE_TIMEOUT_MS = 300000
@@ -132,14 +133,31 @@ export class MCPGateway {
                 { timeout }
             )
             entry.lastUsedAt = Date.now()
+            const durationMs = Date.now() - startedAt
             logger.info({
                 event: 'mcp.tool.invoke',
                 agentId: agent.id,
                 agentSlug: agent.slug,
                 server: serverSlug,
                 tool: toolName,
-                durationMs: Date.now() - startedAt,
+                durationMs,
                 callId: callContext.callId
+            })
+            // Persist the audit row best-effort. Fire-and-forget — the gateway
+            // hot path must not block on the DB write, and the auditService
+            // catches its own errors so this can never throw.
+            void auditService.recordToolInvocation({
+                agentId: agent.id,
+                agentSlug: agent.slug,
+                mcpServerId: server.id,
+                mcpServerSlug: serverSlug,
+                toolName,
+                namespacedTool: namespacedToolName,
+                success: true,
+                durationMs,
+                errorMessage: null,
+                callId: callContext.callId ?? null,
+                userId: agent.userId ?? null
             })
             return result
         } catch (error) {
@@ -148,17 +166,32 @@ export class MCPGateway {
             entry.client.close().catch(() => {
                 /* noop */
             })
+            const durationMs = Date.now() - startedAt
+            const errorMessage = getErrorMessage(error)
             logger.warn({
                 event: 'mcp.tool.invoke.error',
                 agentId: agent.id,
                 agentSlug: agent.slug,
                 server: serverSlug,
                 tool: toolName,
-                durationMs: Date.now() - startedAt,
+                durationMs,
                 callId: callContext.callId,
-                error: getErrorMessage(error)
+                error: errorMessage
             })
-            throw new InternalChronosError(StatusCodes.BAD_GATEWAY, `MCP tool ${namespacedToolName} failed: ${getErrorMessage(error)}`)
+            void auditService.recordToolInvocation({
+                agentId: agent.id,
+                agentSlug: agent.slug,
+                mcpServerId: server.id,
+                mcpServerSlug: serverSlug,
+                toolName,
+                namespacedTool: namespacedToolName,
+                success: false,
+                durationMs,
+                errorMessage,
+                callId: callContext.callId ?? null,
+                userId: agent.userId ?? null
+            })
+            throw new InternalChronosError(StatusCodes.BAD_GATEWAY, `MCP tool ${namespacedToolName} failed: ${errorMessage}`)
         }
     }
 
