@@ -28,6 +28,7 @@ import { AgentflowVersion } from './AgentflowVersion'
 import { Agent } from './Agent'
 import { MCPServer } from './MCPServer'
 import { ToolInvocationAudit } from './ToolInvocationAudit'
+import { CredentialAccessAudit } from './CredentialAccessAudit'
 
 export const entities = {
     AgentFlow,
@@ -59,5 +60,6 @@ export const entities = {
     AgentflowVersion,
     Agent,
     MCPServer,
-    ToolInvocationAudit
+    ToolInvocationAudit,
+    CredentialAccessAudit
 }

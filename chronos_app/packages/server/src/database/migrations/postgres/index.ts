@@ -9,6 +9,7 @@ import { BuiltInAgentDefaultHealthy1800000000007 } from './1800000000007-BuiltIn
 import { RemoveAssistantSupport1800000000008 } from './1800000000008-RemoveAssistantSupport'
 import { RenameAgentflowV2TemplateType1800000000009 } from './1800000000009-RenameAgentflowV2TemplateType'
 import { AddToolInvocationAudit1800000000010 } from './1800000000010-AddToolInvocationAudit'
+import { AddCredentialAccessAudit1800000000011 } from './1800000000011-AddCredentialAccessAudit'
 
 export const postgresMigrations = [
     ConsolidatedBaseline1800000000000,
@@ -21,5 +22,6 @@ export const postgresMigrations = [
     BuiltInAgentDefaultHealthy1800000000007,
     RemoveAssistantSupport1800000000008,
     RenameAgentflowV2TemplateType1800000000009,
-    AddToolInvocationAudit1800000000010
+    AddToolInvocationAudit1800000000010,
+    AddCredentialAccessAudit1800000000011
 ]
