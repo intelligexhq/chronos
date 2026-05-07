@@ -88,8 +88,12 @@ const writeStartExecution = async (agent: Agent, sessionId: string, executionDat
 
 /**
  * Updates the Execution row to a terminal state and writes the matching
- * ExecutionMetrics row. Token counts are zero in v1.6 — HTTP agents do not
- * surface Chronos-format token instrumentation.
+ * ExecutionMetrics row. Surfaces upstream OpenAI token usage when present —
+ * Chat Completions emits prompt_tokens/completion_tokens, the Responses API
+ * emits input_tokens/output_tokens; both carry total_tokens. Streaming
+ * responses are piped raw, so usage is captured only on the non-streaming
+ * success path; streamed runs land at zero until SSE usage extraction is in
+ * scope.
  */
 const writeFinishExecution = async (
     execution: Execution | null,
@@ -106,13 +110,21 @@ const writeFinishExecution = async (
         execution.executionData = JSON.stringify(finalPayload)
         await repo.save(execution)
 
+        const usage = (finalPayload as any)?.response?.usage ?? {}
+        const inputTokens = Number(usage.prompt_tokens ?? usage.input_tokens ?? 0) || 0
+        const outputTokens = Number(usage.completion_tokens ?? usage.output_tokens ?? 0) || 0
+        const totalTokens = Number(usage.total_tokens ?? inputTokens + outputTokens) || 0
+
         const metricsRepo = appServer.AppDataSource.getRepository(ExecutionMetrics)
         const metrics = metricsRepo.create({
             agentflowId: agent.id,
             executionId: execution.id,
             state: state === 'FINISHED' ? 'FINISHED' : 'ERROR',
             durationMs,
-            triggerType: 'api'
+            triggerType: 'api',
+            inputTokens,
+            outputTokens,
+            totalTokens
         })
         await metricsRepo.save(metrics)
     } catch (error) {
