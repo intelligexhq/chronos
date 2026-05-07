@@ -3,7 +3,9 @@ import { CredentialAccessAudit } from '../../database/entities/CredentialAccessA
 import { InternalChronosError } from '../../errors/internalChronosError'
 import { getErrorMessage } from '../../errors/utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import logger from '../../utils/logger'
+import { createModuleLogger } from '../../utils/logger'
+
+const logger = createModuleLogger('audit')
 import { StatusCodes } from 'http-status-codes'
 
 /**

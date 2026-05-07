@@ -4,7 +4,9 @@
 
 import path from 'path'
 import fs from 'fs'
-import logger from './logger'
+import { createModuleLogger } from './logger'
+
+const logger = createModuleLogger('utils')
 import { v4 as uuidv4 } from 'uuid'
 import {
     IAgentFlow,

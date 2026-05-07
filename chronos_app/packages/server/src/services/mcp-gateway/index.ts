@@ -9,7 +9,9 @@ import { MCPServer } from '../../database/entities/MCPServer'
 import { MCPServerStatus, MCPServerTransport } from '../../Interface'
 import { InternalChronosError } from '../../errors/internalChronosError'
 import { getErrorMessage } from '../../errors/utils'
-import logger from '../../utils/logger'
+import { createModuleLogger } from '../../utils/logger'
+
+const logger = createModuleLogger('MCPGateway')
 import auditService from '../audit'
 import httpAgentRuntime from '../agent-runtime-http'
 
@@ -65,7 +67,7 @@ export class MCPGateway {
 
     public start(): void {
         if (this.reaperId) return
-        logger.info(`🛰️ [MCPGateway] Starting (idleTimeoutMs=${this.idleTimeoutMs}, reaperIntervalMs=${REAPER_INTERVAL_MS})`)
+        logger.info(`🛰️ Starting (idleTimeoutMs=${this.idleTimeoutMs}, reaperIntervalMs=${REAPER_INTERVAL_MS})`)
         this.reaperId = setInterval(() => this.reapIdle(), REAPER_INTERVAL_MS)
     }
 
@@ -80,10 +82,10 @@ export class MCPGateway {
             try {
                 await entry.client.close()
             } catch (error) {
-                logger.warn(`[MCPGateway] Failed to close client for server ${id}: ${getErrorMessage(error)}`)
+                logger.warn(`Failed to close client for server ${id}: ${getErrorMessage(error)}`)
             }
         }
-        logger.info('🛰️ [MCPGateway] Stopped')
+        logger.info('🛰️ Stopped')
     }
 
     /**
@@ -423,7 +425,7 @@ export class MCPGateway {
             if (entry.lastUsedAt < cutoff) {
                 this.pool.delete(id)
                 entry.client.close().catch((error) => {
-                    logger.warn(`[MCPGateway] Failed to close idle client for server ${id}: ${getErrorMessage(error)}`)
+                    logger.warn(`Failed to close idle client for server ${id}: ${getErrorMessage(error)}`)
                 })
             }
         }
