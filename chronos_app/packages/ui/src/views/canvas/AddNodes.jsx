@@ -44,7 +44,7 @@ import { SET_COMPONENT_NODES } from '@/store/actions'
 
 // ==============================|| ADD NODES||============================== //
 
-const AddNodes = ({ nodesData, node, isAgentCanvas: _isAgentCanvas, onFlowGenerated }) => {
+const AddNodes = ({ nodesData, node, onFlowGenerated }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const dispatch = useDispatch()
@@ -587,8 +587,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas: _isAgentCanvas, onFlowGenera
 AddNodes.propTypes = {
     nodesData: PropTypes.array,
     node: PropTypes.object,
-    onFlowGenerated: PropTypes.func,
-    isAgentCanvas: PropTypes.bool
+    onFlowGenerated: PropTypes.func
 }
 
 export default memo(AddNodes)

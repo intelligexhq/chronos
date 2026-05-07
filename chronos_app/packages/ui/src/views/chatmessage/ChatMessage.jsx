@@ -162,7 +162,7 @@ CardWithDeleteOverlay.propTypes = {
     onDelete: PropTypes.func
 }
 
-const ChatMessage = ({ open, agentflowid, isAgentCanvas, isDialog, previews, setPreviews }) => {
+const ChatMessage = ({ open, agentflowid, isDialog, previews, setPreviews }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -2976,62 +2976,38 @@ const ChatMessage = ({ open, agentflowid, isAgentCanvas, isDialog, previews, set
                                             </IconButton>
                                         </InputAdornment>
                                     )}
-                                    {!isAgentCanvas && (
-                                        <InputAdornment position='end' sx={{ paddingRight: '15px' }}>
-                                            <IconButton type='submit' disabled={getInputDisabled()} edge='end'>
-                                                {loading ? (
-                                                    <div>
-                                                        <CircularProgress color='inherit' size={20} />
-                                                    </div>
-                                                ) : (
-                                                    // Send icon SVG in input field
+                                    <>
+                                        {!loading && (
+                                            <InputAdornment position='end' sx={{ paddingRight: '15px' }}>
+                                                <IconButton type='submit' disabled={getInputDisabled()} edge='end'>
                                                     <IconSend
                                                         color={
                                                             getInputDisabled() ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'
                                                         }
                                                     />
-                                                )}
-                                            </IconButton>
-                                        </InputAdornment>
-                                    )}
-                                    {isAgentCanvas && (
-                                        <>
-                                            {!loading && (
-                                                <InputAdornment position='end' sx={{ paddingRight: '15px' }}>
-                                                    <IconButton type='submit' disabled={getInputDisabled()} edge='end'>
-                                                        <IconSend
-                                                            color={
-                                                                getInputDisabled()
-                                                                    ? '#9e9e9e'
-                                                                    : customization.isDarkMode
-                                                                    ? 'white'
-                                                                    : '#1e88e5'
-                                                            }
-                                                        />
-                                                    </IconButton>
-                                                </InputAdornment>
-                                            )}
-                                            {loading && (
-                                                <InputAdornment position='end' sx={{ padding: '15px', mr: 1 }}>
-                                                    <IconButton
-                                                        edge='end'
-                                                        title={isMessageStopping ? 'Stopping...' : 'Stop'}
-                                                        style={{ border: !isMessageStopping ? '2px solid red' : 'none' }}
-                                                        onClick={() => handleAbort()}
-                                                        disabled={isMessageStopping}
-                                                    >
-                                                        {isMessageStopping ? (
-                                                            <div>
-                                                                <CircularProgress color='error' size={20} />
-                                                            </div>
-                                                        ) : (
-                                                            <IconSquareFilled size={15} color='red' />
-                                                        )}
-                                                    </IconButton>
-                                                </InputAdornment>
-                                            )}
-                                        </>
-                                    )}
+                                                </IconButton>
+                                            </InputAdornment>
+                                        )}
+                                        {loading && (
+                                            <InputAdornment position='end' sx={{ padding: '15px', mr: 1 }}>
+                                                <IconButton
+                                                    edge='end'
+                                                    title={isMessageStopping ? 'Stopping...' : 'Stop'}
+                                                    style={{ border: !isMessageStopping ? '2px solid red' : 'none' }}
+                                                    onClick={() => handleAbort()}
+                                                    disabled={isMessageStopping}
+                                                >
+                                                    {isMessageStopping ? (
+                                                        <div>
+                                                            <CircularProgress color='error' size={20} />
+                                                        </div>
+                                                    ) : (
+                                                        <IconSquareFilled size={15} color='red' />
+                                                    )}
+                                                </IconButton>
+                                            </InputAdornment>
+                                        )}
+                                    </>
                                 </>
                             }
                         />
@@ -3102,7 +3078,6 @@ const ChatMessage = ({ open, agentflowid, isAgentCanvas, isDialog, previews, set
 ChatMessage.propTypes = {
     open: PropTypes.bool,
     agentflowid: PropTypes.string,
-    isAgentCanvas: PropTypes.bool,
     isDialog: PropTypes.bool,
     previews: PropTypes.array,
     setPreviews: PropTypes.func

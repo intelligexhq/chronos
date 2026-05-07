@@ -118,7 +118,6 @@
 
 ## local
 local_data
-Dockerfile
 AGENTS.md
 CLAUDE.md
 GEMINI.md

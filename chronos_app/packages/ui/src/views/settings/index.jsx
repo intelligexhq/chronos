@@ -13,13 +13,12 @@ import PerfectScrollbar from 'react-perfect-scrollbar'
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
 import Transitions from '@/ui-component/extended/Transitions'
-import settings from '@/menu-items/settings'
 import agentsettings from '@/menu-items/agentsettings'
 import { useAuth } from '@/hooks/useAuth'
 
 // ==============================|| SETTINGS ||============================== //
 
-const Settings = ({ agentflow, isSettingsOpen, anchorEl, isAgentCanvas, onSettingsItemClick, onUploadFile, onClose }) => {
+const Settings = ({ agentflow, isSettingsOpen, anchorEl, onSettingsItemClick, onUploadFile, onClose }) => {
     const theme = useTheme()
     const [settingsMenu, setSettingsMenu] = useState([])
     const customization = useSelector((state) => state.customization)
@@ -45,14 +44,12 @@ const Settings = ({ agentflow, isSettingsOpen, anchorEl, isAgentCanvas, onSettin
 
     useEffect(() => {
         if (agentflow && !agentflow.id) {
-            const menus = isAgentCanvas ? agentsettings : settings
-            const settingsMenu = menus.children.filter((menu) => menu.id === 'loadAgentflow')
+            const settingsMenu = agentsettings.children.filter((menu) => menu.id === 'loadAgentflow')
             setSettingsMenu(settingsMenu)
         } else if (agentflow && agentflow.id) {
-            const menus = isAgentCanvas ? agentsettings : settings
-            setSettingsMenu(menus.children)
+            setSettingsMenu(agentsettings.children)
         }
-    }, [agentflow, isAgentCanvas])
+    }, [agentflow])
 
     useEffect(() => {
         setOpen(isSettingsOpen)
@@ -154,8 +151,7 @@ Settings.propTypes = {
     anchorEl: PropTypes.any,
     onSettingsItemClick: PropTypes.func,
     onUploadFile: PropTypes.func,
-    onClose: PropTypes.func,
-    isAgentCanvas: PropTypes.bool
+    onClose: PropTypes.func
 }
 
 export default Settings
