@@ -695,7 +695,6 @@ const AgentflowCanvas = () => {
                             handleSaveFlow={handleSaveFlow}
                             handleDeleteFlow={handleDeleteFlow}
                             handleLoadFlow={handleLoadFlow}
-                            isAgentCanvas={true}
                         />
                     </Toolbar>
                 </AppBar>
@@ -763,12 +762,7 @@ const AgentflowCanvas = () => {
                                     }}
                                 />
                                 {isBackgroundEnabled && <Background color='#aaa' gap={16} />}
-                                <AddNodes
-                                    isAgentCanvas={true}
-                                    nodesData={getNodesApi.data}
-                                    node={selectedNode}
-                                    onFlowGenerated={triggerConfetti}
-                                />
+                                <AddNodes nodesData={getNodesApi.data} node={selectedNode} onFlowGenerated={triggerConfetti} />
                                 <EditNodeDialog
                                     show={editNodeDialogOpen}
                                     dialogProps={editNodeDialogProps}
@@ -794,8 +788,8 @@ const AgentflowCanvas = () => {
                                         <IconRefreshAlert />
                                     </Fab>
                                 )}
-                                <ChatPopUp isAgentCanvas={true} agentflowid={agentflowId} onOpenChange={setChatPopupOpen} />
-                                {!chatPopupOpen && <ValidationPopUp isAgentCanvas={true} agentflowid={agentflowId} />}
+                                <ChatPopUp agentflowid={agentflowId} onOpenChange={setChatPopupOpen} />
+                                {!chatPopupOpen && <ValidationPopUp agentflowid={agentflowId} />}
                             </ReactFlow>
                         </div>
                     </div>

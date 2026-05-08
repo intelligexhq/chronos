@@ -86,11 +86,9 @@ function a11yProps(index) {
     }
 }
 
-const AgentflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCancel }) => {
+const AgentflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
     const portalElement = document.getElementById('portal')
     const [tabValue, setTabValue] = useState(0)
-
-    const filteredTabs = AGENTFLOW_CONFIGURATION_TABS.filter((tab) => !isAgentCanvas || !tab.hideInAgentFlow)
 
     const component = show ? (
         <Dialog
@@ -120,7 +118,7 @@ const AgentflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCanc
                     variant='scrollable'
                     scrollButtons='auto'
                 >
-                    {filteredTabs.map((item, index) => (
+                    {AGENTFLOW_CONFIGURATION_TABS.map((item, index) => (
                         <Tab
                             sx={{
                                 minHeight: '40px',
@@ -135,7 +133,7 @@ const AgentflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCanc
                         ></Tab>
                     ))}
                 </Tabs>
-                {filteredTabs.map((item, index) => (
+                {AGENTFLOW_CONFIGURATION_TABS.map((item, index) => (
                     <TabPanel key={item.id} value={tabValue} index={index}>
                         {item.id === 'security' && <Security dialogProps={dialogProps} />}
                         {item.id === 'conversationStarters' ? <StarterPrompts dialogProps={dialogProps} /> : null}
@@ -158,7 +156,6 @@ const AgentflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCanc
 
 AgentflowConfigurationDialog.propTypes = {
     show: PropTypes.bool,
-    isAgentCanvas: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func
 }

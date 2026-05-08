@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from 'react-redux'
 
 // MUI
 import { RichTreeView } from '@mui/x-tree-view/RichTreeView'
-import { Typography, Box, Drawer, Chip, Button, Tooltip, Stack } from '@mui/material'
+import { Typography, Box, Drawer, Chip, Button, Tooltip, Stack, ToggleButton, ToggleButtonGroup, Alert, AlertTitle } from '@mui/material'
 import { styled, alpha } from '@mui/material/styles'
 import { useTreeItem2 } from '@mui/x-tree-view/useTreeItem2'
 import {
@@ -40,6 +40,7 @@ import {
 import { useTheme } from '@mui/material/styles'
 import { CHRONOS_CREDENTIAL_ID, AGENTFLOW_ICONS } from '@/store/constant'
 import { NodeExecutionDetails } from '@/views/agentexecutions/NodeExecutionDetails'
+import { JSONViewer } from '@/ui-component/json/JsonViewer'
 import ShareExecutionDialog from './ShareExecutionDialog'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
@@ -298,6 +299,7 @@ export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose,
     const [showShareDialog, setShowShareDialog] = useState(false)
     const [copied, setCopied] = useState(false)
     const [localMetadata, setLocalMetadata] = useState({})
+    const [httpViewMode, setHttpViewMode] = useState('rendered')
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const updateExecutionApi = useApi(executionsApi.updateExecution)
@@ -725,10 +727,25 @@ export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose,
         setSelectedItem(selectedNode)
     }
 
-    // HTTP-agent execution panel — flat JSON view of whatever the runtime
+    // HTTP-agent execution panel — flat view of whatever the runtime
     // persisted (request body, response body, error). No tree, no node
     // selection. The full agentflow execution UI doesn't apply here because
     // an HTTP-agent run is one upstream call, not a graph of nodes.
+    const httpPayload = isHttpExecution ? execution : null
+    const httpResponse = httpPayload?.response
+    const httpRequest = httpPayload?.request
+    const httpError = httpPayload?.error
+    const httpAborted = httpPayload?.aborted
+    const httpStatusCode = httpPayload?.statusCode
+    const httpStatusBody = httpPayload?.body
+    const httpStreamed = httpPayload?.streamed === true
+    const httpHasError = httpError !== undefined || httpStatusCode !== undefined
+    const httpAssistantMessage = httpResponse?.choices?.[0]?.message
+    const httpFinishReason = httpResponse?.choices?.[0]?.finish_reason
+    const httpUsage = httpResponse?.usage
+    const httpAgentId = localMetadata?.agentflow?.id ?? localMetadata?.agentflowId
+    const httpAgentName = localMetadata?.agentflow?.name
+
     const httpExecutionContent = (
         <Box sx={{ display: 'flex', height: '100%', flexDirection: 'row' }}>
             <Box
@@ -744,6 +761,16 @@ export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose,
                     Execution
                 </Typography>
                 <Stack direction='row' spacing={1} sx={{ mt: 1, flexWrap: 'wrap', gap: 1 }}>
+                    {!isPublic && httpAgentId && (
+                        <Chip
+                            sx={{ pl: 1 }}
+                            icon={<IconExternalLink size={15} />}
+                            variant='outlined'
+                            label={httpAgentName || httpAgentId || 'Go to Agent'}
+                            className={'button'}
+                            onClick={() => window.open(`/agents/${httpAgentId}`, '_blank')}
+                        />
+                    )}
                     {!isPublic && localMetadata?.id && (
                         <Tooltip title={`Execution ID: ${localMetadata.id}`} placement='top'>
                             <Chip
@@ -756,39 +783,136 @@ export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose,
                             />
                         </Tooltip>
                     )}
-                    {localMetadata?.state && <Chip size='small' label={`State: ${localMetadata.state}`} variant='outlined' />}
+                    {localMetadata?.state && <Chip variant='outlined' label={`State: ${localMetadata.state}`} />}
                     {localMetadata?.createdDate && (
-                        <Chip size='small' label={`Created: ${new Date(localMetadata.createdDate).toLocaleString()}`} variant='outlined' />
+                        <Chip variant='outlined' label={`Created: ${new Date(localMetadata.createdDate).toLocaleString()}`} />
                     )}
-                    {localMetadata?.sessionId && <Chip size='small' label={`Session: ${localMetadata.sessionId}`} variant='outlined' />}
+                    {localMetadata?.sessionId && <Chip variant='outlined' label={`Session: ${localMetadata.sessionId}`} />}
                 </Stack>
                 <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mt: 2 }}>
                     HTTP-agent execution — the agent ran as a single upstream call. No nested node tree to display.
                 </Typography>
             </Box>
             <Box sx={{ flex: '1 1 65%', padding: 2, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
-                <Typography variant='overline' color='text.secondary'>
-                    Payload
-                </Typography>
-                <Box
-                    component='pre'
-                    sx={{
-                        backgroundColor: (theme) => (theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'),
-                        padding: 2,
-                        borderRadius: 1,
-                        fontSize: '0.85rem',
-                        overflow: 'auto',
-                        margin: 0,
-                        marginTop: 1,
-                        width: '100%',
-                        flex: 1,
-                        boxSizing: 'border-box',
-                        whiteSpace: 'pre-wrap',
-                        wordBreak: 'break-word'
-                    }}
-                >
-                    {JSON.stringify(execution, null, 2)}
-                </Box>
+                <Stack direction='row' alignItems='center' justifyContent='space-between' sx={{ mb: 1 }}>
+                    <Typography variant='overline' color='text.secondary'>
+                        Payload
+                    </Typography>
+                    <ToggleButtonGroup
+                        size='small'
+                        exclusive
+                        value={httpViewMode}
+                        onChange={(_, next) => {
+                            if (next) setHttpViewMode(next)
+                        }}
+                    >
+                        <ToggleButton value='rendered'>Rendered</ToggleButton>
+                        <ToggleButton value='raw'>Raw</ToggleButton>
+                    </ToggleButtonGroup>
+                </Stack>
+
+                {httpHasError && (
+                    <Alert severity='error' variant='outlined' sx={{ mb: 2 }}>
+                        <AlertTitle>
+                            {httpAborted
+                                ? 'Upstream timeout / aborted'
+                                : httpStatusCode !== undefined
+                                ? `Upstream returned HTTP ${httpStatusCode}`
+                                : 'Upstream error'}
+                        </AlertTitle>
+                        {httpError && (
+                            <Typography variant='body2' sx={{ wordBreak: 'break-word' }}>
+                                {httpError}
+                            </Typography>
+                        )}
+                        {httpStatusBody && (
+                            <Box component='pre' sx={{ mt: 1, mb: 0, fontSize: '0.8rem', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                                {typeof httpStatusBody === 'string' ? httpStatusBody : JSON.stringify(httpStatusBody, null, 2)}
+                            </Box>
+                        )}
+                    </Alert>
+                )}
+
+                {httpViewMode === 'rendered' ? (
+                    <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+                        {httpStreamed && (
+                            <Alert severity='info' variant='outlined' sx={{ mb: 2 }}>
+                                Streamed response — the body was piped through to the caller and is not retained for replay.
+                            </Alert>
+                        )}
+                        {httpAssistantMessage?.content && (
+                            <Box sx={{ mb: 2 }}>
+                                <Typography variant='caption' color='text.secondary'>
+                                    Assistant
+                                </Typography>
+                                <Box
+                                    sx={{
+                                        mt: 0.5,
+                                        p: 2,
+                                        borderRadius: 1,
+                                        backgroundColor: (theme) =>
+                                            theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+                                        whiteSpace: 'pre-wrap',
+                                        wordBreak: 'break-word'
+                                    }}
+                                >
+                                    {httpAssistantMessage.content}
+                                </Box>
+                            </Box>
+                        )}
+                        {Array.isArray(httpAssistantMessage?.tool_calls) && httpAssistantMessage.tool_calls.length > 0 && (
+                            <Box sx={{ mb: 2 }}>
+                                <Typography variant='caption' color='text.secondary'>
+                                    Tool calls
+                                </Typography>
+                                <Box sx={{ mt: 0.5 }}>
+                                    <JSONViewer data={httpAssistantMessage.tool_calls} maxHeight='240px' />
+                                </Box>
+                            </Box>
+                        )}
+                        {(httpFinishReason || httpUsage) && (
+                            <Stack direction='row' spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
+                                {httpFinishReason && <Chip size='small' variant='outlined' label={`finish: ${httpFinishReason}`} />}
+                                {httpUsage?.total_tokens !== undefined && (
+                                    <Chip size='small' variant='outlined' label={`tokens: ${httpUsage.total_tokens}`} />
+                                )}
+                                {(httpUsage?.prompt_tokens ?? httpUsage?.input_tokens) !== undefined && (
+                                    <Chip
+                                        size='small'
+                                        variant='outlined'
+                                        label={`in: ${httpUsage?.prompt_tokens ?? httpUsage?.input_tokens}`}
+                                    />
+                                )}
+                                {(httpUsage?.completion_tokens ?? httpUsage?.output_tokens) !== undefined && (
+                                    <Chip
+                                        size='small'
+                                        variant='outlined'
+                                        label={`out: ${httpUsage?.completion_tokens ?? httpUsage?.output_tokens}`}
+                                    />
+                                )}
+                            </Stack>
+                        )}
+                        {httpRequest && (
+                            <Box sx={{ mb: 2 }}>
+                                <Typography variant='caption' color='text.secondary'>
+                                    Request
+                                </Typography>
+                                <Box sx={{ mt: 0.5 }}>
+                                    <JSONViewer data={httpRequest} maxHeight='240px' />
+                                </Box>
+                            </Box>
+                        )}
+                        {!httpHasError && !httpStreamed && !httpResponse && !httpRequest && (
+                            <Typography variant='caption' color='text.secondary'>
+                                No structured payload to render — switch to Raw to see the persisted shape.
+                            </Typography>
+                        )}
+                    </Box>
+                ) : (
+                    <Box sx={{ flex: 1, minHeight: 0, mt: 1 }}>
+                        <JSONViewer data={execution} maxHeight='100%' />
+                    </Box>
+                )}
             </Box>
         </Box>
     )

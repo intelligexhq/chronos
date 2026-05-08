@@ -47,7 +47,7 @@ import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackba
 
 // ==============================|| CANVAS HEADER ||============================== //
 
-const CanvasHeader = ({ agentflow, isAgentCanvas, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
+const CanvasHeader = ({ agentflow, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
     const theme = useTheme()
     const dispatch = useDispatch()
     const navigate = useNavigate()
@@ -216,8 +216,7 @@ const CanvasHeader = ({ agentflow, isAgentCanvas, handleSaveFlow, handleDeleteFl
             agentflowid: agentflow.id,
             agentflowApiKeyId: agentflow.apikeyid,
             isFormDataRequired,
-            isSessionMemory,
-            isAgentCanvas
+            isSessionMemory
         })
         setAPIDialogOpen(true)
     }
@@ -277,14 +276,14 @@ const CanvasHeader = ({ agentflow, isAgentCanvas, handleSaveFlow, handleDeleteFl
 
     const onConfirmSaveName = (flowName) => {
         setFlowDialogOpen(false)
-        setSavePermission(isAgentCanvas ? 'agentflows:update' : 'agentflows:update')
+        setSavePermission('agentflows:update')
         handleSaveFlow(flowName)
     }
 
     useEffect(() => {
         if (updateAgentflowApi.data) {
             setFlowName(updateAgentflowApi.data.name)
-            setSavePermission(isAgentCanvas ? 'agentflows:update' : 'agentflows:update')
+            setSavePermission('agentflows:update')
             dispatch({ type: SET_AGENTFLOW, agentflow: updateAgentflowApi.data })
         }
         setEditingFlowName(false)
@@ -561,7 +560,6 @@ const CanvasHeader = ({ agentflow, isAgentCanvas, handleSaveFlow, handleDeleteFl
                 onClose={() => setSettingsOpen(false)}
                 onSettingsItemClick={onSettingsItemClick}
                 onUploadFile={onUploadFile}
-                isAgentCanvas={isAgentCanvas}
             />
             <SaveAgentflowDialog
                 show={flowDialogOpen}
@@ -597,7 +595,6 @@ const CanvasHeader = ({ agentflow, isAgentCanvas, handleSaveFlow, handleDeleteFl
                 show={agentflowConfigurationDialogOpen}
                 dialogProps={agentflowConfigurationDialogProps}
                 onCancel={() => setAgentflowConfigurationDialogOpen(false)}
-                isAgentCanvas={isAgentCanvas}
             />
             <PublishAgentflowDialog
                 show={publishDialogOpen && !isPublishing}
@@ -619,8 +616,7 @@ CanvasHeader.propTypes = {
     agentflow: PropTypes.object,
     handleSaveFlow: PropTypes.func,
     handleDeleteFlow: PropTypes.func,
-    handleLoadFlow: PropTypes.func,
-    isAgentCanvas: PropTypes.bool
+    handleLoadFlow: PropTypes.func
 }
 
 export default CanvasHeader

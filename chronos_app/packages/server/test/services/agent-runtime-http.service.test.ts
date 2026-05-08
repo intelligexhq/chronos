@@ -133,7 +133,11 @@ export function agentRuntimeHttpServiceTest() {
             })
 
             it('forwards JSON, injects callback URL + headers, returns upstream payload', async () => {
-                const upstreamPayload = { id: 'cmpl-x', choices: [{ message: { content: 'ok' } }] }
+                const upstreamPayload = {
+                    id: 'cmpl-x',
+                    choices: [{ message: { content: 'ok' } }],
+                    usage: { prompt_tokens: 12, completion_tokens: 7, total_tokens: 19 }
+                }
                 const fetchMock = jest.fn().mockResolvedValue({
                     ok: true,
                     status: 200,
@@ -166,6 +170,39 @@ export function agentRuntimeHttpServiceTest() {
                 expect(metrics.agentflowId).toBe('agent-1')
                 expect(metrics.state).toBe('FINISHED')
                 expect(metrics.triggerType).toBe('api')
+                expect(metrics.inputTokens).toBe(12)
+                expect(metrics.outputTokens).toBe(7)
+                expect(metrics.totalTokens).toBe(19)
+            })
+
+            it('parses Responses API token usage shape (input_tokens / output_tokens)', async () => {
+                global.fetch = jest.fn().mockResolvedValue({
+                    ok: true,
+                    status: 200,
+                    headers: new Map([['content-type', 'application/json']]),
+                    json: async () => ({ output: [], usage: { input_tokens: 30, output_tokens: 5, total_tokens: 35 } })
+                }) as any
+                const { req, res } = buildReqRes()
+                await runtime.invoke(baseAgent(), { messages: [] }, req, res)
+                const metrics = mockMetricsRepo.save.mock.calls[0][0]
+                expect(metrics.inputTokens).toBe(30)
+                expect(metrics.outputTokens).toBe(5)
+                expect(metrics.totalTokens).toBe(35)
+            })
+
+            it('falls back to zero token counts when upstream omits the usage block', async () => {
+                global.fetch = jest.fn().mockResolvedValue({
+                    ok: true,
+                    status: 200,
+                    headers: new Map([['content-type', 'application/json']]),
+                    json: async () => ({ id: 'cmpl-y', choices: [{ message: { content: 'ok' } }] })
+                }) as any
+                const { req, res } = buildReqRes()
+                await runtime.invoke(baseAgent(), { messages: [] }, req, res)
+                const metrics = mockMetricsRepo.save.mock.calls[0][0]
+                expect(metrics.inputTokens).toBe(0)
+                expect(metrics.outputTokens).toBe(0)
+                expect(metrics.totalTokens).toBe(0)
             })
 
             it('maps non-2xx upstream to 502 BAD_GATEWAY and writes ERROR metrics', async () => {

@@ -17,7 +17,7 @@ RUN apk add --no-cache \
     cairo-dev \
     pango-dev \
     curl && \
-    npm install -g pnpm
+    npm install -g pnpm@10.33.4
 ENV NODE_OPTIONS=--max-old-space-size=8192
 
 # Target Linux platform, skip installing macOS binaries - for prod builds
@@ -32,7 +32,7 @@ COPY . .
 
 # Install deps, build, then prune devDependencies in-place
 # (preserves compiled native binaries like sqlite3 for musl/Alpine)
-RUN pnpm install && pnpm build && CI=true pnpm prune --prod
+RUN pnpm install --frozen-lockfile && pnpm build && CI=true pnpm prune --prod
 
 # =============================================================================
 # Stage 2: Production - Minimal runtime image
@@ -43,7 +43,7 @@ FROM node:24-alpine AS production
 RUN apk add --no-cache \
     libc6-compat \
     curl && \
-    npm install -g pnpm
+    npm install -g pnpm@10.33.4
 
 ENV NODE_ENV=production
 

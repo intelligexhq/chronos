@@ -1,11 +1,9 @@
-## End-to-end demo of the v1.6 Agent Registry + MCP Gateway.
+## demo compose file for Chronos agent registry + MCP gateway.
 ##
-## Composes Chronos, Postgres, a tiny in-tree streamable-http MCP server
-## (./mcp/ — exposes `echo` and `add`), and a minimal TypeScript HTTP
-## agent that calls back into the Chronos MCP gateway when prompted with
-## `<n> + <m>`.
-##
-## See ./readme.md for the registration walkthrough.
+## includes Chronos + postgresql, a simple streamable-http MCP server,
+## and a minimal TypeScript HTTP agent that calls back into the Chronos MCP gateway when prompted with `<n> + <m>`.
+## 
+## see ./readme.md for the usage walkthrough.
 ##
 services:
     chronos:
@@ -21,11 +19,11 @@ services:
             DEBUG: true
             LOG_SANITIZE_HEADER_FIELDS: authorization,x-api-key,x-auth-token,cookie
             LOG_SANITIZE_BODY_FIELDS: password,pwd,pass,secret,token,apikey,api_key,accesstoken,access_token,refreshtoken
-            ## v1.6 Agent Registry + MCP Gateway flags
+            ## agent Registry + MCP gateway flags
             ENABLE_AGENTS: "true"
             ENABLE_MCP_SERVERS: "true"
             ## Required: the docker bridge network uses RFC1918 addresses, which
-            ## the SSRF gate would otherwise reject. Dev-only.
+            ## the SSRF gate would otherwise reject. dev-only.
             ALLOW_LOOPBACK_AGENTS: "true"
         ports:
             - "3001:3000"
@@ -45,13 +43,10 @@ services:
             POSTGRES_USER: chronos
             POSTGRES_PASSWORD: secret
 
-    ## Reference MCP server. ~50 LoC streamable-http server in ./mcp/ that
-    ## exposes two tools: `echo` and `add`. Built locally so we don't depend
-    ## on upstream image quirks (`mcp/everything` ships stdio + SSE only,
-    ## and its SSE variant crashes after ~20s when no client has connected
-    ## because of demo notification timers).
+    ## Reference MCP server. small streamable-http server in ./mcp/ that
+    ## exposes two tools: `echo` and `add`. built locally so no dependencies. 
     ##
-    ## Registration inside Chronos:
+    ## registration inside Chronos:
     ##   transport=streamable-http  url=http://mcp-reference:7800/mcp
     mcp-reference:
         build:
@@ -61,16 +56,16 @@ services:
         ports:
             - "7800:7800"
 
-    ## Minimal HTTP agent. Implements GET /health and POST /v1/chat/completions.
+    ## Minimal agent. Implements GET /health and POST /v1/chat/completions.
     ## When the last user message contains an expression like `2 + 3`, it
     ## calls back into the Chronos MCP gateway to invoke `reference.add`
     ## and returns the result. Otherwise it echoes the input.
     ##
-    ## After registering this agent in the Chronos UI, copy the callback
-    ## token from the agent detail page, set it on the host as
+    ## Each agent in Chronos after registration get callback token.
+    ## fin the token on the agent details page, set it on the host as
     ## EXAMPLE_AGENT_CALLBACK_TOKEN, then restart only this service:
     ##
-    ##     EXAMPLE_AGENT_CALLBACK_TOKEN=<hex> docker compose up -d --no-deps example-agent
+    ##  EXAMPLE_AGENT_CALLBACK_TOKEN=<hex> docker compose up -d --no-deps example-agent
     example-agent:
         build:
             context: ./agent
