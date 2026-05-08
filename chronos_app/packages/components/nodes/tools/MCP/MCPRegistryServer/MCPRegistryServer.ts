@@ -58,7 +58,15 @@ class MCPRegistryServer implements INode {
                 name: 'mcpServerId',
                 type: 'asyncOptions',
                 loadMethod: 'listMCPServers',
-                description: 'Server registered under MCP Servers in the platform sidebar.'
+                description: 'Server registered under MCP Servers in the platform sidebar.',
+                // `loadConfig: true` makes NodeInputHandler bump its
+                // `reloadTimestamp` whenever the user picks a server here,
+                // which forces sibling asyncMultiOptions inputs in the same
+                // node (the "Available Actions" multi-select below) to
+                // remount and re-call their loadMethod. Without this the
+                // user has to click the Refresh icon next to Available
+                // Actions to populate the catalog after picking a server.
+                loadConfig: true
             },
             {
                 label: 'Available Actions',
