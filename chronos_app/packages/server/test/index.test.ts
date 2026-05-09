@@ -117,8 +117,8 @@ import { agentDispatcherServiceTest } from './services/agent-dispatcher.service.
 import { agentRuntimeHttpServiceTest } from './services/agent-runtime-http.service.test'
 import { mcpGatewayServiceTest } from './services/mcp-gateway.service.test'
 import { auditServiceTest } from './services/audit.service.test'
-import { agentCallbackAuthMiddlewareTest } from './middlewares/agent-callback-auth.test'
-import { agentCallbacksRouteTest } from './routes/v1/agent-callbacks.route.test'
+import { mcpGatewayAuthMiddlewareTest } from './middlewares/mcp-gateway-auth.test'
+import { mcpGatewayRouteTest } from './routes/v1/mcp-gateway.route.test'
 import { nodesPoolTest } from './NodesPool.test'
 import { apiKeyTest } from './utils/api-key.util.test'
 import { sanitizeUtilTest } from './utils/sanitize.util.test'
@@ -231,7 +231,7 @@ describe('Routes Test', () => {
     adminAgentflowsRouteTest()
     schedulesRouteTest()
     dashboardRouteTest()
-    agentCallbacksRouteTest()
+    mcpGatewayRouteTest()
 })
 
 describe('Services Test', () => {
@@ -286,7 +286,7 @@ describe('Services Test', () => {
 })
 
 describe('Middlewares Test', () => {
-    agentCallbackAuthMiddlewareTest()
+    mcpGatewayAuthMiddlewareTest()
 })
 
 describe('Utils Test', () => {

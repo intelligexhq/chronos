@@ -79,12 +79,12 @@ const toggleAgent = async (req: Request, res: Response, next: NextFunction) => {
     }
 }
 
-const regenerateCallbackToken = async (req: Request, res: Response, next: NextFunction) => {
+const regenerateMcpGatewayToken = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (!req.params.id) {
             throw new InternalChronosError(StatusCodes.BAD_REQUEST, 'Agent id is required')
         }
-        const data = await agentsService.regenerateCallbackToken(req.params.id)
+        const data = await agentsService.regenerateMcpGatewayToken(req.params.id)
         return res.json({ success: true, data })
     } catch (error) {
         next(error)
@@ -110,6 +110,6 @@ export default {
     updateAgent,
     deleteAgent,
     toggleAgent,
-    regenerateCallbackToken,
+    regenerateMcpGatewayToken,
     testAgentConnection
 }

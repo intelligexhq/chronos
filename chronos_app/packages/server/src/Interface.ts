@@ -289,7 +289,7 @@ export interface IAgent {
     enabled: boolean
     runtimeConfig?: string
     outboundAuth?: string
-    callbackToken?: string
+    mcpGatewayToken?: string
     allowedTools?: string
     builtinAgentflowId?: string
     lastHealthCheckAt?: Date

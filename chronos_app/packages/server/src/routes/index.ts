@@ -42,7 +42,7 @@ import statsRouter from './stats'
 import schedulesRouter from './schedules'
 import webhooksRouter from './webhooks'
 import agentsRouter from './agents'
-import agentCallbacksRouter from './agent-callbacks'
+import mcpGatewayRouter from './mcp-gateway'
 import mcpServersRouter from './mcp-servers'
 import auditRouter from './audit'
 import skillsRouter from './skills'
@@ -110,7 +110,7 @@ router.use('/stats', statsRouter)
 router.use('/schedules', schedulesRouter)
 router.use('/webhooks', webhooksRouter)
 router.use('/agents', agentsRouter)
-router.use('/agent-callbacks', agentCallbacksRouter)
+router.use('/mcp-gateway', mcpGatewayRouter)
 router.use('/mcp-servers', mcpServersRouter)
 router.use('/audit', auditRouter)
 router.use('/skills', skillsRouter)

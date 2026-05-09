@@ -23,7 +23,7 @@ const deleteAgent = (id) => client.delete(`/agents/${id}`)
 
 const toggleAgent = (id, enabled) => client.patch(`/agents/${id}/toggle`, { enabled })
 
-const regenerateCallbackToken = (id) => client.post(`/agents/${id}/regenerate-callback-token`)
+const regenerateMcpGatewayToken = (id) => client.post(`/agents/${id}/regenerate-mcp-gateway-token`)
 
 const testAgentConnection = (id) => client.post(`/agents/${id}/test-connection`)
 
@@ -34,6 +34,6 @@ export default {
     updateAgent,
     deleteAgent,
     toggleAgent,
-    regenerateCallbackToken,
+    regenerateMcpGatewayToken,
     testAgentConnection
 }

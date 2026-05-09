@@ -1,7 +1,10 @@
 import express from 'express'
 
 const PORT = parseInt(process.env.PORT ?? '8001', 10)
-const CALLBACK_TOKEN = process.env.CALLBACK_TOKEN ?? ''
+// Per-agent token issued by Chronos when this agent is registered. The agent
+// uses it to invoke MCP tools through the Chronos gateway. Copy from the
+// "MCP Gateway Token" field on the agent's detail page.
+const MCP_GATEWAY_TOKEN = process.env.MCP_GATEWAY_TOKEN ?? ''
 
 const stamp = () => new Date().toISOString()
 // eslint-disable-next-line no-console
@@ -24,7 +27,8 @@ app.get('/health', (_req, res) => {
 app.post('/v1/chat/completions', async (req, res) => {
     const body = req.body ?? {}
     const messages: Array<{ role?: string; content?: string }> = Array.isArray(body.messages) ? body.messages : []
-    const callbackUrl: string | undefined = body.x_chronos_callback_url ?? (req.header('x-chronos-callback-url') ?? undefined)
+    const mcpGatewayUrl: string | undefined =
+        body.x_chronos_mcp_gateway_url ?? (req.header('x-chronos-mcp-gateway-url') ?? undefined)
     const callId: string | undefined = body.x_chronos_call_id ?? (req.header('x-chronos-call-id') ?? undefined)
 
     const lastUser = [...messages].reverse().find((m) => m?.role === 'user')
@@ -33,15 +37,15 @@ app.post('/v1/chat/completions', async (req, res) => {
     const match = userText.match(/(\d+)\s*\+\s*(\d+)/)
 
     let assistantText: string
-    if (match && callbackUrl && CALLBACK_TOKEN) {
+    if (match && mcpGatewayUrl && MCP_GATEWAY_TOKEN) {
         const a = parseInt(match[1], 10)
         const b = parseInt(match[2], 10)
         try {
-            const callbackResp = await fetch(callbackUrl, {
+            const gatewayResp = await fetch(mcpGatewayUrl, {
                 method: 'POST',
                 headers: {
                     'content-type': 'application/json',
-                    authorization: `Bearer ${CALLBACK_TOKEN}`
+                    authorization: `Bearer ${MCP_GATEWAY_TOKEN}`
                 },
                 body: JSON.stringify({
                     tool: 'reference.add',
@@ -49,19 +53,19 @@ app.post('/v1/chat/completions', async (req, res) => {
                     callId
                 })
             })
-            const json = (await callbackResp.json().catch(() => ({}))) as Record<string, unknown>
-            if (!callbackResp.ok) {
-                assistantText = `Tool callback failed (${callbackResp.status}): ${JSON.stringify(json)}`
+            const json = (await gatewayResp.json().catch(() => ({}))) as Record<string, unknown>
+            if (!gatewayResp.ok) {
+                assistantText = `MCP gateway call failed (${gatewayResp.status}): ${JSON.stringify(json)}`
             } else {
                 const result = (json.result ?? {}) as { content?: Array<{ type?: string; text?: string }> }
                 const text = result.content?.find((c) => c?.type === 'text')?.text ?? JSON.stringify(result)
                 assistantText = `${a} + ${b} = ${text}`
             }
         } catch (err) {
-            assistantText = `Tool callback error: ${(err as Error).message ?? String(err)}`
+            assistantText = `MCP gateway call error: ${(err as Error).message ?? String(err)}`
         }
-    } else if (match && !CALLBACK_TOKEN) {
-        assistantText = `(no CALLBACK_TOKEN configured — set it from the Agent detail page) Echo: ${userText}`
+    } else if (match && !MCP_GATEWAY_TOKEN) {
+        assistantText = `MCP_GATEWAY_TOKEN not configured — copy it from the Chronos agent detail page. Echo: ${userText}`
     } else {
         assistantText = `Echo: ${userText}`
     }
@@ -85,5 +89,5 @@ app.post('/v1/chat/completions', async (req, res) => {
 })
 
 app.listen(PORT, () => {
-    log(`listening on :${PORT} (callback ${CALLBACK_TOKEN ? 'configured' : 'NOT configured'})`)
+    log(`listening on :${PORT} (MCP gateway token ${MCP_GATEWAY_TOKEN ? 'configured' : 'NOT configured'})`)
 })

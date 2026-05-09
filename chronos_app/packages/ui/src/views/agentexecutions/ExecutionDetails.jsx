@@ -881,16 +881,26 @@ export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose,
                     }}
                 >
                     <Box>
-                        {!isPublic && (
-                            <Chip
-                                sx={{ pl: 1 }}
-                                icon={<IconExternalLink size={15} />}
-                                variant='outlined'
-                                label={localMetadata?.agentflow?.name || localMetadata?.agentflow?.id || 'Go to AgentFlow'}
-                                className={'button'}
-                                onClick={() => window.open(`/canvas/${localMetadata?.agentflow?.id}`, '_blank')}
-                            />
-                        )}
+                        {!isPublic &&
+                            (localMetadata?.agent?.runtimeType === 'HTTP' ? (
+                                <Chip
+                                    sx={{ pl: 1 }}
+                                    icon={<IconExternalLink size={15} />}
+                                    variant='outlined'
+                                    label={localMetadata?.agent?.name || 'Go to Agent'}
+                                    className={'button'}
+                                    onClick={() => window.open(`/agents/${localMetadata?.agent?.id}`, '_blank')}
+                                />
+                            ) : (
+                                <Chip
+                                    sx={{ pl: 1 }}
+                                    icon={<IconExternalLink size={15} />}
+                                    variant='outlined'
+                                    label={localMetadata?.agentflow?.name || localMetadata?.agentflow?.id || 'Go to AgentFlow'}
+                                    className={'button'}
+                                    onClick={() => window.open(`/canvas/${localMetadata?.agentflow?.id}`, '_blank')}
+                                />
+                            ))}
 
                         {!isPublic && (
                             <Tooltip

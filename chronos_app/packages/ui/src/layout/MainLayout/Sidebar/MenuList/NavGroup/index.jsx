@@ -16,7 +16,7 @@ import { Available } from '@/ui-component/rbac/available'
 const NavGroup = ({ item }) => {
     const theme = useTheme()
     const { hasPermission, hasDisplay } = useAuth()
-    const { schedulesEnabled, evaluationsEnabled, dashboardEnabled } = useConfig()
+    const { schedulesEnabled, evaluationsEnabled, dashboardEnabled, agentsEnabled, mcpServersEnabled } = useConfig()
 
     const listItems = (menu, level = 1) => {
         // Filter based on display and permission
@@ -50,6 +50,18 @@ const NavGroup = ({ item }) => {
 
         // Hide dashboard when the feature is not enabled on the server
         if (menu.id === 'cost-dashboard' && !dashboardEnabled) {
+            return false
+        }
+
+        // Hide the agent registry when ENABLE_AGENTS is not true
+        if (menu.id === 'agents' && !agentsEnabled) {
+            return false
+        }
+
+        // Hide MCP server registry + audit log when ENABLE_MCP_SERVERS is not
+        // true. Audit log piggybacks on MCP because its data (tool invocations,
+        // credential access) only flows through the MCP gateway.
+        if ((menu.id === 'mcp-servers' || menu.id === 'audit-log') && !mcpServersEnabled) {
             return false
         }
 

@@ -3,7 +3,7 @@ import { createMockRepository, createMockQueryBuilder } from '../mocks/appServer
 /**
  * Test suite for Agents service (v1.6.0).
  * Covers CRUD, validation (URL/SSRF, runtime-specific required fields),
- * slug uniqueness, callback-token rotation, and the ENABLE_AGENTS gate.
+ * slug uniqueness, MCP gateway token rotation, and the ENABLE_AGENTS gate.
  */
 export function agentsServiceTest() {
     describe('Agents Service', () => {
@@ -90,9 +90,9 @@ export function agentsServiceTest() {
                 expect(result.id).toBe('agent-1')
                 expect(result.runtimeType).toBe('HTTP')
                 expect(result.status).toBe('UNKNOWN')
-                expect(result.callbackToken).toBeDefined()
-                expect(typeof result.callbackToken).toBe('string')
-                expect(result.callbackToken.length).toBe(64)
+                expect(result.mcpGatewayToken).toBeDefined()
+                expect(typeof result.mcpGatewayToken).toBe('string')
+                expect(result.mcpGatewayToken.length).toBe(64)
                 const cfg = JSON.parse(result.runtimeConfig)
                 expect(cfg.timeoutMs).toBe(60000)
             })
@@ -181,7 +181,7 @@ export function agentsServiceTest() {
                     runtimeType: 'BUILT_IN',
                     builtinAgentflowId: 'flow-1'
                 })
-                expect(result.callbackToken).toBeUndefined()
+                expect(result.mcpGatewayToken).toBeUndefined()
                 expect(result.status).toBe('HEALTHY')
             })
 
@@ -219,26 +219,26 @@ export function agentsServiceTest() {
             })
         })
 
-        // ─── regenerateCallbackToken ───────────────────────────────────
+        // ─── regenerateMcpGatewayToken ───────────────────────────────────
 
-        describe('regenerateCallbackToken', () => {
+        describe('regenerateMcpGatewayToken', () => {
             it('rotates the token for HTTP agents', async () => {
-                const stored = { id: 'a1', runtimeType: 'HTTP', callbackToken: 'old' }
+                const stored = { id: 'a1', runtimeType: 'HTTP', mcpGatewayToken: 'old' }
                 mockRepository.findOneBy.mockResolvedValue(stored)
                 mockRepository.save.mockImplementation((e: any) => Promise.resolve(e))
-                const result = await agentsService.regenerateCallbackToken('a1')
-                expect(result.callbackToken).not.toBe('old')
-                expect(result.callbackToken.length).toBe(64)
+                const result = await agentsService.regenerateMcpGatewayToken('a1')
+                expect(result.mcpGatewayToken).not.toBe('old')
+                expect(result.mcpGatewayToken.length).toBe(64)
             })
 
             it('rejects for BUILT_IN agents', async () => {
                 mockRepository.findOneBy.mockResolvedValue({ id: 'a1', runtimeType: 'BUILT_IN' })
-                await expect(agentsService.regenerateCallbackToken('a1')).rejects.toMatchObject({ statusCode: 400 })
+                await expect(agentsService.regenerateMcpGatewayToken('a1')).rejects.toMatchObject({ statusCode: 400 })
             })
 
             it('returns 404 when agent not found', async () => {
                 mockRepository.findOneBy.mockResolvedValue(null)
-                await expect(agentsService.regenerateCallbackToken('missing')).rejects.toMatchObject({ statusCode: 404 })
+                await expect(agentsService.regenerateMcpGatewayToken('missing')).rejects.toMatchObject({ statusCode: 404 })
             })
         })
 
@@ -282,7 +282,7 @@ export function agentsServiceTest() {
                 expect(result.userId).toBe('user-7')
                 expect(result.version).toBe('1.0.0')
                 expect(result.slug).toBe('my-flow')
-                expect(result.callbackToken).toBeUndefined()
+                expect(result.mcpGatewayToken).toBeUndefined()
                 expect(result.serviceEndpoint).toBeUndefined()
             })
 

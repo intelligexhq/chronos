@@ -61,17 +61,17 @@ services:
     ## calls back into the Chronos MCP gateway to invoke `reference.add`
     ## and returns the result. Otherwise it echoes the input.
     ##
-    ## Each agent in Chronos after registration get callback token.
-    ## fin the token on the agent details page, set it on the host as
-    ## EXAMPLE_AGENT_CALLBACK_TOKEN, then restart only this service:
+    ## Each agent registered in Chronos gets an MCP gateway token. Find the
+    ## token on the agent's detail page, set it on the host as
+    ## EXAMPLE_AGENT_MCP_GATEWAY_TOKEN, then restart only this service:
     ##
-    ##  EXAMPLE_AGENT_CALLBACK_TOKEN=<hex> docker compose up -d --no-deps example-agent
+    ##  EXAMPLE_AGENT_MCP_GATEWAY_TOKEN=<hex> docker compose up -d --no-deps example-agent
     example-agent:
         build:
             context: ./agent
         environment:
             PORT: "8001"
-            CALLBACK_TOKEN: "${EXAMPLE_AGENT_CALLBACK_TOKEN:-}"
+            MCP_GATEWAY_TOKEN: "${EXAMPLE_AGENT_MCP_GATEWAY_TOKEN:-}"
         ports:
             - "8001:8001"
         depends_on:

@@ -168,15 +168,14 @@ const parseRuntimeConfig = (agent: Agent): { timeoutMs: number; requestHeaders: 
 }
 
 /**
- * Builds the absolute callback URL the agent should hit for tool invocations.
- * The MCP gateway (Group D) consumes these calls. v1.6 ships the URL even
- * though the gateway is not live yet — registered HTTP agents can already
- * see the contract surface.
+ * Builds the absolute MCP gateway URL the agent should hit for tool
+ * invocations. Sent to the agent on every request as both a body field
+ * (`x_chronos_mcp_gateway_url`) and a header (`x-chronos-mcp-gateway-url`).
  */
-const buildCallbackUrl = (req: Request, agentId: string): string => {
+const buildMcpGatewayUrl = (req: Request, agentId: string): string => {
     const httpProtocol = req.get('x-forwarded-proto') || req.protocol
     const baseURL = `${httpProtocol}://${req.get('host')}`
-    return `${baseURL}/api/v1/agent-callbacks/${agentId}/tools/invoke`
+    return `${baseURL}/api/v1/mcp-gateway/${agentId}/tools/invoke`
 }
 
 const joinUrl = (base: string, path: string): string => {
@@ -229,12 +228,14 @@ const invoke = async (agent: Agent, openaiRequest: any, req: Request, res: Respo
     const { timeoutMs, requestHeaders } = parseRuntimeConfig(agent)
     const authHeaders = await resolveOutboundAuth(agent.outboundAuth)
     const callId = uuidv4()
-    const callbackUrl = buildCallbackUrl(req, agent.id)
+    const mcpGatewayUrl = buildMcpGatewayUrl(req, agent.id)
     const sessionId = (req.headers['x-chat-id'] as string) || openaiRequest?.x_chronos_chat_id || uuidv4()
 
+    // Body stays OpenAI-shaped. The gateway URL is metadata about the request,
+    // not part of its semantic payload — it goes only in the
+    // `x-chronos-mcp-gateway-url` header below.
     const forwardBody = {
         ...openaiRequest,
-        x_chronos_callback_url: callbackUrl,
         x_chronos_call_id: callId
     }
 
@@ -242,7 +243,7 @@ const invoke = async (agent: Agent, openaiRequest: any, req: Request, res: Respo
         'content-type': 'application/json',
         accept: openaiRequest?.stream === true ? 'text/event-stream' : 'application/json',
         'x-chronos-call-id': callId,
-        'x-chronos-callback-url': callbackUrl,
+        'x-chronos-mcp-gateway-url': mcpGatewayUrl,
         ...requestHeaders,
         ...authHeaders
     }

@@ -1,12 +1,8 @@
 import { useEffect, useState, useCallback } from 'react'
-import PropTypes from 'prop-types'
 import {
     Box,
-    Card,
-    CardContent,
     Grid,
     Typography,
-    Skeleton,
     ToggleButton,
     ToggleButtonGroup,
     Autocomplete,
@@ -18,6 +14,9 @@ import {
     useTheme,
     alpha
 } from '@mui/material'
+import SummaryCard from '@/ui-component/dashboard/SummaryCard'
+import ChartCard from '@/ui-component/dashboard/ChartCard'
+import { formatDuration, formatCost, formatNumber, formatDateLabel } from '@/ui-component/dashboard/formatters'
 import {
     BarChart,
     Bar,
@@ -70,37 +69,6 @@ const DATE_PRESETS = {
 
 /** Formats Date to YYYY-MM-DD */
 const formatDate = (d) => d.toISOString().split('T')[0]
-
-/** Formats milliseconds to human-readable */
-const formatDuration = (ms) => {
-    if (ms < 1000) return `${ms}ms`
-    if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`
-    return `${(ms / 60000).toFixed(1)}m`
-}
-
-/** Formats cost with currency */
-const formatCost = (cost, currency = 'USD') => {
-    if (cost === 0) return `${currency} 0.00`
-    if (cost < 0.01) return `${currency} <0.01`
-    return `${currency} ${cost.toFixed(2)}`
-}
-
-/** Formats large numbers */
-const formatNumber = (n) => {
-    if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`
-    if (n >= 1000) return `${(n / 1000).toFixed(1)}K`
-    return String(n)
-}
-
-/** Formats date label for chart X-axis */
-const formatDateLabel = (dateStr) => {
-    if (!dateStr) return ''
-    if (dateStr.includes('T')) {
-        return dateStr.split('T')[1]
-    }
-    const d = new Date(dateStr + 'T00:00:00')
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-}
 
 const EMPTY_POINT = {
     executions: 0,
@@ -545,71 +513,6 @@ const CostDashboard = () => {
             </Stack>
         </MainCard>
     )
-}
-
-/** Summary card component */
-const SummaryCard = ({ title, value, loading, color, onClick }) => {
-    const theme = useTheme()
-    const colorMap = {
-        success: theme.palette.success.main,
-        warning: theme.palette.warning.main,
-        error: theme.palette.error.main
-    }
-
-    return (
-        <Grid item xs={6} sm={4} md={2.4}>
-            <Card
-                variant='outlined'
-                sx={{ height: '100%', ...(onClick && { cursor: 'pointer', '&:hover': { borderColor: theme.palette.primary.main } }) }}
-                onClick={onClick}
-            >
-                <CardContent sx={{ py: 1.5, px: 2, '&:last-child': { pb: 1.5 } }}>
-                    <Typography
-                        variant='caption'
-                        color='text.secondary'
-                        sx={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5 }}
-                    >
-                        {title}
-                    </Typography>
-                    {loading ? (
-                        <Skeleton width='60%' height={32} />
-                    ) : (
-                        <Typography variant='h5' sx={{ mt: 0.5, fontWeight: 600, color: color ? colorMap[color] : 'text.primary' }}>
-                            {value}
-                        </Typography>
-                    )}
-                </CardContent>
-            </Card>
-        </Grid>
-    )
-}
-
-SummaryCard.propTypes = {
-    title: PropTypes.string,
-    value: PropTypes.string,
-    loading: PropTypes.bool,
-    color: PropTypes.string,
-    onClick: PropTypes.func
-}
-
-/** Chart container card */
-const ChartCard = ({ title, loading, children }) => {
-    return (
-        <Card variant='outlined' sx={{ mb: '4px' }}>
-            <CardContent sx={{ py: 1.5, px: 2, '&:last-child': { pb: 1.5 } }}>
-                <Typography variant='subtitle2' sx={{ mb: 1, fontWeight: 600 }}>
-                    {title}
-                </Typography>
-                {loading ? <Skeleton variant='rectangular' height={140} sx={{ borderRadius: 1 }} /> : children}
-            </CardContent>
-        </Card>
-    )
-}
-
-ChartCard.propTypes = {
-    title: PropTypes.string,
-    loading: PropTypes.bool,
-    children: PropTypes.node
 }
 
 export default CostDashboard

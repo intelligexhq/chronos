@@ -6,7 +6,7 @@ import { Agent } from '../../../src/database/entities/Agent'
 import { AgentRuntimeType, AgentStatus } from '../../../src/Interface'
 
 /**
- * Test suite for the MCP gateway callback routes (v1.6.0 — Group D).
+ * Test suite for the MCP gateway routes.
  *
  * The live test server boots with `ENABLE_MCP_SERVERS` unset, so the gateway
  * itself is not constructed — invoke() returns 503. These tests focus on the
@@ -14,20 +14,20 @@ import { AgentRuntimeType, AgentStatus } from '../../../src/Interface'
  * The gateway-level branches (intersection enforcement, tool dispatch) are
  * exercised by the unit suite at `test/services/mcp-gateway.service.test.ts`.
  */
-export function agentCallbacksRouteTest() {
-    describe('Agent Callbacks Route', () => {
-        const baseRoute = '/api/v1/agent-callbacks'
+export function mcpGatewayRouteTest() {
+    describe('MCP Gateway Route', () => {
+        const baseRoute = '/api/v1/mcp-gateway'
         let testAgent: Agent
 
         beforeAll(async () => {
             const repo = getRunningExpressApp().AppDataSource.getRepository(Agent)
             const agent = new Agent()
-            agent.name = 'Callback Route Test Agent'
-            agent.slug = `callback-test-${Date.now()}`
+            agent.name = 'Gateway Route Test Agent'
+            agent.slug = `gateway-test-${Date.now()}`
             agent.runtimeType = AgentRuntimeType.HTTP
             agent.status = AgentStatus.UNKNOWN
             agent.enabled = true
-            agent.callbackToken = `tok-${Date.now()}-${Math.floor(Math.random() * 1e6)}`
+            agent.mcpGatewayToken = `tok-${Date.now()}-${Math.floor(Math.random() * 1e6)}`
             agent.serviceEndpoint = 'https://upstream.example.com'
             agent.allowedTools = JSON.stringify(['postgres.query'])
             agent.version = '1.0.0'
@@ -56,7 +56,7 @@ export function agentCallbacksRouteTest() {
                 expect(response.status).toEqual(StatusCodes.UNAUTHORIZED)
             })
 
-            it('returns 401 when callback token does not match', async () => {
+            it('returns 401 when MCP gateway token does not match', async () => {
                 const response = await supertest(getRunningExpressApp().app)
                     .post(`${baseRoute}/${testAgent.id}/tools/invoke`)
                     .set('Authorization', 'Bearer this-is-not-the-token')
@@ -67,7 +67,7 @@ export function agentCallbacksRouteTest() {
             it('returns 400 when tool field is missing from body', async () => {
                 const response = await supertest(getRunningExpressApp().app)
                     .post(`${baseRoute}/${testAgent.id}/tools/invoke`)
-                    .set('Authorization', `Bearer ${testAgent.callbackToken}`)
+                    .set('Authorization', `Bearer ${testAgent.mcpGatewayToken}`)
                     .send({ params: {} })
                 expect(response.status).toEqual(StatusCodes.BAD_REQUEST)
             })
@@ -78,7 +78,7 @@ export function agentCallbacksRouteTest() {
                 // controller short-circuits to 503 before any MCP traffic.
                 const response = await supertest(getRunningExpressApp().app)
                     .post(`${baseRoute}/${testAgent.id}/tools/invoke`)
-                    .set('Authorization', `Bearer ${testAgent.callbackToken}`)
+                    .set('Authorization', `Bearer ${testAgent.mcpGatewayToken}`)
                     .send({ tool: 'postgres.query', params: { sql: 'select 1' } })
                 expect(response.status).toEqual(StatusCodes.SERVICE_UNAVAILABLE)
             })
@@ -93,7 +93,31 @@ export function agentCallbacksRouteTest() {
             it('returns 503 when gateway is not enabled', async () => {
                 const response = await supertest(getRunningExpressApp().app)
                     .get(`${baseRoute}/${testAgent.id}/tools`)
-                    .set('Authorization', `Bearer ${testAgent.callbackToken}`)
+                    .set('Authorization', `Bearer ${testAgent.mcpGatewayToken}`)
+                expect(response.status).toEqual(StatusCodes.SERVICE_UNAVAILABLE)
+            })
+        })
+
+        describe(`GET ${baseRoute}/:agentId/health`, () => {
+            it('returns 401 without Authorization header', async () => {
+                const response = await supertest(getRunningExpressApp().app).get(`${baseRoute}/${testAgent.id}/health`)
+                expect(response.status).toEqual(StatusCodes.UNAUTHORIZED)
+            })
+
+            it('returns 401 when token does not match', async () => {
+                const response = await supertest(getRunningExpressApp().app)
+                    .get(`${baseRoute}/${testAgent.id}/health`)
+                    .set('Authorization', 'Bearer not-the-real-token')
+                expect(response.status).toEqual(StatusCodes.UNAUTHORIZED)
+            })
+
+            it('returns 503 with valid bearer when gateway is not enabled', async () => {
+                // Same boot config as the other suites: ENABLE_MCP_SERVERS unset,
+                // so the gateway service is not constructed and /health surfaces
+                // that as 503 even though auth passes.
+                const response = await supertest(getRunningExpressApp().app)
+                    .get(`${baseRoute}/${testAgent.id}/health`)
+                    .set('Authorization', `Bearer ${testAgent.mcpGatewayToken}`)
                 expect(response.status).toEqual(StatusCodes.SERVICE_UNAVAILABLE)
             })
         })

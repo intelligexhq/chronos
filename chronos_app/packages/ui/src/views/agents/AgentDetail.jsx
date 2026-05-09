@@ -20,6 +20,7 @@ import {
     Typography
 } from '@mui/material'
 import { IconArrowLeft, IconCopy, IconEdit, IconEye, IconEyeOff, IconRefresh, IconSend, IconX } from '@tabler/icons-react'
+import { CopyBlock, atomOneDark } from 'react-code-blocks'
 
 import MainCard from '@/ui-component/cards/MainCard'
 import ErrorBoundary from '@/ErrorBoundary'
@@ -28,6 +29,8 @@ import { StyledPermissionButton } from '@/ui-component/button/RBACButtons'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 
 import AgentDialog from './AgentDialog'
+import AgentExecutionsTab from './AgentExecutionsTab'
+import AgentMetricsTab from './AgentMetricsTab'
 
 import agentsApi from '@/api/agents'
 import useApi from '@/hooks/useApi'
@@ -49,12 +52,13 @@ const RUNTIME_LABEL = {
 }
 
 /**
- * Agent detail page (`/agents/:id`). Single Overview tab in v1.6 — Executions
- * and Metrics tabs are scaffolded as `disabled` placeholders. The Overview
- * surfaces:
- *   - identity (name, slug, runtime, status, version)
- *   - HTTP runtime config (read-only) and "Test connection"
- *   - callback token with show/hide + copy + rotate-with-confirm
+ * Agent detail page (`/agents/:id`). Three tabs:
+ *   - Overview: identity, runtime config (HTTP), gateway URLs and token
+ *     (copy + rotate-with-confirm), test connection
+ *   - Executions: paginated list scoped to this agent, in-page details
+ *     drawer (reuses the global ExecutionsListTable + ExecutionDetails)
+ *   - Metrics: 7d / 14d window with summary cards and an Executions Over
+ *     Time chart (lighter view than the global Cost Dashboard)
  */
 const AgentDetail = () => {
     const { id } = useParams()
@@ -133,15 +137,15 @@ const AgentDetail = () => {
     }
 
     const onCopyToken = () => {
-        if (!agent?.callbackToken) return
-        navigator.clipboard.writeText(agent.callbackToken)
-        showSuccess('Callback token copied to clipboard')
+        if (!agent?.mcpGatewayToken) return
+        navigator.clipboard.writeText(agent.mcpGatewayToken)
+        showSuccess('MCP gateway token copied to clipboard')
     }
 
     const onRotateToken = async () => {
         if (!agent?.id) return
         const confirmed = await confirm({
-            title: 'Rotate callback token',
+            title: 'Rotate MCP gateway token',
             description:
                 'Rotating revokes the existing token immediately. Any agent process still using the old value will start failing with 401 until updated.',
             confirmButtonName: 'Rotate',
@@ -150,14 +154,14 @@ const AgentDetail = () => {
         if (!confirmed) return
         setRotateLoading(true)
         try {
-            const res = await agentsApi.regenerateCallbackToken(agent.id)
+            const res = await agentsApi.regenerateMcpGatewayToken(agent.id)
             if (res.data) {
                 setAgent(res.data)
                 setTokenVisible(true)
-                showSuccess('Callback token rotated — copy the new value now')
+                showSuccess('MCP gateway token rotated — copy the new value now')
             }
         } catch (err) {
-            showError(err?.response?.data?.message || 'Failed to rotate callback token', true)
+            showError(err?.response?.data?.message || 'Failed to rotate MCP gateway token', true)
         } finally {
             setRotateLoading(false)
         }
@@ -228,9 +232,12 @@ const AgentDetail = () => {
 
                 <Tabs value={tab} onChange={(_e, v) => setTab(v)} sx={{ mb: 2 }}>
                     <Tab label='Overview' />
-                    <Tab label='Executions' disabled />
-                    <Tab label='Metrics' disabled />
+                    <Tab label='Executions' />
+                    <Tab label='Metrics' />
                 </Tabs>
+
+                {tab === 1 && <AgentExecutionsTab agent={agent} />}
+                {tab === 2 && <AgentMetricsTab agent={agent} />}
 
                 {tab === 0 && (
                     <Stack spacing={3}>
@@ -314,16 +321,83 @@ const AgentDetail = () => {
                                 <Divider />
 
                                 <Box>
-                                    <Typography variant='overline'>Callback Token</Typography>
+                                    <Typography variant='overline'>MCP Gateway URLs</Typography>
                                     <Typography variant='body2' sx={{ mb: 1, color: 'text.secondary' }}>
-                                        Bearer this token to call <code>{`POST /api/v1/agent-callbacks/${agent.id}/tools/invoke`}</code>{' '}
-                                        from your agent process.
+                                        We recommend external agent stores the invoke URL in its own config (e.g.{' '}
+                                        <code>MCP_GATEWAY_URL</code>) and validates the per-request <code>x-chronos-mcp-gateway-url</code>{' '}
+                                        header against it. If your agent runs in a different network (Docker, internal subnet), substitute
+                                        the hostname reachable from there. Replace <code>$MCP_GATEWAY_TOKEN</code> with the token from the
+                                        field below.
+                                    </Typography>
+                                    <Stack spacing={1.5} sx={{ mt: 1 }}>
+                                        {(() => {
+                                            const origin = typeof window !== 'undefined' ? window.location.origin : ''
+                                            const invokeUrl = `${origin}/api/v1/mcp-gateway/${agent.id}/tools/invoke`
+                                            const healthUrl = `${origin}/api/v1/mcp-gateway/${agent.id}/health`
+                                            const invokeCurl = `curl ${invokeUrl} \\
+     -X POST \\
+     -H "Content-Type: application/json" \\
+     -H "Authorization: Bearer $MCP_GATEWAY_TOKEN" \\
+     -d '{
+       "tool": "<server-slug>.<tool-name>",
+       "params": {},
+       "callId": "<optional-uuid>"
+     }'`
+                                            const healthCurl = `curl ${healthUrl} \\
+     -H "Authorization: Bearer $MCP_GATEWAY_TOKEN"`
+                                            return (
+                                                <>
+                                                    <Box>
+                                                        <Typography
+                                                            variant='caption'
+                                                            sx={{ display: 'block', color: 'text.secondary', mb: 0.5 }}
+                                                        >
+                                                            Invoke a tool (POST)
+                                                        </Typography>
+                                                        <CopyBlock
+                                                            theme={atomOneDark}
+                                                            text={invokeCurl}
+                                                            language='bash'
+                                                            showLineNumbers={false}
+                                                            wrapLines
+                                                            customStyle={{ padding: '16px 18px', borderRadius: 6 }}
+                                                        />
+                                                    </Box>
+                                                    <Box>
+                                                        <Typography
+                                                            variant='caption'
+                                                            sx={{ display: 'block', color: 'text.secondary', mb: 0.5 }}
+                                                        >
+                                                            Gateway health probe (GET)
+                                                        </Typography>
+                                                        <CopyBlock
+                                                            theme={atomOneDark}
+                                                            text={healthCurl}
+                                                            language='bash'
+                                                            showLineNumbers={false}
+                                                            wrapLines
+                                                            customStyle={{ padding: '16px 18px', borderRadius: 6 }}
+                                                        />
+                                                    </Box>
+                                                </>
+                                            )
+                                        })()}
+                                    </Stack>
+                                </Box>
+
+                                <Divider />
+
+                                <Box>
+                                    <Typography variant='overline'>MCP Gateway Token</Typography>
+                                    <Typography variant='body2' sx={{ mb: 1, color: 'text.secondary' }}>
+                                        Your agent uses this token to invoke MCP tools through Chronos&apos;s gateway. Bearer it on the
+                                        invoke URL above.
                                     </Typography>
                                     <OutlinedInput
                                         fullWidth
                                         size='small'
                                         type={tokenVisible ? 'text' : 'password'}
-                                        value={agent.callbackToken || ''}
+                                        value={agent.mcpGatewayToken || ''}
                                         readOnly
                                         sx={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
                                         endAdornment={

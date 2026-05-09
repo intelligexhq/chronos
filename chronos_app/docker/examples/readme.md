@@ -5,9 +5,9 @@ docker-compose stack which showcases Chronos [Agent Registry](https://intelligex
 - **Chronos** local image with `ENABLE_AGENTS=true` + `ENABLE_MCP_SERVERS=true`.
 - **Postgres** as the database.
 - **mcp-reference** — a small MCP server example in `./mcp/`. Exposes two tools: `echo` and `add`, built locally .
-- **example-agent** — a small agent in `./agent/`, showcases Chronos callback contract: when prompted with `2 + 3`, it calls back into the Chronos MCP gateway to invoke `reference.add` and embeds the result in its reply.
+- **example-agent** — a small agent in `./agent/`, showcases the Chronos MCP gateway contract: when prompted with `2 + 3`, it calls back into the Chronos MCP gateway to invoke `reference.add` and embeds the result in its reply.
 
-Examples show "Chronos-aware agent" image — with the callback flow: `x_chronos_callback_url`, `x_chronos_call_id`, Bearer to `/agent-callbacks/{xxx}/tools/invoke`. Use this example as a starting point for your own agents.
+Examples show a "Chronos-aware agent" image — with the gateway flow: `x_chronos_mcp_gateway_url`, `x_chronos_call_id`, Bearer to `/mcp-gateway/{agentId}/tools/invoke`. Use this example as a starting point for your own agents.
 
 In Chronos, the MCP server side is generic — Chronos recognises any MCP server speaking `streamable-http` or `sse`. You would register real MCP servers (Postgres, GitHub, Slack, etc.) — in the v1.8 release Chronos adds several maintained reference servers to choose from.
 
@@ -79,18 +79,18 @@ Once docker compose is running:
    - **allowedTools:** add `reference.add`. Click **Load from MCP Servers** to populate the autocomplete options.
 3. Save.
 
-### 3. Copy the callback token to the agent
+### 3. Copy the MCP gateway token to the agent
 
-The example agent reads its callback token from the `CALLBACK_TOKEN` env var. After step 2:
+The example agent reads its gateway token from the `MCP_GATEWAY_TOKEN` env var. After step 2:
 
-1. Click into the new agent → Overview tab → reveal the **Callback Token** → copy.
+1. Click into the new agent → Overview tab → reveal the **MCP Gateway Token** → copy.
 2. Set it on the host and restart only the agent service:
 
 ```bash
-   CALLBACK_TOKEN=<paste-hex-here> docker compose up -d --no-deps example-agent
+   MCP_GATEWAY_TOKEN=<paste-hex-here> docker compose up -d --no-deps example-agent
 ```
 
-3. Confirm the agent log says `callback configured`:
+3. Confirm the agent log says `MCP gateway token configured`:
 
 ```bash
 docker compose logs --tail 5 example-agent
@@ -120,7 +120,7 @@ Inside `docker compose logs chronos` you will see one `event=mcp.tool.invoke` au
 
 ### Why invoke from inside the network?
 
-The MCP-gateway callback URL Chronos hands the agent is built from the inbound request's `Host` header. If you invoke through `localhost:3001` from your host machine, the callback URL points at `localhost:3001` — which the agent container cannot reach. Invoking through the docker service name (`http://chronos:3000`) keeps the callback URL on the docker network where the agent can reach it.
+The MCP gateway URL Chronos hands the agent is built from the inbound request's `Host` header. If you invoke through `localhost:3001` from your host machine, the gateway URL points at `localhost:3001` — which the agent container cannot reach. Invoking through the docker service name (`http://chronos:3000`) keeps the gateway URL on the docker network where the agent can reach it.
 
 For production deployments, set `BASE_URL` on the Chronos service to a fixed reachable URL (the platform code reads `req.get('host')` only as a default).
 
@@ -146,11 +146,11 @@ Sibling stack that asserts the Chronos works end-to-end without operator interac
 
 - runs an embedded Streamable-HTTP MCP server with one tool, `add(a, b) → a+b`
 - runs an agent `/health` stub so registration + the health poller are both happy
-- logs into Chronos, registers the MCP server and an HTTP agent, reads back the auto-generated callback token
-- POSTs `{ tool: "smoke.add", params: { a: 2, b: 3 } }` to `/api/v1/agent-callbacks/:agentId/tools/invoke` with that token
+- logs into Chronos, registers the MCP server and an HTTP agent, reads back the auto-generated MCP gateway token
+- POSTs `{ tool: "smoke.add", params: { a: 2, b: 3 } }` to `/api/v1/mcp-gateway/:agentId/tools/invoke` with that token
 - asserts the result text is `"5"`, exits 0; any failure exits non-zero
 
-This exercises the full round-trip path (callback bearer auth, allowedTools intersection, pooled MCP client, real `tools/call` against a real MCP server, audit-log line emitted) without depending on third-party images. It does NOT exercise the Chronos dispatcher → external HTTP agent half — that is unit-tested directly.
+This exercises the full round-trip path (gateway bearer auth, allowedTools intersection, pooled MCP client, real `tools/call` against a real MCP server, audit-log line emitted) without depending on third-party images. It does NOT exercise the Chronos dispatcher → external HTTP agent half — that is unit-tested directly.
 
 Run:
 

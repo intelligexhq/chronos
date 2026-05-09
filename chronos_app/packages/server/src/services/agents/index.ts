@@ -17,12 +17,12 @@ const assertAgentsEnabled = (): void => {
     }
 }
 
-const generateCallbackToken = (): string => crypto.randomBytes(32).toString('hex')
+const generateMcpGatewayToken = (): string => crypto.randomBytes(32).toString('hex')
 
 /**
  * Validates a URL is HTTP/HTTPS and rejects loopback / RFC1918 / link-local
  * targets unless `ALLOW_LOOPBACK_AGENTS=true` is set. Closes a small SSRF
- * surface — Chronos issues callback tokens, so a misconfigured agent
+ * surface — Chronos issues MCP gateway tokens, so a misconfigured agent
  * pointing at an internal address could probe the local network.
  */
 const validateOutboundUrl = (raw: string, fieldName: string): void => {
@@ -155,7 +155,7 @@ const createAgent = async (requestBody: any): Promise<Agent> => {
         newAgent.enabled = requestBody.enabled !== false
         newAgent.runtimeConfig = JSON.stringify(runtimeConfig)
         newAgent.outboundAuth = stringifyJsonField(requestBody.outboundAuth)
-        newAgent.callbackToken = runtimeType === AgentRuntimeType.HTTP ? generateCallbackToken() : undefined
+        newAgent.mcpGatewayToken = runtimeType === AgentRuntimeType.HTTP ? generateMcpGatewayToken() : undefined
         newAgent.allowedTools = stringifyJsonField(requestBody.allowedTools)
         newAgent.builtinAgentflowId = requestBody.builtinAgentflowId ?? undefined
         newAgent.userId = requestBody.userId || undefined
@@ -316,7 +316,7 @@ const toggleAgent = async (agentId: string, enabled: boolean): Promise<Agent> =>
     }
 }
 
-const regenerateCallbackToken = async (agentId: string): Promise<Agent> => {
+const regenerateMcpGatewayToken = async (agentId: string): Promise<Agent> => {
     try {
         assertAgentsEnabled()
         const appServer = getRunningExpressApp()
@@ -326,15 +326,15 @@ const regenerateCallbackToken = async (agentId: string): Promise<Agent> => {
             throw new InternalChronosError(StatusCodes.NOT_FOUND, `Agent ${agentId} not found`)
         }
         if (agent.runtimeType !== AgentRuntimeType.HTTP) {
-            throw new InternalChronosError(StatusCodes.BAD_REQUEST, 'Callback tokens are only used by HTTP agents')
+            throw new InternalChronosError(StatusCodes.BAD_REQUEST, 'MCP gateway tokens are only used by HTTP agents')
         }
-        agent.callbackToken = generateCallbackToken()
+        agent.mcpGatewayToken = generateMcpGatewayToken()
         return await repo.save(agent)
     } catch (error) {
         if (error instanceof InternalChronosError) throw error
         throw new InternalChronosError(
             StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: agentsService.regenerateCallbackToken - ${getErrorMessage(error)}`
+            `Error: agentsService.regenerateMcpGatewayToken - ${getErrorMessage(error)}`
         )
     }
 }
@@ -436,6 +436,6 @@ export default {
     getAgentById,
     getAgentBySlug,
     toggleAgent,
-    regenerateCallbackToken,
+    regenerateMcpGatewayToken,
     testAgentConnection
 }
