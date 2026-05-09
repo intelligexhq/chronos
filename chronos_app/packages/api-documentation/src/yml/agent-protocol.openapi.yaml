@@ -81,12 +81,15 @@ paths:
             description: |
                 The Chronos dispatcher forwards invocations as POSTs to
                 `<serviceEndpoint>/v1/chat/completions`. The body is an
-                OpenAI chat-completions request augmented with two Chronos
-                extension fields; the same values are also sent as headers.
+                OpenAI chat-completions request with one Chronos extension
+                field (`x_chronos_call_id`); request metadata for the MCP
+                gateway is carried in headers only.
 
-                For tool use, call back into Chronos using
-                `x_chronos_mcp_gateway_url` (or the `x-chronos-mcp-gateway-url`
-                header) with `Authorization: Bearer <agent.mcpGatewayToken>`.
+                For tool use, call back into Chronos at the URL in the
+                `x-chronos-mcp-gateway-url` header with
+                `Authorization: Bearer <agent.mcpGatewayToken>`. The
+                recommended pattern is to hold the URL in agent-side config
+                and validate the header against it on every request.
                 See `/api/v1/mcp-gateway/{agentId}/tools/invoke`.
 
                 If the request body has `stream: true`, return an SSE stream
@@ -120,7 +123,14 @@ paths:
                   schema:
                       type: string
                       format: uri
-                  description: Same value as `x_chronos_mcp_gateway_url` in the body.
+                  description: |
+                      Absolute URL the agent should POST to for tool
+                      invocations on this request, e.g.
+                      `https://chronos.example.com/api/v1/mcp-gateway/<agentId>/tools/invoke`.
+                      Computed per-request from the inbound `Host`. The
+                      recommended agent-side pattern is to hold this URL in
+                      configuration and validate the header value against
+                      it (defense-in-depth against header tampering).
                 - in: header
                   name: accept
                   required: false
@@ -296,6 +306,78 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/Error'
 
+    /api/v1/mcp-gateway/{agentId}/health:
+        get:
+            tags:
+                - mcp-gateway
+            summary: Per-agent gateway readiness probe
+            description: |
+                Returns 200 once the request has cleared the same auth
+                middleware that gates `/tools/invoke` (token matches, agent
+                enabled, runtime type HTTP) AND the gateway service itself
+                is wired (`ENABLE_MCP_SERVERS=true`). A 200 response is a
+                real proof of end-to-end reachability — token works,
+                gateway is up.
+
+                Echoes the canonical `gatewayUrl` Chronos derives from the
+                inbound `Host`. Agents that hold their own `MCP_GATEWAY_URL`
+                config can compare it against this value at startup and
+                fail loud on mismatch.
+
+                Intended for startup probes and optional periodic heartbeats.
+                Cheap: no downstream MCP calls.
+            operationId: mcpGatewayHealth
+            security:
+                - mcpGatewayToken: []
+            parameters:
+                - in: path
+                  name: agentId
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+            responses:
+                '200':
+                    description: Auth and gateway both healthy.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required: [ok, agentId, agentEnabled, gatewayUrl]
+                                properties:
+                                    ok:
+                                        type: boolean
+                                    agentId:
+                                        type: string
+                                        format: uuid
+                                    agentEnabled:
+                                        type: boolean
+                                    gatewayUrl:
+                                        type: string
+                                        format: uri
+                                        description: |
+                                            Canonical absolute URL of this
+                                            agent's invoke endpoint, derived
+                                            from the inbound `Host`.
+                '401':
+                    description: Missing / invalid Bearer or unknown agent.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '403':
+                    description: Agent is BUILT_IN or disabled.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '503':
+                    description: Gateway is not enabled (`ENABLE_MCP_SERVERS=false`).
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+
 components:
     securitySchemes:
         mcpGatewayToken:
@@ -311,13 +393,14 @@ components:
         AgentChatCompletionsRequest:
             type: object
             description: |
-                OpenAI chat-completions request body augmented with Chronos
-                extension fields. The standard OpenAI fields (`model`,
+                OpenAI chat-completions request body augmented with one
+                Chronos extension field. The standard OpenAI fields (`model`,
                 `messages`, `stream`, `temperature`, etc.) are forwarded
-                unchanged.
+                unchanged. The MCP gateway URL is sent in the
+                `x-chronos-mcp-gateway-url` header only — not in the body —
+                so the body remains a clean OpenAI envelope.
             required:
                 - messages
-                - x_chronos_mcp_gateway_url
                 - x_chronos_call_id
             additionalProperties: true
             properties:
@@ -331,15 +414,6 @@ components:
                 stream:
                     type: boolean
                     default: false
-                x_chronos_mcp_gateway_url:
-                    type: string
-                    format: uri
-                    description: |
-                        Absolute URL of the MCP gateway endpoint this agent
-                        should call back into for tool use, e.g.
-                        `https://chronos.example.com/api/v1/mcp-gateway/<agentId>/tools/invoke`.
-                        Same value also sent as the `x-chronos-mcp-gateway-url`
-                        request header.
                 x_chronos_call_id:
                     type: string
                     format: uuid

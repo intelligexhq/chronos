@@ -160,7 +160,9 @@ export function agentRuntimeHttpServiceTest() {
                 expect(opts.headers.Authorization).toBe('Bearer TKN')
                 expect(opts.headers['x-chronos-mcp-gateway-url']).toMatch(/\/api\/v1\/mcp-gateway\/agent-1\/tools\/invoke$/)
                 const body = JSON.parse(opts.body)
-                expect(body.x_chronos_mcp_gateway_url).toMatch(/mcp-gateway\/agent-1/)
+                // Body must NOT carry the gateway URL — it lives in the header only,
+                // so the OpenAI envelope stays clean.
+                expect(body.x_chronos_mcp_gateway_url).toBeUndefined()
                 expect(body.x_chronos_call_id).toBeDefined()
                 expect(res.json).toHaveBeenCalledWith(upstreamPayload)
 

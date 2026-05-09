@@ -97,5 +97,29 @@ export function mcpGatewayRouteTest() {
                 expect(response.status).toEqual(StatusCodes.SERVICE_UNAVAILABLE)
             })
         })
+
+        describe(`GET ${baseRoute}/:agentId/health`, () => {
+            it('returns 401 without Authorization header', async () => {
+                const response = await supertest(getRunningExpressApp().app).get(`${baseRoute}/${testAgent.id}/health`)
+                expect(response.status).toEqual(StatusCodes.UNAUTHORIZED)
+            })
+
+            it('returns 401 when token does not match', async () => {
+                const response = await supertest(getRunningExpressApp().app)
+                    .get(`${baseRoute}/${testAgent.id}/health`)
+                    .set('Authorization', 'Bearer not-the-real-token')
+                expect(response.status).toEqual(StatusCodes.UNAUTHORIZED)
+            })
+
+            it('returns 503 with valid bearer when gateway is not enabled', async () => {
+                // Same boot config as the other suites: ENABLE_MCP_SERVERS unset,
+                // so the gateway service is not constructed and /health surfaces
+                // that as 503 even though auth passes.
+                const response = await supertest(getRunningExpressApp().app)
+                    .get(`${baseRoute}/${testAgent.id}/health`)
+                    .set('Authorization', `Bearer ${testAgent.mcpGatewayToken}`)
+                expect(response.status).toEqual(StatusCodes.SERVICE_UNAVAILABLE)
+            })
+        })
     })
 }

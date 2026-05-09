@@ -231,9 +231,11 @@ const invoke = async (agent: Agent, openaiRequest: any, req: Request, res: Respo
     const mcpGatewayUrl = buildMcpGatewayUrl(req, agent.id)
     const sessionId = (req.headers['x-chat-id'] as string) || openaiRequest?.x_chronos_chat_id || uuidv4()
 
+    // Body stays OpenAI-shaped. The gateway URL is metadata about the request,
+    // not part of its semantic payload — it goes only in the
+    // `x-chronos-mcp-gateway-url` header below.
     const forwardBody = {
         ...openaiRequest,
-        x_chronos_mcp_gateway_url: mcpGatewayUrl,
         x_chronos_call_id: callId
     }
 

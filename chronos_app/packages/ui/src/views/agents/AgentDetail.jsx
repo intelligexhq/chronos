@@ -138,6 +138,12 @@ const AgentDetail = () => {
         showSuccess('MCP gateway token copied to clipboard')
     }
 
+    const onCopyValue = (value, label) => {
+        if (!value) return
+        navigator.clipboard.writeText(value)
+        showSuccess(`${label} copied to clipboard`)
+    }
+
     const onRotateToken = async () => {
         if (!agent?.id) return
         const confirmed = await confirm({
@@ -314,10 +320,84 @@ const AgentDetail = () => {
                                 <Divider />
 
                                 <Box>
+                                    <Typography variant='overline'>MCP Gateway URLs</Typography>
+                                    <Typography variant='body2' sx={{ mb: 1, color: 'text.secondary' }}>
+                                        We recommend external agent stores the invoke URL in its own config (e.g.{' '}
+                                        <code>MCP_GATEWAY_URL</code>) and validates the per-request{' '}
+                                        <code>x-chronos-mcp-gateway-url</code> header against it.
+                                    </Typography>
+                                    <Typography variant='body2' sx={{ mb: 1, color: 'text.secondary' }}>
+                                        If your agent runs in a different network (Docker, internal subnet), substitute the hostname
+                                        reachable from there.
+                                    </Typography>
+                                    <Stack spacing={1.5} sx={{ mt: 1 }}>
+                                        {(() => {
+                                            const origin = typeof window !== 'undefined' ? window.location.origin : ''
+                                            const invokeUrl = `${origin}/api/v1/mcp-gateway/${agent.id}/tools/invoke`
+                                            const healthUrl = `${origin}/api/v1/mcp-gateway/${agent.id}/health`
+                                            return (
+                                                <>
+                                                    <Box>
+                                                        <Typography variant='caption' sx={{ display: 'block', color: 'text.secondary' }}>
+                                                            Invoke URL (POST, Bearer the gateway token)
+                                                        </Typography>
+                                                        <OutlinedInput
+                                                            fullWidth
+                                                            size='small'
+                                                            value={invokeUrl}
+                                                            readOnly
+                                                            sx={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
+                                                            endAdornment={
+                                                                <InputAdornment position='end'>
+                                                                    <Tooltip title='Copy'>
+                                                                        <IconButton
+                                                                            size='small'
+                                                                            onClick={() => onCopyValue(invokeUrl, 'Invoke URL')}
+                                                                        >
+                                                                            <IconCopy size={16} />
+                                                                        </IconButton>
+                                                                    </Tooltip>
+                                                                </InputAdornment>
+                                                            }
+                                                        />
+                                                    </Box>
+                                                    <Box>
+                                                        <Typography variant='caption' sx={{ display: 'block', color: 'text.secondary' }}>
+                                                            Health URL (GET, Bearer the gateway token)
+                                                        </Typography>
+                                                        <OutlinedInput
+                                                            fullWidth
+                                                            size='small'
+                                                            value={healthUrl}
+                                                            readOnly
+                                                            sx={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
+                                                            endAdornment={
+                                                                <InputAdornment position='end'>
+                                                                    <Tooltip title='Copy'>
+                                                                        <IconButton
+                                                                            size='small'
+                                                                            onClick={() => onCopyValue(healthUrl, 'Health URL')}
+                                                                        >
+                                                                            <IconCopy size={16} />
+                                                                        </IconButton>
+                                                                    </Tooltip>
+                                                                </InputAdornment>
+                                                            }
+                                                        />
+                                                    </Box>
+                                                </>
+                                            )
+                                        })()}
+                                    </Stack>
+                                </Box>
+
+                                <Divider />
+
+                                <Box>
                                     <Typography variant='overline'>MCP Gateway Token</Typography>
                                     <Typography variant='body2' sx={{ mb: 1, color: 'text.secondary' }}>
-                                        Your agent uses this token to invoke MCP tools through Chronos&apos;s gateway. Bearer it on{' '}
-                                        <code>{`POST /api/v1/mcp-gateway/${agent.id}/tools/invoke`}</code>.
+                                        Your agent uses this token to invoke MCP tools through Chronos&apos;s gateway. Bearer it on the
+                                        invoke URL above.
                                     </Typography>
                                     <OutlinedInput
                                         fullWidth

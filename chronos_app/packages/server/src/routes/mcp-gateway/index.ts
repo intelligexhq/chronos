@@ -11,5 +11,6 @@ const router = express.Router()
  */
 router.post('/:agentId/tools/invoke', mcpGatewayAuth, mcpGatewayController.invokeTool)
 router.get('/:agentId/tools', mcpGatewayAuth, mcpGatewayController.listTools)
+router.get('/:agentId/health', mcpGatewayAuth, mcpGatewayController.health)
 
 export default router
