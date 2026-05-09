@@ -14,6 +14,8 @@ export const ConfigProvider = ({ children }) => {
     const [evaluationsEnabled, setEvaluationsEnabled] = useState(false)
     const [dashboardEnabled, setDashboardEnabled] = useState(false)
     const [webhooksEnabled, setWebhooksEnabled] = useState(false)
+    const [agentsEnabled, setAgentsEnabled] = useState(false)
+    const [mcpServersEnabled, setMcpServersEnabled] = useState(false)
 
     useEffect(() => {
         const userSettings = platformsettingsApi.getSettings()
@@ -43,6 +45,8 @@ export const ConfigProvider = ({ children }) => {
                 setEvaluationsEnabled(!!finalData.EVALUATIONS_ENABLED)
                 setDashboardEnabled(!!finalData.DASHBOARD_ENABLED)
                 setWebhooksEnabled(!!finalData.WEBHOOKS_ENABLED)
+                setAgentsEnabled(!!finalData.AGENTS_ENABLED)
+                setMcpServersEnabled(!!finalData.MCP_SERVERS_ENABLED)
                 setLoading(false)
             })
             .catch((error) => {
@@ -62,7 +66,9 @@ export const ConfigProvider = ({ children }) => {
                 schedulesEnabled,
                 evaluationsEnabled,
                 dashboardEnabled,
-                webhooksEnabled
+                webhooksEnabled,
+                agentsEnabled,
+                mcpServersEnabled
             }}
         >
             {children}

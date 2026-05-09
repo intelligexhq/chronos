@@ -4,11 +4,11 @@
  * callback round-trip against a running Chronos instance.
  *
  * The "agent" half does not implement /v1/chat/completions — the test
- * driver calls /api/v1/agent-callbacks/:agentId/tools/invoke directly
- * with the agent's auto-generated callback token. That path exercises:
+ * driver calls /api/v1/mcp-gateway/:agentId/tools/invoke directly
+ * with the agent's auto-generated MCP gateway token. That path exercises:
  *
  *   - Agent + MCP server registration via the UI API
- *   - Callback bearer auth (constant-time compare)
+ *   - MCP gateway bearer auth (constant-time compare)
  *   - allowedTools intersection (Agent ∩ MCPServer)
  *   - Pooled MCP client connection (Streamable HTTP transport)
  *   - tools/call against a real MCP server with assertion on the result
@@ -232,19 +232,19 @@ const runDriver = async (): Promise<void> => {
         })
     })
     if (!agentResp.ok) throw new Error(`register agent failed: ${agentResp.status} ${await agentResp.text()}`)
-    const agent = (await agentResp.json()) as { id: string; slug: string; callbackToken?: string }
-    if (!agent.callbackToken) throw new Error(`agent response missing callbackToken: ${JSON.stringify(agent)}`)
+    const agent = (await agentResp.json()) as { id: string; slug: string; mcpGatewayToken?: string }
+    if (!agent.mcpGatewayToken) throw new Error(`agent response missing mcpGatewayToken: ${JSON.stringify(agent)}`)
     // eslint-disable-next-line no-console
     console.log(`[driver] agent registered id=${agent.id} slug=${agent.slug}`)
 
-    // 3. round-trip: agent → callback → gateway → MCP server → result
+    // 3. round-trip: agent → gateway → MCP server → result
     // eslint-disable-next-line no-console
-    console.log(`[driver] invoking smoke.add via /agent-callbacks/${agent.id}/tools/invoke`)
-    const callResp = await fetch(`${CHRONOS_BASE_URL}/api/v1/agent-callbacks/${agent.id}/tools/invoke`, {
+    console.log(`[driver] invoking smoke.add via /mcp-gateway/${agent.id}/tools/invoke`)
+    const callResp = await fetch(`${CHRONOS_BASE_URL}/api/v1/mcp-gateway/${agent.id}/tools/invoke`, {
         method: 'POST',
         headers: {
             'content-type': 'application/json',
-            authorization: `Bearer ${agent.callbackToken}`
+            authorization: `Bearer ${agent.mcpGatewayToken}`
         },
         body: JSON.stringify({
             tool: 'smoke.add',

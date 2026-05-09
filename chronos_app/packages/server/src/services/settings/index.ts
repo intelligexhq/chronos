@@ -12,7 +12,9 @@ const getSettings = async () => {
             SCHEDULES_ENABLED: process.env.ENABLE_SCHEDULES === 'true',
             EVALUATIONS_ENABLED: process.env.ENABLE_EVALUATIONS === 'true',
             DASHBOARD_ENABLED: process.env.ENABLE_DASHBOARD !== 'false',
-            WEBHOOKS_ENABLED: process.env.ENABLE_WEBHOOKS === 'true'
+            WEBHOOKS_ENABLED: process.env.ENABLE_WEBHOOKS === 'true',
+            AGENTS_ENABLED: process.env.ENABLE_AGENTS === 'true',
+            MCP_SERVERS_ENABLED: process.env.ENABLE_MCP_SERVERS === 'true'
         }
 
         switch (platformType) {

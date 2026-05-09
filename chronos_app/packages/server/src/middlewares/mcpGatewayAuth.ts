@@ -11,7 +11,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 declare global {
     namespace Express {
         interface Request {
-            callbackAgent?: Agent
+            gatewayAgent?: Agent
         }
     }
 }
@@ -22,22 +22,22 @@ const respond = (res: Response, status: number, error: string): Response => {
 
 /**
  * Authenticates a registered HTTP agent calling the MCP gateway. The agent
- * presents its `callbackToken` as a Bearer credential; the middleware
+ * presents its `mcpGatewayToken` as a Bearer credential; the middleware
  * constant-time-compares it against the value stored on the `Agent` row
- * keyed by `:agentId`. On success, attaches `req.callbackAgent`.
+ * keyed by `:agentId`. On success, attaches `req.gatewayAgent`.
  *
  * Rejects:
  * - 401 if Authorization header is missing or malformed
  * - 401 if the supplied token does not match the stored token (also 401 for
  *   "agent not found" to avoid leaking which IDs exist)
- * - 403 if the agent is BUILT_IN (callbacks are HTTP-only) or disabled
+ * - 403 if the agent is BUILT_IN (gateway is HTTP-only) or disabled
  *
- * Mounted on `POST /api/v1/agent-callbacks/:agentId/tools/invoke` and
- * `GET /api/v1/agent-callbacks/:agentId/tools`. Path is whitelisted in
+ * Mounted on `POST /api/v1/mcp-gateway/:agentId/tools/invoke` and
+ * `GET /api/v1/mcp-gateway/:agentId/tools`. Path is whitelisted in
  * `utils/constants.ts` so external agents bypass the global API-key auth —
- * the callback token IS the auth.
+ * the gateway token IS the auth.
  */
-export const agentCallbackAuth = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
+export const mcpGatewayAuth = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
     try {
         const authHeader = req.headers.authorization
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -63,22 +63,22 @@ export const agentCallbackAuth = async (req: Request, res: Response, next: NextF
 
         // Constant-time-compare even when the agent does not exist so token
         // verification cost does not leak the existence of an agent ID.
-        const storedToken = agent?.callbackToken ?? ''
+        const storedToken = agent?.mcpGatewayToken ?? ''
         if (!safeEqual(storedToken, supplied) || !agent) {
-            return respond(res, 401, 'Invalid callback token')
+            return respond(res, 401, 'Invalid MCP gateway token')
         }
 
         if (agent.runtimeType !== AgentRuntimeType.HTTP) {
-            return respond(res, 403, 'Callbacks are only available for HTTP agents')
+            return respond(res, 403, 'MCP gateway is only available for HTTP agents')
         }
         if (!agent.enabled) {
             return respond(res, 403, 'Agent is disabled')
         }
 
-        req.callbackAgent = agent
+        req.gatewayAgent = agent
         return next()
     } catch (error) {
-        logger.error(`[agentCallbackAuth] Unexpected error: ${getErrorMessage(error)}`)
+        logger.error(`[mcpGatewayAuth] Unexpected error: ${getErrorMessage(error)}`)
         return respond(res, 500, 'Internal authentication error')
     }
 }

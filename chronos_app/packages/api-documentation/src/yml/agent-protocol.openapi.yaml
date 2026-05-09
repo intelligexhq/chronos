@@ -35,13 +35,13 @@ servers:
 tags:
     - name: agent-runtime
       description: Endpoints an external HTTP agent must implement (Platform → Agent).
-    - name: agent-callbacks
+    - name: mcp-gateway
       description: MCP gateway endpoints exposed by Chronos (Agent → Platform).
 
 # Default: no protocol-level auth requirement. Agent-runtime endpoints accept
 # whatever auth the operator configured via `Agent.outboundAuth` (Bearer or a
 # named header), surfaced as the `Authorization` (or named) header on every
-# inbound request. Agent-callback endpoints opt in explicitly to `callbackToken`.
+# inbound request. MCP gateway endpoints opt in explicitly to `mcpGatewayToken`.
 security: []
 
 paths:
@@ -85,9 +85,9 @@ paths:
                 extension fields; the same values are also sent as headers.
 
                 For tool use, call back into Chronos using
-                `x_chronos_callback_url` (or the `x-chronos-callback-url`
-                header) with `Authorization: Bearer <agent.callbackToken>`.
-                See `/api/v1/agent-callbacks/{agentId}/tools/invoke`.
+                `x_chronos_mcp_gateway_url` (or the `x-chronos-mcp-gateway-url`
+                header) with `Authorization: Bearer <agent.mcpGatewayToken>`.
+                See `/api/v1/mcp-gateway/{agentId}/tools/invoke`.
 
                 If the request body has `stream: true`, return an SSE stream
                 in OpenAI's chunk format; the dispatcher pipes it back to the
@@ -115,12 +115,12 @@ paths:
                       Same value as `x_chronos_call_id` in the body. Echo
                       back via the callback's `callId` field.
                 - in: header
-                  name: x-chronos-callback-url
+                  name: x-chronos-mcp-gateway-url
                   required: true
                   schema:
                       type: string
                       format: uri
-                  description: Same value as `x_chronos_callback_url` in the body.
+                  description: Same value as `x_chronos_mcp_gateway_url` in the body.
                 - in: header
                   name: accept
                   required: false
@@ -156,16 +156,16 @@ paths:
                 '500':
                     description: Internal agent error. Chronos surfaces this as 502 to its caller.
 
-    /api/v1/agent-callbacks/{agentId}/tools/invoke:
+    /api/v1/mcp-gateway/{agentId}/tools/invoke:
         post:
             tags:
-                - agent-callbacks
+                - mcp-gateway
             summary: Invoke an MCP tool through the Chronos gateway
             description: |
                 Called by an external HTTP agent when it wants to use a
                 registered MCP tool. The gateway:
 
-                  1. Authenticates the agent's `callbackToken` (Bearer).
+                  1. Authenticates the agent's `mcpGatewayToken` (Bearer).
                   2. Parses the namespaced tool name `<server-slug>.<tool>`.
                   3. Enforces `Agent.allowedTools ∩ MCPServer.allowedTools`.
                   4. Opens (or reuses) a pooled MCP client to the resolved
@@ -173,14 +173,14 @@ paths:
                   5. Returns the MCP `CallToolResult`.
 
                 The path is whitelisted from the platform's global API-key
-                check — the per-agent callback token IS the auth.
+                check — the per-agent gateway token IS the auth.
 
                 A persistent audit table is planned for v1.7. v1.6 emits a
                 structured `logger.info({ event: 'mcp.tool.invoke', … })`
                 line per call.
-            operationId: invokeToolCallback
+            operationId: invokeMcpGatewayTool
             security:
-                - callbackToken: []
+                - mcpGatewayToken: []
             parameters:
                 - in: path
                   name: agentId
@@ -256,10 +256,10 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/Error'
 
-    /api/v1/agent-callbacks/{agentId}/tools:
+    /api/v1/mcp-gateway/{agentId}/tools:
         get:
             tags:
-                - agent-callbacks
+                - mcp-gateway
             summary: List the tools this agent is allowed to call
             description: |
                 Returns the static intersection of `Agent.allowedTools` and
@@ -268,7 +268,7 @@ paths:
                 `GET /api/v1/mcp-servers/{id}/tools` (operator surface).
             operationId: listAgentTools
             security:
-                - callbackToken: []
+                - mcpGatewayToken: []
             parameters:
                 - in: path
                   name: agentId
@@ -298,13 +298,13 @@ paths:
 
 components:
     securitySchemes:
-        callbackToken:
+        mcpGatewayToken:
             type: http
             scheme: bearer
             bearerFormat: hex
             description: |
-                Per-agent callback token. Stored on the `Agent` row as
-                `callbackToken`. Rotatable from the Agent detail UI; rotation
+                Per-agent MCP gateway token. Stored on the `Agent` row as
+                `mcpGatewayToken`. Rotatable from the Agent detail UI; rotation
                 is single-step (no overlap window in v1.6).
 
     schemas:
@@ -317,7 +317,7 @@ components:
                 unchanged.
             required:
                 - messages
-                - x_chronos_callback_url
+                - x_chronos_mcp_gateway_url
                 - x_chronos_call_id
             additionalProperties: true
             properties:
@@ -331,14 +331,14 @@ components:
                 stream:
                     type: boolean
                     default: false
-                x_chronos_callback_url:
+                x_chronos_mcp_gateway_url:
                     type: string
                     format: uri
                     description: |
                         Absolute URL of the MCP gateway endpoint this agent
                         should call back into for tool use, e.g.
-                        `https://chronos.example.com/api/v1/agent-callbacks/<agentId>/tools/invoke`.
-                        Same value also sent as the `x-chronos-callback-url`
+                        `https://chronos.example.com/api/v1/mcp-gateway/<agentId>/tools/invoke`.
+                        Same value also sent as the `x-chronos-mcp-gateway-url`
                         request header.
                 x_chronos_call_id:
                     type: string

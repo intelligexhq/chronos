@@ -14,7 +14,7 @@ router.patch('/:id/toggle', checkPermission('agents:update'), agentsController.t
 
 router.delete('/:id', checkPermission('agents:delete'), agentsController.deleteAgent)
 
-router.post('/:id/regenerate-callback-token', checkPermission('agents:update'), agentsController.regenerateCallbackToken)
+router.post('/:id/regenerate-mcp-gateway-token', checkPermission('agents:update'), agentsController.regenerateMcpGatewayToken)
 router.post('/:id/test-connection', checkPermission('agents:update'), agentsController.testAgentConnection)
 
 router.post('/:id/invoke', checkPermission('agents:invoke'), agentsController.invokeAgent)

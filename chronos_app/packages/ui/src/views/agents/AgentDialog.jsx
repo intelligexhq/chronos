@@ -67,7 +67,7 @@ const slugify = (raw) =>
  * registered servers, namespacing each as `<slug>.<tool>`). BUILT_IN collects
  * builtinAgentflowId from the canvas registry.
  *
- * Callback-token UX (copy + rotate) lives on the AgentDetail page, not here —
+ * MCP-gateway-token UX (copy + rotate) lives on the AgentDetail page, not here —
  * the dialog is the same for create and edit and we don't want to leak the
  * token in the edit form by default.
  */

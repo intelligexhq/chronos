@@ -91,15 +91,15 @@ const toggleAgent = async (req: Request, res: Response, next: NextFunction) => {
     }
 }
 
-const regenerateCallbackToken = async (req: Request, res: Response, next: NextFunction) => {
+const regenerateMcpGatewayToken = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (!req.params.id) {
             throw new InternalChronosError(
                 StatusCodes.PRECONDITION_FAILED,
-                `Error: agentsController.regenerateCallbackToken - id not provided!`
+                `Error: agentsController.regenerateMcpGatewayToken - id not provided!`
             )
         }
-        const apiResponse = await agentsService.regenerateCallbackToken(req.params.id)
+        const apiResponse = await agentsService.regenerateMcpGatewayToken(req.params.id)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -150,7 +150,7 @@ export default {
     getAllAgents,
     getAgentById,
     toggleAgent,
-    regenerateCallbackToken,
+    regenerateMcpGatewayToken,
     testAgentConnection,
     invokeAgent,
     chatCompletions

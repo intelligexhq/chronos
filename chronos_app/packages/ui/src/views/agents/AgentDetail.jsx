@@ -133,15 +133,15 @@ const AgentDetail = () => {
     }
 
     const onCopyToken = () => {
-        if (!agent?.callbackToken) return
-        navigator.clipboard.writeText(agent.callbackToken)
-        showSuccess('Callback token copied to clipboard')
+        if (!agent?.mcpGatewayToken) return
+        navigator.clipboard.writeText(agent.mcpGatewayToken)
+        showSuccess('MCP gateway token copied to clipboard')
     }
 
     const onRotateToken = async () => {
         if (!agent?.id) return
         const confirmed = await confirm({
-            title: 'Rotate callback token',
+            title: 'Rotate MCP gateway token',
             description:
                 'Rotating revokes the existing token immediately. Any agent process still using the old value will start failing with 401 until updated.',
             confirmButtonName: 'Rotate',
@@ -150,14 +150,14 @@ const AgentDetail = () => {
         if (!confirmed) return
         setRotateLoading(true)
         try {
-            const res = await agentsApi.regenerateCallbackToken(agent.id)
+            const res = await agentsApi.regenerateMcpGatewayToken(agent.id)
             if (res.data) {
                 setAgent(res.data)
                 setTokenVisible(true)
-                showSuccess('Callback token rotated — copy the new value now')
+                showSuccess('MCP gateway token rotated — copy the new value now')
             }
         } catch (err) {
-            showError(err?.response?.data?.message || 'Failed to rotate callback token', true)
+            showError(err?.response?.data?.message || 'Failed to rotate MCP gateway token', true)
         } finally {
             setRotateLoading(false)
         }
@@ -314,16 +314,16 @@ const AgentDetail = () => {
                                 <Divider />
 
                                 <Box>
-                                    <Typography variant='overline'>Callback Token</Typography>
+                                    <Typography variant='overline'>MCP Gateway Token</Typography>
                                     <Typography variant='body2' sx={{ mb: 1, color: 'text.secondary' }}>
-                                        Bearer this token to call <code>{`POST /api/v1/agent-callbacks/${agent.id}/tools/invoke`}</code>{' '}
-                                        from your agent process.
+                                        Your agent uses this token to invoke MCP tools through Chronos&apos;s gateway. Bearer it on{' '}
+                                        <code>{`POST /api/v1/mcp-gateway/${agent.id}/tools/invoke`}</code>.
                                     </Typography>
                                     <OutlinedInput
                                         fullWidth
                                         size='small'
                                         type={tokenVisible ? 'text' : 'password'}
-                                        value={agent.callbackToken || ''}
+                                        value={agent.mcpGatewayToken || ''}
                                         readOnly
                                         sx={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
                                         endAdornment={

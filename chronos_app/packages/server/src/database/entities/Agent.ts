@@ -9,7 +9,7 @@ import { AgentRuntimeType, AgentStatus, IAgent } from '../../Interface'
  * (https://a2a-protocol.org/latest/specification/) so a future A2A runtime
  * can publish `/.well-known/agent.json` from these columns without a schema
  * change. Chronos-specific fields (runtimeType, status, runtimeConfig,
- * outboundAuth, callbackToken, allowedTools, builtinAgentflowId, health
+ * outboundAuth, mcpGatewayToken, allowedTools, builtinAgentflowId, health
  * tracking) are kept distinct from the declarative A2A surface.
  */
 @Entity()
@@ -84,7 +84,7 @@ export class Agent implements IAgent {
     outboundAuth?: string
 
     @Column({ nullable: true, type: 'varchar' })
-    callbackToken?: string
+    mcpGatewayToken?: string
 
     @Column({ nullable: true, type: 'text' })
     allowedTools?: string

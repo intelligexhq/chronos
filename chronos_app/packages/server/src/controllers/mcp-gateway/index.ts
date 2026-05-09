@@ -4,9 +4,9 @@ import { InternalChronosError } from '../../errors/internalChronosError'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 
 const requireAgent = (req: Request) => {
-    const agent = req.callbackAgent
+    const agent = req.gatewayAgent
     if (!agent) {
-        throw new InternalChronosError(StatusCodes.UNAUTHORIZED, 'Callback agent not attached to request')
+        throw new InternalChronosError(StatusCodes.UNAUTHORIZED, 'Gateway agent not attached to request')
     }
     return agent
 }

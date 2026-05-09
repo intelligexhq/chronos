@@ -10,6 +10,7 @@ import { RemoveAssistantSupport1800000000008 } from './1800000000008-RemoveAssis
 import { RenameAgentflowV2TemplateType1800000000009 } from './1800000000009-RenameAgentflowV2TemplateType'
 import { AddToolInvocationAudit1800000000010 } from './1800000000010-AddToolInvocationAudit'
 import { AddCredentialAccessAudit1800000000011 } from './1800000000011-AddCredentialAccessAudit'
+import { RenameCallbackTokenToMcpGatewayToken1800000000012 } from './1800000000012-RenameCallbackTokenToMcpGatewayToken'
 
 export const sqliteMigrations = [
     ConsolidatedBaseline1800000000000,
@@ -23,5 +24,6 @@ export const sqliteMigrations = [
     RemoveAssistantSupport1800000000008,
     RenameAgentflowV2TemplateType1800000000009,
     AddToolInvocationAudit1800000000010,
-    AddCredentialAccessAudit1800000000011
+    AddCredentialAccessAudit1800000000011,
+    RenameCallbackTokenToMcpGatewayToken1800000000012
 ]

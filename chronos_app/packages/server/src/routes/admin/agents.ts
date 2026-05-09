@@ -11,7 +11,7 @@ router.post('/', requireScope(AdminScope.AGENTS_WRITE), adminAgentsController.cr
 router.put('/:id', requireScope(AdminScope.AGENTS_WRITE), adminAgentsController.updateAgent)
 router.delete('/:id', requireScope(AdminScope.AGENTS_WRITE), adminAgentsController.deleteAgent)
 router.patch('/:id/toggle', requireScope(AdminScope.AGENTS_WRITE), adminAgentsController.toggleAgent)
-router.post('/:id/regenerate-callback-token', requireScope(AdminScope.AGENTS_WRITE), adminAgentsController.regenerateCallbackToken)
+router.post('/:id/regenerate-mcp-gateway-token', requireScope(AdminScope.AGENTS_WRITE), adminAgentsController.regenerateMcpGatewayToken)
 router.post('/:id/test-connection', requireScope(AdminScope.AGENTS_WRITE), adminAgentsController.testAgentConnection)
 
 export default router
