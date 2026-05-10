@@ -168,14 +168,19 @@ const parseRuntimeConfig = (agent: Agent): { timeoutMs: number; requestHeaders: 
 }
 
 /**
- * Builds the absolute MCP gateway URL the agent should hit for tool
- * invocations. Sent to the agent on every request as both a body field
- * (`x_chronos_mcp_gateway_url`) and a header (`x-chronos-mcp-gateway-url`).
+ * Builds the absolute MCP gateway URL the agent should connect to for tool
+ * discovery + invocation. Sent on every chat-completions forward as the
+ * `x-chronos-mcp-gateway-url` header — header-only by design so the body
+ * stays a clean OpenAI envelope.
+ *
+ * The URL is the MCP Streamable HTTP entry point: agents open an MCP session
+ * here using `@modelcontextprotocol/sdk` (or any compliant client) and run
+ * `tools/list` + `tools/call` over standard MCP transport.
  */
 const buildMcpGatewayUrl = (req: Request, agentId: string): string => {
     const httpProtocol = req.get('x-forwarded-proto') || req.protocol
     const baseURL = `${httpProtocol}://${req.get('host')}`
-    return `${baseURL}/api/v1/mcp-gateway/${agentId}/tools/invoke`
+    return `${baseURL}/api/v1/mcp-gateway/${agentId}`
 }
 
 const joinUrl = (base: string, path: string): string => {
@@ -246,6 +251,14 @@ const invoke = async (agent: Agent, openaiRequest: any, req: Request, res: Respo
         'x-chronos-mcp-gateway-url': mcpGatewayUrl,
         ...requestHeaders,
         ...authHeaders
+    }
+    // In-band gateway token: lets agents pick up rotations without a restart.
+    // Header form so it falls under the same redaction conventions as
+    // Authorization in most observability stacks. Agents that prefer the
+    // pre-configured env var can ignore this header — see
+    // docker/examples/agent for the reference precedence (env wins).
+    if (agent.mcpGatewayToken) {
+        headers['x-chronos-mcp-gateway-token'] = agent.mcpGatewayToken
     }
 
     const startedAt = Date.now()
