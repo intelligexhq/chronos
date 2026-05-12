@@ -37,6 +37,7 @@ import { Schedule } from './database/entities/Schedule'
 import { SchedulePoller } from './schedulers/SchedulePoller'
 import { AgentHealthPoller } from './schedulers/AgentHealthPoller'
 import { MCPServerHealthPoller } from './schedulers/MCPServerHealthPoller'
+import { OAuth2RefreshScheduler } from './schedulers/OAuth2RefreshScheduler'
 import { MCPGateway } from './services/mcp-gateway'
 import { CatalogChangeEmitter, MCPGatewaySessionStore } from './services/mcp-gateway-server'
 import { MetricsAggregator } from './services/metrics-aggregator'
@@ -88,6 +89,7 @@ export class App {
     schedulePoller: SchedulePoller
     agentHealthPoller?: AgentHealthPoller
     mcpServerHealthPoller?: MCPServerHealthPoller
+    oauth2RefreshScheduler?: OAuth2RefreshScheduler
     mcpGateway?: MCPGateway
     mcpGatewaySessionStore?: MCPGatewaySessionStore
     mcpCatalogChangeEmitter?: CatalogChangeEmitter
@@ -231,6 +233,15 @@ export class App {
                     catalogChangeEmitter: this.mcpCatalogChangeEmitter
                 })
                 this.mcpServerHealthPoller.start()
+            }
+
+            // OAuth2 refresh scheduler — keeps oauth2-refresh credentials' access
+            // tokens fresh during quiet periods. Independent of MCP server enablement
+            // because oauth2-refresh credentials may be attached to non-MCP integrations
+            // in the future. Gated on ENABLE_MCP_OAUTH2_REFRESH=true (default off).
+            if (process.env.ENABLE_MCP_OAUTH2_REFRESH === 'true') {
+                this.oauth2RefreshScheduler = new OAuth2RefreshScheduler({ appDataSource: this.AppDataSource })
+                this.oauth2RefreshScheduler.start()
             }
 
             // Dashboard metrics aggregator — runs daily rollup of execution_metrics into daily_metrics
@@ -409,6 +420,9 @@ export class App {
             }
             if (this.mcpServerHealthPoller) {
                 this.mcpServerHealthPoller.stop()
+            }
+            if (this.oauth2RefreshScheduler) {
+                this.oauth2RefreshScheduler.stop()
             }
             if (this.mcpGatewaySessionStore) {
                 removePromises.push(this.mcpGatewaySessionStore.stop())
