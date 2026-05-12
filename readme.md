@@ -14,9 +14,9 @@
 ## Why use Intelligex Chronos?
 
   - *[Intelligex Chronos](https://intelligex.com/chronos) is a controll plane* - deploy, run and manage agents built on the Chronos visual canvas or standalone, code-first agents via OpenAI API specification. All through one unified interface.
-  - *MCP tool gateway.* Tools are MCP servers. Chronos provides MCP registry and gateway. Agents reach tools in a unified, credential-brokered, audited way.
+  - *MCP tool gateway.* Tools are MCP servers. Chronos provides MCP registry and gateway. Agents reach tools in a unified, credential-brokered and audited way.
   - *Governance is inbuilt.* SSO, RBAC, stop-switches, audit log and PII redaction.
-  - *Observability built in.* OpenTelemetry traces, replayable executions, per-step cost attribution.
+  - *Observability built in.* Chronos uses OpenTelemetry standrad to keep visibility.
 
 ## Quick start
 
@@ -37,7 +37,7 @@ docker run -d --name chronos -p 3001:3000 chronos:local
 # http://localhost:3001
 ```
 
-For more configuration and advanced hosting examples, including locally hosted vectorstores, Ollama, Chrons queue modes — see [Docker compose examples](./chronos_app/docker/) section.
+For more configuration and complex hosting examples, including locally hosted vectorstores, Ollama, queue modes, etc. — see [advanced docker compose examples](./chronos_app/docker/) section.
 
 ## Get involved
 
