@@ -236,10 +236,7 @@ const AuditLog = () => {
                 <ErrorBoundary error={error} />
             ) : (
                 <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    <ViewHeader
-                        title='Audit Log'
-                        description='Audit logs all MCP tool invocations in Intelligex Chronos gateway'
-                    />
+                    <ViewHeader title='Audit Log' description='Audit logs all MCP tool invocations in Intelligex Chronos gateway' />
 
                     {scopedMcpServerId && (
                         <Alert

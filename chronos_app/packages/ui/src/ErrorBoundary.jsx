@@ -35,7 +35,11 @@ const ErrorBoundary = ({ error }) => {
                     </Box>
                 </Card>
                 <Typography variant='body1' sx={{ fontSize: '1.0rem', textAlign: 'center', lineHeight: '1.5' }}>
-                    Please try again. If the issue persists, raise an issue on <a href="https://github.com/intelligexhq/chronos" target='_blank'>our Github site</a>.
+                    Please try again. If the issue persists, raise an issue on{' '}
+                    <a href='https://github.com/intelligexhq/chronos' target='_blank' rel='noreferrer'>
+                        our Github site
+                    </a>
+                    .
                 </Typography>
             </Stack>
         </Box>
