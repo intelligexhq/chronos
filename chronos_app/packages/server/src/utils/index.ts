@@ -607,7 +607,7 @@ export const buildFlow = async ({
             )
 
             if (isUpsert && stopNodeId && nodeId === stopNodeId) {
-                logger.debug(`[server]: [${orgId}]: Upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
+                logger.debug(`[${orgId}]: Upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
                 const indexResult = await newNodeInstance.vectorStoreMethods!['upsert']!.call(newNodeInstance, reactFlowNodeData, {
                     orgId,
                     workspaceId,
@@ -627,7 +627,7 @@ export const buildFlow = async ({
                     baseURL
                 })
                 if (indexResult) upsertHistory['result'] = indexResult
-                logger.debug(`[server]: [${orgId}]: Finished upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
+                logger.debug(`[${orgId}]: Finished upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
                 break
             } else if (
                 !isUpsert &&
@@ -636,7 +636,7 @@ export const buildFlow = async ({
             ) {
                 initializedNodes.add(nodeId)
             } else {
-                logger.debug(`[server]: [${orgId}]: Initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
+                logger.debug(`[${orgId}]: Initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
                 const finalQuestion = uploadedFilesContent ? `${uploadedFilesContent}\n\n${question}` : question
                 let outputResult = await newNodeInstance.init(reactFlowNodeData, finalQuestion, {
                     orgId,
@@ -702,11 +702,11 @@ export const buildFlow = async ({
 
                 flowNodes[nodeIndex].data.instance = outputResult
 
-                logger.debug(`[server]: [${orgId}]: Finished initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
+                logger.debug(`[${orgId}]: Finished initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
                 initializedNodes.add(reactFlowNode.data.id)
             }
         } catch (e: any) {
-            logger.error(`[server]: [${orgId}]:`, e)
+            logger.error(`[${orgId}]:`, e)
             throw new Error(e)
         }
 

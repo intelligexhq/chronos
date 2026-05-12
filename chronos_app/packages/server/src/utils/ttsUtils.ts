@@ -67,7 +67,7 @@ export const generateTTSForResponseStream = async (
             }
         )
     } catch (error) {
-        logger.error(`[server]: TTS streaming failed: ${getErrorMessage(error)}`)
+        logger.error(`TTS streaming failed: ${getErrorMessage(error)}`)
         sseStreamer.streamTTSEndEvent(chatId, chatMessageId)
     }
 }

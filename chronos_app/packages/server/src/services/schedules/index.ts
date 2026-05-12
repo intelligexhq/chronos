@@ -9,7 +9,9 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { QueueManager } from '../../queue/QueueManager'
 import { ScheduleQueue } from '../../queue/ScheduleQueue'
 import { MODE } from '../../Interface'
-import logger from '../../utils/logger'
+import { createModuleLogger } from '../../utils/logger'
+
+const logger = createModuleLogger('ScheduleService')
 
 const isSchedulingEnabled = (): boolean => process.env.ENABLE_SCHEDULES === 'true'
 
@@ -115,7 +117,7 @@ const deleteSchedule = async (scheduleId: string): Promise<any> => {
             try {
                 await scheduleQueue.removeRepeatableJob(scheduleId, schedule.cronExpression, schedule.timezone)
             } catch (error) {
-                logger.warn(`[ScheduleService] Failed to remove repeatable job for schedule ${scheduleId}:`, { error })
+                logger.warn(`Failed to remove repeatable job for schedule ${scheduleId}:`, { error })
             }
         }
 
@@ -214,7 +216,7 @@ const updateSchedule = async (scheduleId: string, scheduleBody: any): Promise<an
             try {
                 await scheduleQueue.removeRepeatableJob(scheduleId, schedule.cronExpression, schedule.timezone)
             } catch (error) {
-                logger.warn(`[ScheduleService] Failed to remove old repeatable job:`, { error })
+                logger.warn(`Failed to remove old repeatable job:`, { error })
             }
         }
 
@@ -266,7 +268,7 @@ const toggleSchedule = async (scheduleId: string, enabled: boolean): Promise<any
                 try {
                     await scheduleQueue.removeRepeatableJob(scheduleId, schedule.cronExpression, schedule.timezone)
                 } catch (error) {
-                    logger.warn(`[ScheduleService] Failed to remove repeatable job on toggle:`, { error })
+                    logger.warn(`Failed to remove repeatable job on toggle:`, { error })
                 }
             }
         }

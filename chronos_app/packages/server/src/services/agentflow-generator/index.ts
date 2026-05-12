@@ -210,7 +210,7 @@ const generateAgentflow = async (question: string, selectedChatModel: Record<str
                 selectedChatModel,
                 isAgentFlowGenerator: true
             })
-            logger.debug(`[server]: Generated Agentflow Job added to queue: ${job.id}`)
+            logger.debug(`Generated Agentflow Job added to queue: ${job.id}`)
             const queueEvents = predictionQueue.getQueueEvents()
             response = await job.waitUntilFinished(queueEvents)
         } else {

@@ -10,7 +10,9 @@ import { InternalChronosError } from '../../errors/internalChronosError'
 import { getErrorMessage } from '../../errors/utils'
 import { decryptCredentialData } from '../../utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import logger from '../../utils/logger'
+import { createModuleLogger } from '../../utils/logger'
+
+const logger = createModuleLogger('HttpAgentRuntime')
 import { ensureFreshAccessToken } from '../credentials/oauth2-refresh'
 
 const DEFAULT_HTTP_TIMEOUT_MS = 60000
@@ -88,7 +90,7 @@ const writeStartExecution = async (agent: Agent, sessionId: string, executionDat
         })
         return await appServer.AppDataSource.getRepository(Execution).save(execution)
     } catch (error) {
-        logger.warn(`[HttpAgentRuntime] Failed to record start execution for agent ${agent.id}: ${getErrorMessage(error)}`)
+        logger.warn(`Failed to record start execution for agent ${agent.id}: ${getErrorMessage(error)}`)
         return null
     }
 }
@@ -150,7 +152,7 @@ const writeFinishExecution = async (
         })
         await metricsRepo.save(metrics)
     } catch (error) {
-        logger.warn(`[HttpAgentRuntime] Failed to record finish execution for agent ${agent.id}: ${getErrorMessage(error)}`)
+        logger.warn(`Failed to record finish execution for agent ${agent.id}: ${getErrorMessage(error)}`)
     }
 }
 

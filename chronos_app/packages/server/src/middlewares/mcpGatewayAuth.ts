@@ -4,7 +4,9 @@ import { Agent } from '../database/entities/Agent'
 import { AgentRuntimeType } from '../Interface'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 import { getErrorMessage } from '../errors/utils'
-import logger from '../utils/logger'
+import { createModuleLogger } from '../utils/logger'
+
+const logger = createModuleLogger('mcpGatewayAuth')
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -78,7 +80,7 @@ export const mcpGatewayAuth = async (req: Request, res: Response, next: NextFunc
         req.gatewayAgent = agent
         return next()
     } catch (error) {
-        logger.error(`[mcpGatewayAuth] Unexpected error: ${getErrorMessage(error)}`)
+        logger.error(`Unexpected error: ${getErrorMessage(error)}`)
         return respond(res, 500, 'Internal authentication error')
     }
 }

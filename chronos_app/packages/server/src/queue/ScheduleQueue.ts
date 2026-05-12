@@ -12,7 +12,9 @@ import { Schedule } from '../database/entities/Schedule'
 import { Execution } from '../database/entities/Execution'
 import { AgentFlow } from '../database/entities/AgentFlow'
 import { SSEStreamer } from '../utils/SSEStreamer'
-import logger from '../utils/logger'
+import { createModuleLogger } from '../utils/logger'
+
+const logger = createModuleLogger('ScheduleQueue')
 
 interface ScheduleQueueOptions {
     appDataSource: DataSource
@@ -56,13 +58,13 @@ export class ScheduleQueue extends BaseQueue {
 
         const schedule = await scheduleRepo.findOneBy({ id: scheduleId })
         if (!schedule) {
-            logger.error(`[ScheduleQueue] Schedule ${scheduleId} not found, skipping`)
+            logger.error(`Schedule ${scheduleId} not found, skipping`)
             return
         }
 
         const agentflow = await agentflowRepo.findOneBy({ id: schedule.agentflowId })
         if (!agentflow) {
-            logger.error(`[ScheduleQueue] AgentFlow ${schedule.agentflowId} not found for schedule ${scheduleId}`)
+            logger.error(`AgentFlow ${schedule.agentflowId} not found for schedule ${scheduleId}`)
             await scheduleRepo.update(scheduleId, {
                 lastRunDate: new Date(),
                 lastRunStatus: 'ERROR' as ExecutionState
@@ -76,7 +78,7 @@ export class ScheduleQueue extends BaseQueue {
             try {
                 inputPayload = JSON.parse(schedule.inputPayload)
             } catch {
-                logger.warn(`[ScheduleQueue] Invalid inputPayload JSON for schedule ${scheduleId}`)
+                logger.warn(`Invalid inputPayload JSON for schedule ${scheduleId}`)
             }
         }
 
@@ -105,7 +107,7 @@ export class ScheduleQueue extends BaseQueue {
             await executeFlow(executeParams)
         } catch (error: any) {
             executionState = 'ERROR'
-            logger.error(`[ScheduleQueue] Schedule ${scheduleId} execution failed:`, { error })
+            logger.error(`Schedule ${scheduleId} execution failed:`, { error })
         }
 
         // Tag the execution created by executeFlow with the scheduleId.
@@ -113,7 +115,7 @@ export class ScheduleQueue extends BaseQueue {
         try {
             await executionRepo.update({ sessionId: chatId }, { scheduleId })
         } catch (error) {
-            logger.warn(`[ScheduleQueue] Failed to tag execution with scheduleId:`, { error })
+            logger.warn(`Failed to tag execution with scheduleId:`, { error })
         }
 
         // Update schedule
@@ -146,7 +148,7 @@ export class ScheduleQueue extends BaseQueue {
                 jobId: schedule.id
             }
         )
-        logger.info(`[ScheduleQueue] Added repeatable job for schedule ${schedule.id} (${schedule.cronExpression} ${schedule.timezone})`)
+        logger.info(`Added repeatable job for schedule ${schedule.id} (${schedule.cronExpression} ${schedule.timezone})`)
     }
 
     public async removeRepeatableJob(scheduleId: string, cronExpression: string, timezone: string): Promise<void> {
@@ -156,7 +158,7 @@ export class ScheduleQueue extends BaseQueue {
             pattern: cronExpression,
             tz: timezone
         })
-        logger.info(`[ScheduleQueue] Removed repeatable job for schedule ${scheduleId}`)
+        logger.info(`Removed repeatable job for schedule ${scheduleId}`)
     }
 
     public async syncRepeatableJobs(enabledSchedules: Schedule[]): Promise<void> {
@@ -171,10 +173,10 @@ export class ScheduleQueue extends BaseQueue {
             try {
                 await this.addRepeatableJob(schedule)
             } catch (error) {
-                logger.error(`[ScheduleQueue] Failed to sync schedule ${schedule.id}:`, { error })
+                logger.error(`Failed to sync schedule ${schedule.id}:`, { error })
             }
         }
 
-        logger.info(`[ScheduleQueue] Synced ${enabledSchedules.length} repeatable jobs`)
+        logger.info(`Synced ${enabledSchedules.length} repeatable jobs`)
     }
 }

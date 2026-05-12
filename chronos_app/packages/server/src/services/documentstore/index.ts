@@ -345,7 +345,7 @@ const deleteDocumentStore = async (
             const { totalSize } = await removeFilesFromStorage(orgId, DOCUMENT_STORE_BASE_FOLDER, entity.id)
             await updateStorageUsage(orgId, '', totalSize, usageCacheManager)
         } catch (error) {
-            logger.error(`[server]: Error deleting file storage for documentStore ${storeId}`)
+            logger.error(`Error deleting file storage for documentStore ${storeId}`)
         }
 
         // delete upsert history
@@ -694,7 +694,7 @@ const previewChunksMiddleware = async (
         if (process.env.MODE === MODE.QUEUE) {
             const upsertQueue = appServer.queueManager.getQueue('upsert')
             const job = await upsertQueue.addJob(omit(executeData, OMIT_QUEUE_JOB_DATA))
-            logger.debug(`[server]: Job added to queue: ${job.id}`)
+            logger.debug(`Job added to queue: ${job.id}`)
 
             const queueEvents = upsertQueue.getQueueEvents()
             const result = await job.waitUntilFinished(queueEvents)
@@ -872,7 +872,7 @@ const processLoaderMiddleware = async (
         if (process.env.MODE === MODE.QUEUE) {
             const upsertQueue = appServer.queueManager.getQueue('upsert')
             const job = await upsertQueue.addJob(omit(executeData, OMIT_QUEUE_JOB_DATA))
-            logger.debug(`[server]: Job added to queue: ${job.id}`)
+            logger.debug(`Job added to queue: ${job.id}`)
 
             if (isInternalRequest) {
                 return {
@@ -1281,7 +1281,7 @@ const insertIntoVectorStoreMiddleware = async (
         if (process.env.MODE === MODE.QUEUE) {
             const upsertQueue = appServer.queueManager.getQueue('upsert')
             const job = await upsertQueue.addJob(omit(executeData, OMIT_QUEUE_JOB_DATA))
-            logger.debug(`[server]: Job added to queue: ${job.id}`)
+            logger.debug(`Job added to queue: ${job.id}`)
 
             const queueEvents = upsertQueue.getQueueEvents()
             const result = await job.waitUntilFinished(queueEvents)
@@ -1991,7 +1991,7 @@ const upsertDocStoreMiddleware = async (
         if (process.env.MODE === MODE.QUEUE) {
             const upsertQueue = appServer.queueManager.getQueue('upsert')
             const job = await upsertQueue.addJob(omit(executeData, OMIT_QUEUE_JOB_DATA))
-            logger.debug(`[server]: Job added to queue: ${job.id}`)
+            logger.debug(`Job added to queue: ${job.id}`)
 
             const queueEvents = upsertQueue.getQueueEvents()
             const result = await job.waitUntilFinished(queueEvents)
@@ -2057,7 +2057,7 @@ const refreshDocStoreMiddleware = async (
         if (process.env.MODE === MODE.QUEUE) {
             const upsertQueue = appServer.queueManager.getQueue('upsert')
             const job = await upsertQueue.addJob(omit(executeData, OMIT_QUEUE_JOB_DATA))
-            logger.debug(`[server]: Job added to queue: ${job.id}`)
+            logger.debug(`Job added to queue: ${job.id}`)
 
             const queueEvents = upsertQueue.getQueueEvents()
             const result = await job.waitUntilFinished(queueEvents)

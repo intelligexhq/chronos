@@ -81,7 +81,7 @@ if (process.env.STORAGE_TYPE === 'gcs') {
         keyFilename: process.env.GOOGLE_CLOUD_STORAGE_CREDENTIAL,
         defaultCallback: (err: any) => {
             if (err) {
-                logger.error('[GCS]: Error logging to GCS: ' + err)
+                logger.child({ source: 'GCS' }).error('Error logging to GCS: ' + err)
             }
         }
     }
@@ -277,11 +277,13 @@ export function expressRequestLogger(req: Request, res: Response, next: NextFunc
             requestMetadata.request.headers = sanitizedHeaders
         }
 
+        const serverChild = logger.child({ source: 'server' })
+        const requestChild = requestLogger.child({ source: 'server' })
         if (req.method !== 'GET') {
-            requestLogger.info(`[server]: ${req.method} ${req.url}`, requestMetadata)
-            logger.info(`[server]: ${req.method} ${req.url}`)
+            requestChild.info(`${req.method} ${req.url}`, requestMetadata)
+            serverChild.info(`${req.method} ${req.url}`)
         } else {
-            requestLogger.http(`[server]: ${req.method} ${req.url}`, requestMetadata)
+            requestChild.http(`${req.method} ${req.url}`, requestMetadata)
         }
     }
 

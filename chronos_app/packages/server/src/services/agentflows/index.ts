@@ -19,7 +19,9 @@ import { getAppVersion, getTelemetryFlowObj } from '../../utils'
 import { containsBase64File, updateFlowDataWithFilePaths } from '../../utils/fileRepository'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
-import logger from '../../utils/logger'
+import { createModuleLogger } from '../../utils/logger'
+
+const logger = createModuleLogger('agentflows')
 
 export const enum AgentflowErrorMessage {
     INVALID_AGENTFLOW_TYPE = 'Invalid Agentflow Type'
@@ -106,7 +108,7 @@ const deleteAgentflow = async (agentflowId: string, userContext?: UserContext): 
             // Delete all uploads corresponding to this agentflow
             await removeFolderFromStorage('', agentflowId)
         } catch (e) {
-            logger.error(`[server]: Error deleting file storage for agentflow ${agentflowId}`)
+            logger.error(`Error deleting file storage for agentflow ${agentflowId}`)
         }
         return dbResponse
     } catch (error) {

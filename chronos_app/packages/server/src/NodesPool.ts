@@ -4,7 +4,9 @@ import { Dirent } from 'fs'
 import { getNodeModulesPackagePath } from './utils'
 import { existsSync, promises } from 'fs'
 import { ICommonObject } from 'chronos-components'
-import logger from './utils/logger'
+import { createModuleLogger } from './utils/logger'
+
+const logger = createModuleLogger('NodesPool')
 import { appConfig } from './AppConfig'
 
 /** Category allowlist: maps category name → node name array, or "*" for all nodes in that category */
@@ -32,9 +34,9 @@ export const loadNodesConfig = (): NodesConfig | null => {
             if (raw.mode === 'allowlist' && raw.categories && typeof raw.categories === 'object') {
                 return raw.categories as NodesConfig
             }
-            logger.warn(`[server]: providers.config.json has unrecognised mode or missing categories, allowing all nodes`)
+            logger.warn(`providers.config.json has unrecognised mode or missing categories, allowing all nodes`)
         } catch (err) {
-            logger.error(`[server]: Failed to parse providers config at ${configPath}:`, err)
+            logger.error(`Failed to parse providers config at ${configPath}:`, err)
         }
     }
 
@@ -86,7 +88,7 @@ export class NodesPool {
 
             for (const name of rule) {
                 if (!registeredInCategory.includes(name)) {
-                    logger.warn(`[server]: Node "${name}" in category "${category}" allowlist does not match any registered node`)
+                    logger.warn(`Node "${name}" in category "${category}" allowlist does not match any registered node`)
                 }
             }
         }
@@ -100,7 +102,7 @@ export class NodesPool {
         const nodesConfig = loadNodesConfig()
         if (nodesConfig) {
             const categoryCount = Object.keys(nodesConfig).length
-            logger.info(`[server]: Nodes allowlist active — ${categoryCount} categories enabled`)
+            logger.info(`Nodes allowlist active — ${categoryCount} categories enabled`)
         }
         const packagePath = getNodeModulesPackagePath('chronos-components')
         const nodesPath = path.join(packagePath, 'dist', 'nodes')
@@ -151,7 +153,7 @@ export class NodesPool {
                             }
                         }
                     } catch (err) {
-                        logger.error(`❌ [server]: Error during initDatabase with file ${file}:`, err)
+                        logger.error(`❌ Error during initDatabase with file ${file}:`, err)
                     }
                 }
             })

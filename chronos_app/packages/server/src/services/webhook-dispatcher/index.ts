@@ -4,7 +4,9 @@ import { DataSource } from 'typeorm'
 import { Webhook } from '../../database/entities/Webhook'
 import { WebhookDelivery } from '../../database/entities/WebhookDelivery'
 import { WebhookEvent, IAgentflowExecutedData } from '../../Interface'
-import logger from '../../utils/logger'
+import { createModuleLogger } from '../../utils/logger'
+
+const logger = createModuleLogger('WebhookDispatcher')
 
 const STATE_TO_EVENT: Record<string, WebhookEvent> = {
     FINISHED: 'execution.completed',
@@ -106,11 +108,11 @@ export const dispatchWebhooks = async (
 
             // Fire-and-forget delivery with retry
             deliverWithRetry(appDataSource, webhook, payloadStr, event, execution.id).catch((err) =>
-                logger.warn(`[WebhookDispatcher] Delivery failed for webhook ${webhook.id}: ${err}`)
+                logger.warn(`Delivery failed for webhook ${webhook.id}: ${err}`)
             )
         }
     } catch (error) {
-        logger.warn(`[WebhookDispatcher] Failed to dispatch webhooks for execution ${execution.id}: ${error}`)
+        logger.warn(`Failed to dispatch webhooks for execution ${execution.id}: ${error}`)
     }
 }
 
@@ -174,11 +176,11 @@ async function deliverWithRetry(
             await appDataSource.getRepository(WebhookDelivery).save(delivery)
 
             if (response.ok) {
-                logger.info(`[WebhookDispatcher] Delivered webhook ${webhook.id} for execution ${executionId} (attempt ${attempt})`)
+                logger.info(`Delivered webhook ${webhook.id} for execution ${executionId} (attempt ${attempt})`)
                 return
             }
 
-            logger.warn(`[WebhookDispatcher] Webhook ${webhook.id} returned HTTP ${response.status} (attempt ${attempt}/${maxAttempts})`)
+            logger.warn(`Webhook ${webhook.id} returned HTTP ${response.status} (attempt ${attempt}/${maxAttempts})`)
         } catch (error: any) {
             delivery.errorMessage = error?.message || String(error)
             delivery.deliveredAt = new Date()
@@ -187,7 +189,7 @@ async function deliverWithRetry(
                 .save(delivery)
                 .catch(() => {})
 
-            logger.warn(`[WebhookDispatcher] Webhook ${webhook.id} delivery error (attempt ${attempt}/${maxAttempts}): ${error?.message}`)
+            logger.warn(`Webhook ${webhook.id} delivery error (attempt ${attempt}/${maxAttempts}): ${error?.message}`)
         }
 
         // If we have more attempts, wait with exponential backoff

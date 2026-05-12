@@ -2,7 +2,9 @@ import { StatusCodes } from 'http-status-codes'
 import { InternalChronosError } from '../errors/internalChronosError'
 import { UsageCacheManager } from '../UsageCacheManager'
 import { LICENSE_QUOTAS } from './constants'
-import logger from './logger'
+import { createModuleLogger } from './logger'
+
+const logger = createModuleLogger('getCurrentUsage')
 
 type UsageType = 'flows' | 'users'
 export const ENTERPRISE_FEATURE_FLAGS = [
@@ -41,7 +43,7 @@ export const getCurrentUsage = async (orgId: string, subscriptionId: string, usa
             }
         }
     } catch (error) {
-        logger.error(`[getCurrentUsage] Error getting usage: ${error}`)
+        logger.error(`Error getting usage: ${error}`)
         throw error
     }
 }

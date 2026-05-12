@@ -80,20 +80,17 @@ export abstract class BaseQueue {
                 this.queue.name,
                 async (job: Job) => {
                     const start = new Date().getTime()
-                    logger.info(`[BaseQueue] Processing job ${job.id} in ${this.queue.name} at ${new Date().toISOString()}`)
+                    logger.info(`Processing job ${job.id} in ${this.queue.name} at ${new Date().toISOString()}`)
                     try {
                         const result = await this.processJob(job.data)
                         const end = new Date().getTime()
-                        logger.info(
-                            `[BaseQueue] Completed job ${job.id} in ${this.queue.name} at ${new Date().toISOString()} (${end - start}ms)`
-                        )
+                        logger.info(`Completed job ${job.id} in ${this.queue.name} at ${new Date().toISOString()} (${end - start}ms)`)
                         return result
                     } catch (error) {
                         const end = new Date().getTime()
-                        logger.error(
-                            `[BaseQueue] Job ${job.id} failed in ${this.queue.name} at ${new Date().toISOString()} (${end - start}ms):`,
-                            { error }
-                        )
+                        logger.error(`Job ${job.id} failed in ${this.queue.name} at ${new Date().toISOString()} (${end - start}ms):`, {
+                            error
+                        })
                         throw error
                     }
                 },
@@ -109,21 +106,21 @@ export abstract class BaseQueue {
 
             // Add error listeners to the worker
             this.worker.on('error', (err) => {
-                logger.error(`[BaseQueue] Worker error for queue "${this.queue.name}":`, { error: err })
+                logger.error(`Worker error for queue "${this.queue.name}":`, { error: err })
             })
 
             this.worker.on('closed', () => {
-                logger.info(`[BaseQueue] Worker closed for queue "${this.queue.name}"`)
+                logger.info(`Worker closed for queue "${this.queue.name}"`)
             })
 
             this.worker.on('failed', (job, err) => {
-                logger.error(`[BaseQueue] Worker job ${job?.id} failed in queue "${this.queue.name}":`, { error: err })
+                logger.error(`Worker job ${job?.id} failed in queue "${this.queue.name}":`, { error: err })
             })
 
-            logger.info(`[BaseQueue] Worker created successfully for queue "${this.queue.name}"`)
+            logger.info(`Worker created successfully for queue "${this.queue.name}"`)
             return this.worker
         } catch (error) {
-            logger.error(`[BaseQueue] Failed to create worker for queue "${this.queue.name}":`, { error })
+            logger.error(`Failed to create worker for queue "${this.queue.name}":`, { error })
             throw error
         }
     }
