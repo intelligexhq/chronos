@@ -1,7 +1,9 @@
 import { Request, Response, NextFunction } from 'express'
 import { RateLimiterManager } from '../../utils/rateLimit'
 import agentflowsService from '../../services/agentflows'
-import logger from '../../utils/logger'
+import { createModuleLogger } from '../../utils/logger'
+
+const logger = createModuleLogger('predictions')
 import predictionsServices from '../../services/predictions'
 import { InternalChronosError } from '../../errors/internalChronosError'
 import { StatusCodes } from 'http-status-codes'
@@ -32,7 +34,7 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
         }
         let isDomainAllowed = true
         let unauthorizedOriginError = 'This site is not allowed to access this chatbot'
-        logger.info(`[server]: Request originated from ${req.headers.origin || 'UNKNOWN ORIGIN'}`)
+        logger.info(`Request originated from ${req.headers.origin || 'UNKNOWN ORIGIN'}`)
         if (agentflow.chatbotConfig) {
             const parsedConfig = JSON.parse(agentflow.chatbotConfig)
             // check whether the first one is not empty. if it is empty that means the user set a value and then removed it.

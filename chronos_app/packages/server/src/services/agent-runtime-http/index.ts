@@ -10,7 +10,10 @@ import { InternalChronosError } from '../../errors/internalChronosError'
 import { getErrorMessage } from '../../errors/utils'
 import { decryptCredentialData } from '../../utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import logger from '../../utils/logger'
+import { createModuleLogger } from '../../utils/logger'
+
+const logger = createModuleLogger('HttpAgentRuntime')
+import { ensureFreshAccessToken } from '../credentials/oauth2-refresh'
 
 const DEFAULT_HTTP_TIMEOUT_MS = 60000
 
@@ -23,6 +26,7 @@ const DEFAULT_HTTP_TIMEOUT_MS = 60000
  *   { type: 'bearer', credentialId: '...', tokenField?: 'apiKey' }
  *   { type: 'header', name: 'X-Token', value: '...' }
  *   { type: 'header', name: 'X-Token', credentialId: '...', valueField?: 'apiKey' }
+ *   { type: 'oauth2-refresh', credentialId: '...' }   (v1.8.0 Group B)
  */
 const resolveOutboundAuth = async (outboundAuth?: string): Promise<Record<string, string>> => {
     if (!outboundAuth) return {}
@@ -62,6 +66,11 @@ const resolveOutboundAuth = async (outboundAuth?: string): Promise<Record<string
         return { [parsed.name]: value }
     }
 
+    if (parsed.type === 'oauth2-refresh' && typeof parsed.credentialId === 'string') {
+        const accessToken = await ensureFreshAccessToken({ credentialId: parsed.credentialId })
+        return { Authorization: 'Bearer ' + accessToken }
+    }
+
     return {}
 }
 
@@ -81,7 +90,7 @@ const writeStartExecution = async (agent: Agent, sessionId: string, executionDat
         })
         return await appServer.AppDataSource.getRepository(Execution).save(execution)
     } catch (error) {
-        logger.warn(`[HttpAgentRuntime] Failed to record start execution for agent ${agent.id}: ${getErrorMessage(error)}`)
+        logger.warn(`Failed to record start execution for agent ${agent.id}: ${getErrorMessage(error)}`)
         return null
     }
 }
@@ -143,7 +152,7 @@ const writeFinishExecution = async (
         })
         await metricsRepo.save(metrics)
     } catch (error) {
-        logger.warn(`[HttpAgentRuntime] Failed to record finish execution for agent ${agent.id}: ${getErrorMessage(error)}`)
+        logger.warn(`Failed to record finish execution for agent ${agent.id}: ${getErrorMessage(error)}`)
     }
 }
 

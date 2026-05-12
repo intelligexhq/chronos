@@ -4,7 +4,9 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { INodeData, MODE } from '../../Interface'
 import { ICommonObject, INodeOptionsValue } from 'chronos-components'
 import { databaseEntities } from '../../utils'
-import logger from '../../utils/logger'
+import { createModuleLogger } from '../../utils/logger'
+
+const logger = createModuleLogger('nodes')
 import { InternalChronosError } from '../../errors/internalChronosError'
 import { getErrorMessage } from '../../errors/utils'
 import { INPUT_PARAMS_TYPE, OMIT_QUEUE_JOB_DATA } from '../../utils/constants'
@@ -143,7 +145,7 @@ const executeCustomFunction = async (requestBody: any, workspaceId?: string, org
         const predictionQueue = appServer.queueManager.getQueue('prediction')
 
         const job = await predictionQueue.addJob(omit(executeData, OMIT_QUEUE_JOB_DATA))
-        logger.debug(`[server]: Execute Custom Function Job added to queue by ${orgId}: ${job.id}`)
+        logger.debug(`Execute Custom Function Job added to queue by ${orgId}: ${job.id}`)
 
         const queueEvents = predictionQueue.getQueueEvents()
         const result = await job.waitUntilFinished(queueEvents)

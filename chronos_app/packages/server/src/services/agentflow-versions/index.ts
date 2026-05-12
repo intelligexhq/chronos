@@ -5,7 +5,9 @@ import { InternalChronosError } from '../../errors/internalChronosError'
 import { getErrorMessage } from '../../errors/utils'
 import { UserContext } from '../../Interface.Auth'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import logger from '../../utils/logger'
+import { createModuleLogger } from '../../utils/logger'
+
+const logger = createModuleLogger('agentflow-versions')
 
 const NOTES_MAX_LENGTH = 1000
 
@@ -100,7 +102,7 @@ const publishAgentflow = async (
                 userContext?.userId ?? ''
             )
         } catch (e) {
-            logger.warn(`[server]: telemetry agentflow_published failed: ${getErrorMessage(e)}`)
+            logger.warn(`telemetry agentflow_published failed: ${getErrorMessage(e)}`)
         }
 
         return savedVersion
@@ -156,7 +158,7 @@ const rollbackAgentflow = async (agentflowId: string, version: number, userConte
                 userContext?.userId ?? ''
             )
         } catch (e) {
-            logger.warn(`[server]: telemetry agentflow_rolled_back failed: ${getErrorMessage(e)}`)
+            logger.warn(`telemetry agentflow_rolled_back failed: ${getErrorMessage(e)}`)
         }
 
         const refreshed = await appServer.AppDataSource.getRepository(AgentFlow).findOneBy({ id: agentflow.id })

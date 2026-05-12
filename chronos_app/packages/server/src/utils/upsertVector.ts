@@ -9,7 +9,9 @@ import {
     getFileFromUpload,
     removeSpecificFileFromUpload
 } from 'chronos-components'
-import logger from '../utils/logger'
+import { createModuleLogger } from '../utils/logger'
+
+const logger = createModuleLogger('upsertVector')
 import {
     buildFlow,
     constructGraphs,
@@ -281,7 +283,7 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
             const upsertQueue = appServer.queueManager.getQueue('upsert')
 
             const job = await upsertQueue.addJob(omit(executeData, OMIT_QUEUE_JOB_DATA))
-            logger.debug(`[server]: Job added to queue: ${job.id}`)
+            logger.debug(`Job added to queue: ${job.id}`)
 
             const queueEvents = upsertQueue.getQueueEvents()
             const result = await job.waitUntilFinished(queueEvents)
@@ -303,7 +305,7 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
             return result
         }
     } catch (e) {
-        logger.error('[server]: Error:', e)
+        logger.error('Error:', e)
         appServer.metricsProvider?.incrementCounter(CHRONOS_METRIC_COUNTERS.VECTORSTORE_UPSERT, { status: CHRONOS_COUNTER_STATUS.FAILURE })
 
         if (e instanceof InternalChronosError && e.statusCode === StatusCodes.UNAUTHORIZED) {

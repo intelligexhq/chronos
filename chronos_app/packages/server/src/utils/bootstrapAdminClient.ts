@@ -7,7 +7,9 @@
  * to create the first OAuth client automatically.
  */
 
-import logger from './logger'
+import { createModuleLogger } from './logger'
+
+const logger = createModuleLogger('bootstrapAdminClient')
 import oauthClientService from '../services/oauth-client'
 
 /**
@@ -27,9 +29,9 @@ export const bootstrapAdminOAuthClient = async (): Promise<void> => {
     try {
         const client = await oauthClientService.createBootstrapClient(clientId, clientSecret, scopes)
         if (client) {
-            logger.info(`[server]: Admin OAuth client [${clientId}] is ready`)
+            logger.info(`Admin OAuth client [${clientId}] is ready`)
         }
     } catch (error) {
-        logger.error(`❌ [server]: Failed to bootstrap admin OAuth client: ${error}`)
+        logger.error(`❌ Failed to bootstrap admin OAuth client: ${error}`)
     }
 }

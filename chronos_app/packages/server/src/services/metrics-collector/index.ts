@@ -6,7 +6,7 @@ import { ExecutionMetrics } from '../../database/entities/ExecutionMetrics'
 import { IAgentflowExecutedData } from '../../Interface'
 import { createModuleLogger } from '../../utils/logger'
 
-const logger = createModuleLogger('metrics-collector')
+const logger = createModuleLogger('MetricsCollector')
 
 /**
  * Price index entry for a single model.
@@ -60,7 +60,7 @@ const buildPricingIndex = async (): Promise<Map<string, ModelPrice>> => {
         }
 
         if (!modelsData) {
-            logger.warn('[MetricsCollector] Could not find models.json for pricing data')
+            logger.warn('Could not find models.json for pricing data')
             return pricingIndex
         }
 
@@ -86,9 +86,9 @@ const buildPricingIndex = async (): Promise<Map<string, ModelPrice>> => {
             }
         }
 
-        logger.info(`[MetricsCollector] Loaded pricing for ${pricingIndex.size} models (currency: ${pricingCurrency})`)
+        logger.info(`Loaded pricing for ${pricingIndex.size} models (currency: ${pricingCurrency})`)
     } catch (error) {
-        logger.warn(`[MetricsCollector] Error building pricing index: ${error}`)
+        logger.warn(`Error building pricing index: ${error}`)
     }
 
     return pricingIndex
@@ -141,7 +141,7 @@ export const collectExecutionMetrics = async (
                 executedNodes = typeof execution.executionData === 'string' ? JSON.parse(execution.executionData) : execution.executionData
             }
         } catch {
-            logger.warn(`[MetricsCollector] Failed to parse executionData for execution ${execution.id}`)
+            logger.warn(`Failed to parse executionData for execution ${execution.id}`)
             return
         }
 
@@ -224,7 +224,7 @@ export const collectExecutionMetrics = async (
         await metricsRepo.save(metrics)
 
         logger.info(
-            `[MetricsCollector] Collected metrics for execution ${execution.id}: ` +
+            `Collected metrics for execution ${execution.id}: ` +
                 `${totalTokensAll} tokens, $${estimatedCostUsd.toFixed(6)}, ${durationMs}ms, ` +
                 `${llmCallCount} LLM calls, ${executedNodes.length} nodes`
         )
@@ -235,10 +235,10 @@ export const collectExecutionMetrics = async (
                 hasOutput: !!n.data?.output,
                 outputKeys: n.data?.output ? Object.keys(n.data.output) : []
             }))
-            logger.info(`[MetricsCollector] No LLM calls detected. Node structure: ${JSON.stringify(nodeKeys)}`)
+            logger.info(`No LLM calls detected. Node structure: ${JSON.stringify(nodeKeys)}`)
         }
     } catch (error) {
-        logger.warn(`[MetricsCollector] Failed to collect metrics for execution ${execution.id}: ${error}`)
+        logger.warn(`Failed to collect metrics for execution ${execution.id}: ${error}`)
     }
 }
 

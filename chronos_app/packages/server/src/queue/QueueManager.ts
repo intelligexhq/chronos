@@ -13,7 +13,9 @@ import { BullMQAdapter } from '@bull-board/api/bullMQAdapter'
 import { Express } from 'express'
 import { UsageCacheManager } from '../UsageCacheManager'
 import { ExpressAdapter } from '@bull-board/express'
-import logger from '../utils/logger'
+import { createModuleLogger } from '../utils/logger'
+
+const logger = createModuleLogger('QueueManager')
 
 const QUEUE_NAME = process.env.QUEUE_NAME || 'chronos-queue'
 
@@ -112,7 +114,7 @@ export class QueueManager {
     public createInlineWorkers(): void {
         for (const [name, queue] of this.queues) {
             queue.createWorker()
-            logger.info(`[QueueManager] Inline worker created for queue "${name}"`)
+            logger.info(`Inline worker created for queue "${name}"`)
         }
     }
 

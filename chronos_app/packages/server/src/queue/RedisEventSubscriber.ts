@@ -1,6 +1,8 @@
 import { createClient } from 'redis'
 import { SSEStreamer } from '../utils/SSEStreamer'
-import logger from '../utils/logger'
+import { createModuleLogger } from '../utils/logger'
+
+const logger = createModuleLogger('RedisEventSubscriber')
 
 export class RedisEventSubscriber {
     private redisSubscriber: ReturnType<typeof createClient>
@@ -51,15 +53,15 @@ export class RedisEventSubscriber {
 
     private setupEventListeners() {
         this.redisSubscriber.on('connect', () => {
-            logger.info(`[RedisEventSubscriber] Redis client connecting...`)
+            logger.info(`Redis client connecting...`)
         })
 
         this.redisSubscriber.on('ready', () => {
-            logger.info(`[RedisEventSubscriber] Redis client ready and connected`)
+            logger.info(`Redis client ready and connected`)
         })
 
         this.redisSubscriber.on('error', (err) => {
-            logger.error(`[RedisEventSubscriber] Redis client error:`, {
+            logger.error(`Redis client error:`, {
                 error: err,
                 isReady: this.redisSubscriber.isReady,
                 isOpen: this.redisSubscriber.isOpen,
@@ -68,11 +70,11 @@ export class RedisEventSubscriber {
         })
 
         this.redisSubscriber.on('end', () => {
-            logger.warn(`[RedisEventSubscriber] Redis client connection ended`)
+            logger.warn(`Redis client connection ended`)
         })
 
         this.redisSubscriber.on('reconnecting', () => {
-            logger.info(`[RedisEventSubscriber] Redis client reconnecting...`)
+            logger.info(`Redis client reconnecting...`)
         })
     }
 

@@ -8,7 +8,9 @@ import { InternalChronosError } from '../../errors/internalChronosError'
 import { getErrorMessage } from '../../errors/utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { MODE } from '../../Interface'
-import logger from '../../utils/logger'
+import { createModuleLogger } from '../../utils/logger'
+
+const logger = createModuleLogger('OpenAI Compat')
 
 /**
  * POST /api/v1/openai/chat/completions
@@ -123,7 +125,7 @@ const handleStreamingResponse = async (req: Request, res: Response, agentflowId:
         sseStreamer.streamMetadataEvent(apiResponse.chatId, apiResponse)
     } catch (error) {
         const errorMsg = getErrorMessage(error)
-        logger.error(`[OpenAI Compat] Streaming error: ${errorMsg}`)
+        logger.error(`Streaming error: ${errorMsg}`)
         // Send error as a final chunk before closing
         const errorChunk = {
             id: completionId,

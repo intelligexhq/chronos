@@ -6,7 +6,9 @@
 import { getDataSource } from '../DataSource'
 import { User } from '../database/entities/User'
 import { AuthService } from '../services/auth'
-import logger from './logger'
+import { createModuleLogger } from './logger'
+
+const logger = createModuleLogger('initializeUser')
 
 /**
  * Configuration for initial user from environment variables
@@ -32,7 +34,7 @@ function getInitialUserConfig(): InitialUserConfig | null {
 
     const firstColonIndex = initialUser.indexOf(':')
     if (firstColonIndex === -1) {
-        logger.error('❌ [server]: Invalid CHRONOS_INITIAL_USER format. Expected email:password or email:password:name')
+        logger.error('❌ Invalid CHRONOS_INITIAL_USER format. Expected email:password or email:password:name')
         return null
     }
 
@@ -54,7 +56,7 @@ function getInitialUserConfig(): InitialUserConfig | null {
     }
 
     if (!email || !password) {
-        logger.error('❌ [server]: Invalid CHRONOS_INITIAL_USER format. Email and password are required.')
+        logger.error('❌ Invalid CHRONOS_INITIAL_USER format. Email and password are required.')
         return null
     }
 
@@ -87,20 +89,20 @@ export async function initializeInitialUser(): Promise<void> {
 
     // If env vars not set, skip silently
     if (!config) {
-        logger.debug('[server]: No initial user configuration provided (CHRONOS_INITIAL_USER not set)')
+        logger.debug('No initial user configuration provided (CHRONOS_INITIAL_USER not set)')
         return
     }
 
     // Check if users already exist
     const usersExist = await hasExistingUsers()
     if (usersExist) {
-        logger.info('[server]: Users already exist in database, skipping initial user creation')
+        logger.info('Users already exist in database, skipping initial user creation')
         return
     }
 
     // Validate password
     if (config.password.length < 8) {
-        logger.error('❌ [server]: Initial user password must be at least 8 characters. Skipping user creation.')
+        logger.error('❌ Initial user password must be at least 8 characters. Skipping user creation.')
         return
     }
 
@@ -113,8 +115,8 @@ export async function initializeInitialUser(): Promise<void> {
             name: config.name
         })
 
-        logger.info(`[server]: Initial admin user created successfully: ${config.email}`)
+        logger.info(`Initial admin user created successfully: ${config.email}`)
     } catch (error) {
-        logger.error(`❌ [server]: Failed to create initial user: ${error}`)
+        logger.error(`❌ Failed to create initial user: ${error}`)
     }
 }

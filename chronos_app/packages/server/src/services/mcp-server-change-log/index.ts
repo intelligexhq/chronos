@@ -6,7 +6,7 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { createModuleLogger } from '../../utils/logger'
 import { MCPServerChangeKind } from '../../Interface'
 
-const logger = createModuleLogger('MCPServerChangeLog')
+const logger = createModuleLogger('mcpServerChangeLogService')
 
 /**
  * Fields whose values are secrets and must be redacted before being written
@@ -153,7 +153,7 @@ const writeRow = async (row: {
             changeSummary: row.changeSummary
         })
     } catch (error) {
-        logger.warn(`[mcpServerChangeLogService] write failed: ${getErrorMessage(error)}`)
+        logger.warn(`write failed: ${getErrorMessage(error)}`)
     }
 }
 

@@ -6,7 +6,7 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { createModuleLogger } from '../../utils/logger'
 import { PolicyOutcome } from '../../Interface'
 
-const logger = createModuleLogger('audit')
+const logger = createModuleLogger('auditService')
 import { StatusCodes } from 'http-status-codes'
 
 /**
@@ -74,7 +74,7 @@ const recordToolInvocation = async (input: ToolInvocationAuditInput): Promise<vo
         const repo = getRunningExpressApp().AppDataSource.getRepository(ToolInvocationAudit)
         await repo.insert(input)
     } catch (error) {
-        logger.warn(`[auditService] recordToolInvocation failed: ${getErrorMessage(error)}`)
+        logger.warn(`recordToolInvocation failed: ${getErrorMessage(error)}`)
     }
 }
 
@@ -199,7 +199,7 @@ const recordCredentialAccess = async (input: CredentialAccessAuditInput): Promis
         const repo = getRunningExpressApp().AppDataSource.getRepository(CredentialAccessAudit)
         await repo.insert(input)
     } catch (error) {
-        logger.warn(`[auditService] recordCredentialAccess failed: ${getErrorMessage(error)}`)
+        logger.warn(`recordCredentialAccess failed: ${getErrorMessage(error)}`)
     }
 }
 

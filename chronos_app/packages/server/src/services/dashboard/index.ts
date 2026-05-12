@@ -3,7 +3,9 @@ import { ExecutionMetrics } from '../../database/entities/ExecutionMetrics'
 import { DailyMetrics } from '../../database/entities/DailyMetrics'
 import { AgentFlow } from '../../database/entities/AgentFlow'
 import { getPricingCurrency } from '../metrics-collector'
-import logger from '../../utils/logger'
+import { createModuleLogger } from '../../utils/logger'
+
+const logger = createModuleLogger('DashboardService')
 
 /**
  * Returns summary statistics for the dashboard.
@@ -20,7 +22,7 @@ const getSummary = async (appDataSource: DataSource, startDate: string, endDate:
 
         return await getMultiDaySummary(appDataSource, startDate, endDate, agentflowId, currency)
     } catch (error) {
-        logger.error(`[DashboardService] getSummary error: ${error}`)
+        logger.error(`getSummary error: ${error}`)
         throw error
     }
 }
@@ -44,7 +46,7 @@ const getTimeseries = async (
 
         return await getDailyTimeseries(appDataSource, startDate, endDate, agentflowId, currency)
     } catch (error) {
-        logger.error(`[DashboardService] getTimeseries error: ${error}`)
+        logger.error(`getTimeseries error: ${error}`)
         throw error
     }
 }
@@ -128,7 +130,7 @@ const getAgents = async (
 
         return { agents, total, currency }
     } catch (error) {
-        logger.error(`[DashboardService] getAgents error: ${error}`)
+        logger.error(`getAgents error: ${error}`)
         throw error
     }
 }
@@ -151,7 +153,7 @@ const getExport = async (appDataSource: DataSource, startDate: string, endDate: 
 
         return await qb.getMany()
     } catch (error) {
-        logger.error(`[DashboardService] getExport error: ${error}`)
+        logger.error(`getExport error: ${error}`)
         throw error
     }
 }
@@ -179,12 +181,12 @@ const getIntraDaySummary = async (
 
     const metrics = await qb.getMany()
 
-    logger.info(`[DashboardService] Intra-day query date=${date} found ${metrics.length} execution_metrics rows`)
+    logger.info(`Intra-day query date=${date} found ${metrics.length} execution_metrics rows`)
 
     // Also check total rows in execution_metrics for debugging
     if (metrics.length === 0) {
         const totalRows = await metricsRepo.count()
-        logger.info(`[DashboardService] Total execution_metrics rows in DB: ${totalRows}`)
+        logger.info(`Total execution_metrics rows in DB: ${totalRows}`)
     }
 
     const totalExecutions = metrics.length
