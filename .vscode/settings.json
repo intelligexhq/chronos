@@ -22,8 +22,8 @@
     "eslint.workingDirectories": [
         { "pattern": "chronos_app/packages/*" }
     ],
-    "typescript.tsdk": "chronos_app/node_modules/typescript/lib",
-    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "js/ts.tsdk.path": "chronos_app/node_modules/typescript/lib",
+    "js/ts.tsdk.promptToUseWorkspaceVersion": true,
     "files.eol": "\n",
     "files.insertFinalNewline": true,
     "files.trimTrailingWhitespace": true
