@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -7,7 +7,12 @@ import {
     Button,
     ButtonGroup,
     Chip,
+    ClickAwayListener,
+    Grow,
+    MenuItem,
+    MenuList,
     Paper,
+    Popper,
     Skeleton,
     Stack,
     Switch,
@@ -19,7 +24,7 @@ import {
     Tooltip,
     useTheme
 } from '@mui/material'
-import { IconEdit, IconExternalLink, IconPlug, IconPlus, IconTrash, IconX } from '@tabler/icons-react'
+import { IconCaretDown, IconEdit, IconExternalLink, IconLoader, IconPlug, IconPlus, IconTrash, IconX } from '@tabler/icons-react'
 
 import MainCard from '@/ui-component/cards/MainCard'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
@@ -30,6 +35,7 @@ import { StyledTableCell, StyledTableRow } from '@/ui-component/table/TableStyle
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 
 import MCPServerDialog from './MCPServerDialog'
+import PresetPickerDialog from './PresetPickerDialog'
 
 import mcpServersApi from '@/api/mcp-servers'
 import useApi from '@/hooks/useApi'
@@ -76,6 +82,9 @@ const MCPServers = () => {
     const [isLoading, setLoading] = useState(true)
     const [showDialog, setShowDialog] = useState(false)
     const [dialogProps, setDialogProps] = useState({})
+    const [showPresetPicker, setShowPresetPicker] = useState(false)
+    const [splitMenuOpen, setSplitMenuOpen] = useState(false)
+    const splitMenuAnchor = useRef(null)
 
     const [currentPage, setCurrentPage] = useState(1)
     const [pageLimit, setPageLimit] = useState(DEFAULT_ITEMS_PER_PAGE)
@@ -129,6 +138,23 @@ const MCPServers = () => {
             type: 'ADD',
             cancelButtonName: 'Cancel',
             confirmButtonName: 'Register'
+        })
+        setShowDialog(true)
+    }
+
+    const openPresetPicker = () => {
+        setSplitMenuOpen(false)
+        setShowPresetPicker(true)
+    }
+
+    const onPresetPick = (preset) => {
+        setShowPresetPicker(false)
+        setDialogProps({
+            title: `Register ${preset.displayName}`,
+            type: 'ADD',
+            cancelButtonName: 'Cancel',
+            confirmButtonName: 'Register',
+            presetData: preset
         })
         setShowDialog(true)
     }
@@ -223,6 +249,19 @@ const MCPServers = () => {
         return sortServers(raw.filter(filterServers))
     })()
 
+    // Auto-poll while at least one row sits in `UNKNOWN` — newly-registered
+    // stdio servers carry that status until the gateway's first probe
+    // resolves (cold-start + tools/list, typically a few seconds). The
+    // interval self-cancels once every row has flipped to HEALTHY /
+    // UNHEALTHY / DISABLED so steady-state pages don't poll the server.
+    useEffect(() => {
+        const anyProbing = rows.some((row) => row.status === 'UNKNOWN')
+        if (!anyProbing) return undefined
+        const handle = setInterval(() => refresh(currentPage, pageLimit), 3000)
+        return () => clearInterval(handle)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [rows, currentPage, pageLimit])
+
     return (
         <>
             <MainCard>
@@ -237,7 +276,12 @@ const MCPServers = () => {
                             title='MCP Servers'
                             description='Registered MCP servers reachable through the platform gateway'
                         >
-                            <ButtonGroup disableElevation aria-label='outlined primary button group'>
+                            <ButtonGroup
+                                ref={splitMenuAnchor}
+                                disableElevation
+                                variant='contained'
+                                aria-label='register mcp server split button'
+                            >
                                 <StyledPermissionButton
                                     permissionId={'mcp-servers:create'}
                                     variant='contained'
@@ -247,7 +291,40 @@ const MCPServers = () => {
                                 >
                                     Register MCP Server
                                 </StyledPermissionButton>
+                                <StyledPermissionButton
+                                    permissionId={'mcp-servers:create'}
+                                    variant='contained'
+                                    size='small'
+                                    aria-label='register from preset'
+                                    aria-haspopup='menu'
+                                    aria-expanded={splitMenuOpen ? 'true' : undefined}
+                                    onClick={() => setSplitMenuOpen((prev) => !prev)}
+                                    sx={{ borderRadius: 2, height: 40, minWidth: 0, px: 1 }}
+                                >
+                                    <IconCaretDown size={16} />
+                                </StyledPermissionButton>
                             </ButtonGroup>
+                            <Popper
+                                open={splitMenuOpen}
+                                anchorEl={splitMenuAnchor.current}
+                                role={undefined}
+                                transition
+                                disablePortal
+                                placement='bottom-end'
+                                sx={{ zIndex: 1300 }}
+                            >
+                                {({ TransitionProps }) => (
+                                    <Grow {...TransitionProps}>
+                                        <Paper>
+                                            <ClickAwayListener onClickAway={() => setSplitMenuOpen(false)}>
+                                                <MenuList autoFocusItem={splitMenuOpen} dense>
+                                                    <MenuItem onClick={openPresetPicker}>From preset…</MenuItem>
+                                                </MenuList>
+                                            </ClickAwayListener>
+                                        </Paper>
+                                    </Grow>
+                                )}
+                            </Popper>
                         </ViewHeader>
                         {isLoading && (
                             <Box>
@@ -339,22 +416,31 @@ const MCPServers = () => {
                                                         />
                                                     </StyledTableCell>
                                                     <StyledTableCell>
-                                                        <Chip
-                                                            size='small'
-                                                            label={(server.status || '').toLowerCase()}
-                                                            color={
-                                                                server.status === 'HEALTHY'
-                                                                    ? undefined
-                                                                    : STATUS_CHIP_COLOR[server.status] || 'default'
-                                                            }
-                                                            sx={{
-                                                                ...(server.status === 'HEALTHY' && {
-                                                                    backgroundColor: theme.palette.success.dark,
-                                                                    color: theme.palette.common.white
-                                                                }),
-                                                                ...(server.status === 'DISABLED' && { opacity: 0.6 })
-                                                            }}
-                                                        />
+                                                        {server.status === 'UNKNOWN' ? (
+                                                            <Chip
+                                                                size='small'
+                                                                variant='outlined'
+                                                                icon={<IconLoader size={14} className='spin-animation' />}
+                                                                label='probing…'
+                                                            />
+                                                        ) : (
+                                                            <Chip
+                                                                size='small'
+                                                                label={(server.status || '').toLowerCase()}
+                                                                color={
+                                                                    server.status === 'HEALTHY'
+                                                                        ? undefined
+                                                                        : STATUS_CHIP_COLOR[server.status] || 'default'
+                                                                }
+                                                                sx={{
+                                                                    ...(server.status === 'HEALTHY' && {
+                                                                        backgroundColor: theme.palette.success.dark,
+                                                                        color: theme.palette.common.white
+                                                                    }),
+                                                                    ...(server.status === 'DISABLED' && { opacity: 0.6 })
+                                                                }}
+                                                            />
+                                                        )}
                                                     </StyledTableCell>
                                                     <StyledTableCell sx={{ maxWidth: 280 }}>
                                                         <Tooltip title={server.url || ''}>
@@ -430,6 +516,7 @@ const MCPServers = () => {
                 )}
             </MainCard>
             <MCPServerDialog show={showDialog} dialogProps={dialogProps} onCancel={() => setShowDialog(false)} onConfirm={onConfirm} />
+            <PresetPickerDialog show={showPresetPicker} onCancel={() => setShowPresetPicker(false)} onPick={onPresetPick} />
             <ConfirmDialog />
         </>
     )
