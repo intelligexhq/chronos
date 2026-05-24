@@ -218,14 +218,7 @@ const InvocationRendered = ({ row, copy }) => {
                     Agent
                 </Typography>
                 <Box sx={boxSx}>
-                    <IdentityRow
-                        name={row.agentSlug}
-                        id={row.agentId}
-                        goToHref={row.agentId ? `/agents/${row.agentId}` : null}
-                        goToLabel='Go to Agent'
-                        idLabel='Agent ID'
-                        copy={copy}
-                    />
+                    <IdentityRow name={row.agentSlug} id={row.agentId} idLabel='Agent ID' copy={copy} />
                 </Box>
             </Box>
 
@@ -235,14 +228,7 @@ const InvocationRendered = ({ row, copy }) => {
                 </Typography>
                 <Box sx={boxSx}>
                     <Stack spacing={2}>
-                        <IdentityRow
-                            name={row.mcpServerSlug}
-                            id={row.mcpServerId}
-                            goToHref={row.mcpServerId ? `/mcp-servers/${row.mcpServerId}` : null}
-                            goToLabel='Go to MCP Server'
-                            idLabel='MCP Server ID'
-                            copy={copy}
-                        />
+                        <IdentityRow name={row.mcpServerSlug} id={row.mcpServerId} idLabel='MCP Server ID' copy={copy} />
                         <Chip
                             sx={{ pl: 1, fontFamily: 'monospace', alignSelf: 'flex-start' }}
                             variant='outlined'
@@ -281,56 +267,41 @@ InvocationRendered.propTypes = {
 }
 
 /**
- * Slug as primary heading, raw UUID with a copy affordance below it, and
- * a "Go to" button on the right. Used unwrapped so callers control the
- * outer container (the audit-detail invocation view wraps several of these
- * in bordered boxes under their own h5 labels).
+ * Slug as primary heading, raw UUID with a copy affordance below it.
+ * Page-level navigation to the Agent / MCP Server lives in the drawer
+ * header chip row — the body card stays pure display.
  */
-const IdentityRow = ({ name, id, goToHref, goToLabel, idLabel, copy }) => (
-    <Stack direction='row' alignItems='center' spacing={2}>
-        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-            <Typography variant='subtitle1' sx={{ fontWeight: 500 }}>
-                {name || '—'}
-            </Typography>
-            {id && (
-                <Stack direction='row' alignItems='center' spacing={0.5} sx={{ mt: 0.5 }}>
-                    <Box
-                        component='span'
-                        sx={{
-                            fontFamily: 'monospace',
-                            fontSize: '0.78rem',
-                            color: 'text.secondary',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                        }}
-                    >
-                        {id}
-                    </Box>
-                    <IconButton title={`Copy ${idLabel}`} color='success' onClick={() => copy(id, idLabel)}>
-                        <IconCopy />
-                    </IconButton>
-                </Stack>
-            )}
-        </Box>
-        {goToHref && (
-            <Button
-                size='small'
-                variant='outlined'
-                startIcon={<IconExternalLink size={14} />}
-                onClick={() => window.open(goToHref, '_blank')}
-            >
-                {goToLabel}
-            </Button>
+const IdentityRow = ({ name, id, idLabel, copy }) => (
+    <Box>
+        <Typography variant='subtitle1' sx={{ fontWeight: 300 }}>
+            {name || '—'}
+        </Typography>
+        {id && (
+            <Stack direction='row' alignItems='center' spacing={0.5} sx={{ mt: 0.5 }}>
+                <Box
+                    component='span'
+                    sx={{
+                        fontFamily: 'monospace',
+                        fontSize: '0.78rem',
+                        color: 'text.secondary',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                    }}
+                >
+                    {id}
+                </Box>
+                <IconButton title={`Copy ${idLabel}`} color='success' onClick={() => copy(id, idLabel)}>
+                    <IconCopy />
+                </IconButton>
+            </Stack>
         )}
-    </Stack>
+    </Box>
 )
 
 IdentityRow.propTypes = {
     name: PropTypes.string,
     id: PropTypes.string,
-    goToHref: PropTypes.string,
-    goToLabel: PropTypes.string,
     idLabel: PropTypes.string,
     copy: PropTypes.func
 }
@@ -426,14 +397,14 @@ const PolicyRendered = ({ row }) => {
                         each MCP server.
                     </Typography>
                     {row.mcpServerId && (
-                        <Button
-                            size='small'
+                        <Chip
+                            sx={{ pl: 1 }}
+                            icon={<IconExternalLink size={15} />}
                             variant='outlined'
-                            startIcon={<IconExternalLink size={14} />}
+                            label='View policy for this MCP Server'
+                            className='button'
                             onClick={() => window.open(`/mcp-servers/${row.mcpServerId}`, '_blank')}
-                        >
-                            View policy for this MCP Server
-                        </Button>
+                        />
                     )}
                 </Box>
             </Box>
