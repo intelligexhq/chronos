@@ -1,8 +1,56 @@
-# Chronos Docker examples
+# Chronos Docker
 
-This directory hosts Dockerfile.local with instructions to building container image. And multiple docker compose examples for Chronos local deployment options.
+This directory hosts the Dockerfiles, compose files, and supporting code for running Chronos in containers.
 
-*Build and run Chronos locally, without Docker container images. Uses local Nodejs runtime enviroenment:*
+## Directory layout
+
+```
+docker/
+├── Dockerfile.local              canonical build (production-shaped)
+├── Dockerfile.demo               extends Dockerfile.local with `uv` for the fetch MCP preset
+├── docker-compose.demo.yml       primary path — zero-touch evaluator demo
+├── docker-compose.yml            basic single-service deployment
+├── docker-compose.walkthrough.yml   manual agent-registry walkthrough (uses ./references/)
+├── docker-compose.smoke.yml      internal smoke test (uses ./fixtures/)
+├── docker-compose-workers.yml    horizontal-scale worker deployment
+├── docker-compose-vectordb.yml   Qdrant + Ollama for embeddings
+├── docker-compose-schedules.yml  scheduled-agent deployment
+├── docker-compose-opentelemetry.yml   OTel collector + Jaeger
+├── references/                   operator-copyable reference code (see references/readme.md)
+│   ├── agent-http/
+│   └── mcp-streamable-http/
+├── fixtures/                     in-tree test fixtures, NOT for copying (see fixtures/readme.md)
+│   ├── mcp-stdio/
+│   └── smoke-runner/
+├── seeders/                      build/seed tooling
+│   └── demo-seed/                 idempotent seeder for docker-compose.demo.yml
+└── observability/
+```
+
+## Quickstart — demo stack (recommended)
+
+The fastest way to evaluate Chronos. Boots Chronos + Postgres, then a one-shot seeder registers two MCP servers (Memory + Fetch) and an OpenRouter credential so an agentflow you build in the canvas can call real tools without any post-boot configuration.
+
+```bash
+cd chronos/chronos_app/docker
+docker build -f Dockerfile.demo -t chronos:demo ..
+OPENROUTER_API_KEY=sk-or-... OPENROUTER_LLM_MODEL=openai/gpt-4o-mini \
+  docker compose -f docker-compose.demo.yml up
+# chronos is now accessible on http://localhost:3001
+# login: admin@admin.com / test1234
+```
+
+What lands after boot:
+
+-   An **OpenRouter** credential the canvas can attach to any Chat node.
+-   Two **MCP servers** registered as stdio (Memory via `npx`, Fetch via `uvx`). Both should reach `HEALTHY` within a few seconds.
+-   Logged seeder output confirms `+N created` / `N skipped` per category.
+
+The seeder is idempotent: re-running `docker compose -f docker-compose.demo.yml up` will not duplicate records or overwrite manual edits made in the UI. The `Dockerfile.demo` image extends `Dockerfile.local` with `uv` so the Python-based fetch MCP preset works out of the box; production Chronos images stay lean.
+
+## Other deployment paths
+
+_Build and run Chronos locally, without Docker container images. Uses local Nodejs runtime enviroenment:_
 
 ```bash
 # nodejs runtime v24 is required. use nvm if necesary
@@ -18,7 +66,7 @@ pnpm dev
 # chronos is accessible on localhost:3000
 ```
 
-*Build and run a local Docker container image:*
+_Build and run a local Docker container image:_
 
 ```bash
 # clone & go to docker directory
@@ -31,7 +79,7 @@ docker run -d --name chronos -p 3001:3000 chronos:local
 # chronos is now accessable on http://localhost:3001
 ```
 
-*Use the local container image in [docker compose](https://docs.docker.com/compose/):*
+_Use the local container image in [docker compose](https://docs.docker.com/compose/):_
 
 ```bash
 docker compose -f docker-compose.yml up  # or docker compose -f docker-compose.yml up -d
@@ -44,17 +92,17 @@ docker-compose down # or docker-compose down --volumes
 # chronos is now accessable on http://localhost:3001
 ```
 
-*Worker mode with redis queues for horizontal scalability of agent request processing:*
+_Worker mode with redis queues for horizontal scalability of agent request processing:_
 
 ```bash
 # run the docker compose which shows how to operate Chronos in queue / worker mode
-docker compose -f docker-compose-workers.yml up 
+docker compose -f docker-compose-workers.yml up
 # scale workers if needed
 docker compose -f docker-compose-workers.yml up --scale chronos-worker=3
 # if enable you will see BullMQ dashboard at http://localhost:3001/admin/queues
 ```
 
-*Vector database mode for document embeddings example:*
+_Vector database mode for document embeddings example:_
 
 ```bash
 # run with Qdrant vector database and Ollama container for local embeddings
@@ -71,18 +119,24 @@ docker compose -f docker-compose-vectordb.yml exec ollama ollama pull nomic-embe
 
 To persista the data, or supply data to Chronos app you can use the following enviroenment variables. For more options see [.env.example](.env.example)
 
-## Examples
+## Compose files at a glance
 
-List of examples:
-
-- [single service deployment](./docker-compose.yml)
-- [multiple worker example](./docker-compose-workers.yml)
-- [vector embeddings with self hosted models](./docker-compose-vectordb.yml)
+| File                                                                     | Purpose                                                        |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------- |
+| [`docker-compose.demo.yml`](./docker-compose.demo.yml)                   | Recommended first run — seeded demo stack                      |
+| [`docker-compose.yml`](./docker-compose.yml)                             | Basic single-service deployment                                |
+| [`docker-compose.walkthrough.yml`](./docker-compose.walkthrough.yml)     | Manual agent-registry walkthrough (see `references/readme.md`) |
+| [`docker-compose.smoke.yml`](./docker-compose.smoke.yml)                 | Internal smoke test (CI / regression)                          |
+| [`docker-compose-workers.yml`](./docker-compose-workers.yml)             | Horizontal-scale workers + Redis queues                        |
+| [`docker-compose-vectordb.yml`](./docker-compose-vectordb.yml)           | Qdrant + Ollama for embeddings                                 |
+| [`docker-compose-schedules.yml`](./docker-compose-schedules.yml)         | Scheduled-agent deployment                                     |
+| [`docker-compose-opentelemetry.yml`](./docker-compose-opentelemetry.yml) | OTel + Jaeger observability stack                              |
 
 ## Need assistance?
 
 We provide [professional services](https://intelligex.com/about) to help you deploy, customise, and operate Chronos in your organisation’s environment:
-- Architecture and deployment in your infra (on‑prem or cloud).
-- Custom agent development, integrations of existing agents.
-- MCP catalogues, discovery, auditing and security
-- Training and best practices for teams.
+
+-   Architecture and deployment in your infra (on‑prem or cloud).
+-   Custom agent development, integrations of existing agents.
+-   MCP catalogues, discovery, auditing and security
+-   Training and best practices for teams.

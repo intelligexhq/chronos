@@ -9,7 +9,7 @@
 ##
 ## Run:
 ##
-##     docker build -f ../Dockerfile.local -t chronos:local ../..
+##     docker build -f Dockerfile.local -t chronos:local ..
 ##     docker compose -f docker-compose.smoke.yml up \
 ##       --abort-on-container-exit --exit-code-from smoke-runner
 ##
@@ -47,7 +47,7 @@ services:
 
     smoke-runner:
         build:
-            context: ./smoke
+            context: ./fixtures/smoke-runner
         environment:
             CHRONOS_BASE_URL: http://chronos:3000
             CHRONOS_USER_EMAIL: admin@admin.com

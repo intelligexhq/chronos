@@ -1,9 +1,11 @@
-## demo compose file for Chronos agent registry + MCP gateway.
+## Agent registry + MCP gateway walkthrough compose.
 ##
-## includes Chronos + postgresql, a simple streamable-http MCP server,
-## and a minimal TypeScript HTTP agent that calls back into the Chronos MCP gateway when prompted with `<n> + <m>`.
-## 
-## see ./readme.md for the usage walkthrough.
+## Boots Chronos + Postgres + a streamable-http MCP server (./references/mcp-streamable-http)
+## + a minimal HTTP agent (./references/agent-http) that calls back into the
+## Chronos MCP gateway when prompted with `<n> + <m>`.
+##
+## See ./references/readme.md for the manual registration walkthrough.
+## For the zero-touch demo path, prefer docker-compose.demo.yml instead.
 ##
 services:
     chronos:
@@ -43,14 +45,15 @@ services:
             POSTGRES_USER: chronos
             POSTGRES_PASSWORD: secret
 
-    ## Reference MCP server. small streamable-http server in ./mcp/ that
-    ## exposes two tools: `echo` and `add`. built locally so no dependencies. 
+    ## Reference MCP server. small streamable-http server in
+    ## ./references/mcp-streamable-http/ that exposes two tools: `echo` and `add`.
+    ## Built locally so no dependencies.
     ##
     ## registration inside Chronos:
     ##   transport=streamable-http  url=http://mcp-reference:7800/mcp
     mcp-reference:
         build:
-            context: ./mcp
+            context: ./references/mcp-streamable-http
         environment:
             PORT: "7800"
         ports:
@@ -68,7 +71,7 @@ services:
     ##  EXAMPLE_AGENT_MCP_GATEWAY_TOKEN=<hex> docker compose up -d --no-deps example-agent
     example-agent:
         build:
-            context: ./agent
+            context: ./references/agent-http
         environment:
             PORT: "8001"
             MCP_GATEWAY_TOKEN: "${EXAMPLE_AGENT_MCP_GATEWAY_TOKEN:-}"

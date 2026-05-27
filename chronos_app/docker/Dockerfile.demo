@@ -1,0 +1,69 @@
+# Demo-stack Chronos image.
+#
+# Extends the canonical Dockerfile.local with `uv` / `uvx` python package manager
+# to get local fetch MCP preset (which spawns `uvx mcp-server-fetch`) working
+# out of the box when registered via the demo seeder.
+#
+# Build:
+#   docker build -f Dockerfile.demo -t chronos:demo ..
+
+FROM node:24-alpine AS builder
+
+RUN apk add --no-cache \
+    libc6-compat \
+    python3 \
+    make \
+    g++ \
+    build-base \
+    cairo-dev \
+    pango-dev \
+    curl && \
+    npm install -g pnpm@10.33.4
+ENV NODE_OPTIONS=--max-old-space-size=8192
+
+WORKDIR /app
+
+COPY . .
+
+RUN pnpm install --frozen-lockfile && pnpm build && CI=true pnpm prune --prod
+
+FROM node:24-alpine AS production
+
+# Runtime baseline matches Dockerfile.local (libc6-compat + curl + pnpm)
+# plus python3 + uv. uv binaries are copied from the official astral-sh/uv
+# image — avoids running the install script on Alpine where BusyBox
+# `realpath` lacks GNU's `--` end-of-options separator that uv's internal
+# path resolution depends on.
+RUN apk add --no-cache \
+    libc6-compat \
+    curl \
+    python3 \
+    py3-pip && \
+    npm install -g pnpm@10.33.4
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
+
+ENV NODE_ENV=production
+
+WORKDIR /app
+
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-lock.yaml ./
+COPY --from=builder /app/pnpm-workspace.yaml ./
+COPY --from=builder /app/node_modules ./node_modules
+
+COPY --from=builder /app/packages/server/dist ./packages/server/dist
+COPY --from=builder /app/packages/server/package.json ./packages/server/
+COPY --from=builder /app/packages/server/templates ./packages/server/templates
+COPY --from=builder /app/packages/server/providers.config.json ./packages/server/
+
+COPY --from=builder /app/packages/ui/build ./packages/ui/build
+COPY --from=builder /app/packages/ui/package.json ./packages/ui/
+
+COPY --from=builder /app/packages/components/dist ./packages/components/dist
+COPY --from=builder /app/packages/components/package.json ./packages/components/
+COPY --from=builder /app/packages/components/models.json ./packages/components/
+
+EXPOSE 3000
+
+CMD ["pnpm", "start"]
