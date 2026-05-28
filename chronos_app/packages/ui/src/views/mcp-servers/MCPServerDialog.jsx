@@ -26,7 +26,7 @@ import {
     Tooltip,
     Typography
 } from '@mui/material'
-import { IconRefresh, IconSend, IconX } from '@tabler/icons-react'
+import { IconAlertTriangle, IconCircleCheck, IconRefresh, IconSend, IconX } from '@tabler/icons-react'
 
 import { StyledButton } from '@/ui-component/button/StyledButton'
 
@@ -117,6 +117,10 @@ const MCPServerDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const [fieldErrors, setFieldErrors] = useState({})
     const [testLoading, setTestLoading] = useState(false)
     const [discoverLoading, setDiscoverLoading] = useState(false)
+    // Inline result of the last Test & discover run, shown in the Allowed
+    // Tools section. Null until run; reset on dialog open and transport change
+    // so a stale result never misleads.
+    const [verifyStatus, setVerifyStatus] = useState(null)
     // When the Chronos user opened this dialog from a preset, we keep the
     // preset around so the form can constrain the credential picker to the
     // preset's `requiredCredentialSchema` and so the placeholder copy can
@@ -188,6 +192,7 @@ const MCPServerDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     // once a credential is picked at save time.
     useEffect(() => {
         if (!show) return
+        setVerifyStatus(null)
         if (isEdit && dialogProps.data) {
             const s = dialogProps.data
             setServerId(s.id || '')
@@ -465,17 +470,34 @@ const MCPServerDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     }
 
     const onDiscoverTools = async () => {
+        if (discoverLoading) return
         const isStdio = transport === 'stdio'
-        if (isStdio && !isEdit) {
-            showError('Save the server first — stdio preview is not available pre-save', false)
+        if (isStdio && !command.trim()) {
+            showError('Enter a command first', false)
             return
         }
         if (!isStdio && !url.trim()) return
+        // A preset's credential must be chosen first, otherwise its arg/env
+        // markers resolve to empty and the spawn fails for a confusing reason.
+        if (activePreset?.requiredCredentialSchema && !presetCredentialId) {
+            setFieldErrors((prev) => ({ ...prev, presetCredential: `Pick a ${activePreset.requiredCredentialSchema} credential first` }))
+            return
+        }
         setDiscoverLoading(true)
+        setVerifyStatus(null)
         try {
             let res
             if (isEdit && serverId) {
                 res = await mcpServersApi.listMCPServerTools(serverId)
+            } else if (isStdio) {
+                res = await mcpServersApi.previewMCPServerTools({
+                    transport,
+                    command,
+                    args: argsList.filter((a) => typeof a === 'string' && a.length > 0),
+                    env: buildStdioEnvBody(envEntries),
+                    timeoutMs: Number(timeoutMs) || 30000,
+                    slug: slug || undefined
+                })
             } else {
                 const requestHeaders = requestHeadersText ? parseJson(requestHeadersText) : undefined
                 res = await mcpServersApi.previewMCPServerTools({
@@ -490,23 +512,23 @@ const MCPServerDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             const tools = (res.data?.tools || []).map((t) => t?.name).filter((n) => typeof n === 'string')
             setDiscoveredTools(tools)
             if (tools.length === 0) {
-                showError('Server returned no tools', false)
+                setVerifyStatus({ ok: true, message: 'Connected — server exposed no tools' })
             } else {
                 // Merge into the active selection so chips render immediately.
-                // Chronos users deselect with the chip's X. Manual entries that
-                // came before Discover are preserved.
+                // Manual entries made before this run are preserved.
                 const previous = allowedTools
                 const merged = mergeUnique(previous, tools)
                 const added = merged.length - previous.length
                 setAllowedTools(merged)
-                showSuccess(
-                    added > 0
-                        ? `Discovered ${tools.length} tool${tools.length === 1 ? '' : 's'} — added ${added} to Allowed Tools.`
-                        : `Discovered ${tools.length} tool${tools.length === 1 ? '' : 's'} (already selected).`
-                )
+                setVerifyStatus({
+                    ok: true,
+                    message: `Connected — ${tools.length} tool${tools.length === 1 ? '' : 's'}${
+                        added > 0 ? ` (added ${added} to Allowed Tools)` : ''
+                    }`
+                })
             }
         } catch (err) {
-            showError(err?.response?.data?.message || 'Failed to discover tools', true)
+            setVerifyStatus({ ok: false, message: err?.response?.data?.message || err?.message || 'Failed to connect' })
         } finally {
             setDiscoverLoading(false)
         }
@@ -683,7 +705,14 @@ const MCPServerDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     </Box>
                     <Box>
                         <Typography variant='overline'>Transport</Typography>
-                        <RadioGroup row value={transport} onChange={(e) => setTransport(e.target.value)}>
+                        <RadioGroup
+                            row
+                            value={transport}
+                            onChange={(e) => {
+                                setTransport(e.target.value)
+                                setVerifyStatus(null)
+                            }}
+                        >
                             {TRANSPORTS.map((t) => (
                                 <FormControlLabel
                                     key={t.value}
@@ -1009,14 +1038,14 @@ const MCPServerDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                             <Tooltip
                                 title={
                                     transport === 'stdio'
-                                        ? isEdit
-                                            ? 'Spawn the stdio MCP server and call tools/list'
-                                            : 'Save the server first — stdio preview is not available pre-save'
+                                        ? !command.trim()
+                                            ? 'Enter a command first'
+                                            : 'Spawn the MCP server and call tools/list to verify it works'
                                         : !url.trim()
                                         ? 'Enter a URL first'
                                         : isEdit
                                         ? 'Call tools/list on the live MCP server'
-                                        : 'Preview tools/list against the URL above (server is not yet saved)'
+                                        : 'Connect to the URL above and call tools/list (server is not yet saved)'
                                 }
                             >
                                 <span>
@@ -1024,14 +1053,39 @@ const MCPServerDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                                         size='small'
                                         variant='outlined'
                                         onClick={onDiscoverTools}
-                                        disabled={discoverLoading || (transport === 'stdio' ? !isEdit || !command.trim() : !url.trim())}
-                                        startIcon={<IconRefresh size={14} />}
+                                        disabled={transport === 'stdio' ? !command.trim() : !url.trim()}
+                                        startIcon={
+                                            <Box
+                                                sx={{
+                                                    display: 'inline-flex',
+                                                    ...(discoverLoading && {
+                                                        animation: 'mcp-discover-spin 0.9s linear infinite',
+                                                        '@keyframes mcp-discover-spin': { to: { transform: 'rotate(360deg)' } }
+                                                    })
+                                                }}
+                                            >
+                                                <IconRefresh size={14} />
+                                            </Box>
+                                        }
                                     >
-                                        {discoverLoading ? 'Discovering…' : 'Discover Tools'}
+                                        {discoverLoading ? 'Testing…' : 'Test & discover'}
                                     </StyledButton>
                                 </span>
                             </Tooltip>
                         </Stack>
+                        {verifyStatus && (
+                            <Stack direction='row' spacing={0.75} alignItems='center' sx={{ mb: 1 }}>
+                                <Box
+                                    component='span'
+                                    sx={{ display: 'inline-flex', color: verifyStatus.ok ? 'success.dark' : 'error.main' }}
+                                >
+                                    {verifyStatus.ok ? <IconCircleCheck size={16} /> : <IconAlertTriangle size={16} />}
+                                </Box>
+                                <Typography variant='body2' sx={{ color: verifyStatus.ok ? 'success.dark' : 'error.main' }}>
+                                    {verifyStatus.message}
+                                </Typography>
+                            </Stack>
+                        )}
                         <Autocomplete
                             multiple
                             freeSolo

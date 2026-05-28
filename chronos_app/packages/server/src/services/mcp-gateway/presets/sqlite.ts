@@ -14,12 +14,13 @@ import { MCPPreset } from './types'
 const sqlitePreset: MCPPreset = {
     id: 'sqlite',
     displayName: 'SQLite',
-    description: 'SQL query and schema tools over a SQLite database file. Edit the --db-path argument to your database. Requires `uv` on the host PATH.',
+    description:
+        'SQL query and schema tools over a SQLite database file. Edit the --db-path argument to your database. Requires `uv` on the host PATH.',
     icon: 'sqlite.svg',
     suggestedSlug: 'sqlite',
     transport: MCPServerTransport.STDIO,
     command: 'uvx',
-    args: ['mcp-server-sqlite', '--db-path', '/data/demo.db'],
+    args: ['mcp-server-sqlite', '--db-path', '/tmp/demo.db'],
     defaultAllowedTools: [],
     defaultTimeoutMs: 30000
 }
