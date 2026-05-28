@@ -4,6 +4,27 @@ All notable changes to Chronos. Format follows [Keep a Changelog](https://keepac
 
 ---
 
+## [1.8.2] — 2026-05-28
+
+### Added
+
+- **Audit payload retention sweeper.** When `ENABLE_AUDIT_PAYLOAD_RETENTION=true`, a background scheduler periodically NULLs the `requestPayload` / `responsePayload` columns on `tool_invocation_audit` rows older than `AUDIT_PAYLOAD_RETENTION_DAYS` (default 90). Row metadata is preserved forever; only the heavy payload blobs age out. Sweep cadence is `AUDIT_PAYLOAD_RETENTION_SWEEP_INTERVAL_MS` (default 24h); the first sweep fires one interval after server start. Default OFF — no payload data is ever deleted unless the flag is explicitly enabled. Independent of `AUDIT_FULL_PAYLOADS`, so the same job can clean up historical payload rows after capture is disabled.
+- **Test & discover for MCP servers.** The registration dialog connects to the server — spawning `stdio` servers transiently before save — lists its tools, and shows success or the spawn error inline.
+- **Filesystem and SQLite quick-add presets.** Bundled `stdio` presets for `@modelcontextprotocol/server-filesystem` and `mcp-server-sqlite`.
+
+### Changed
+
+- **MCP Servers list shows why a server is unhealthy.** Hovering the `unhealthy` status chip reveals the last health-check error.
+- **Left navigation reordered** so Agentflows is the first group.
+- **`POST /api/v1/mcp-servers/preview-tools` now requires `mcp-servers:create`** (was `mcp-servers:view`), since it can spawn a process.
+- **Standardized link and dialog styling** via theme overrides — links underline on hover, dialogs share consistent padding.
+
+### Removed
+
+- **Deprecated GitHub and PostgreSQL MCP presets.** Their upstream npm packages are no longer maintained; register those servers manually.
+
+---
+
 ## [1.8.0] — 2026-05-19
 
 MCP Gateway depth + protocol standardization. Chronos now speaks MCP Streamable HTTP natively to registered HTTP agents, supports locally-spawned `stdio` MCP servers, carries per-server reliability policies, and rotates OAuth2 credentials in the background. The pre-v1.8 REST callback contract is retired with no backwards-compatibility window.

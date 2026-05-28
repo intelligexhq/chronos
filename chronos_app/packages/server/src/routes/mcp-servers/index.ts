@@ -22,6 +22,9 @@ router.delete('/:id', checkPermission('mcp-servers:delete'), mcpServersControlle
 router.post('/:id/test-connection', checkPermission('mcp-servers:update'), mcpServersController.testMCPServerConnection)
 router.get('/:id/tools', checkPermission('mcp-servers:view'), mcpServersController.listMCPServerTools)
 router.get('/:id/change-log', checkPermission('mcp-servers:view'), mcpServersController.getMCPServerChangeLog)
-router.post('/preview-tools', checkPermission('mcp-servers:view'), mcpServersController.previewMCPServerTools)
+// Pre-save stdio preview spawns a child process, so this is gated at
+// `create` (the picker that reaches it is already create-gated) rather than
+// the read-only `view` the HTTP preview alone would need.
+router.post('/preview-tools', checkPermission('mcp-servers:create'), mcpServersController.previewMCPServerTools)
 
 export default router

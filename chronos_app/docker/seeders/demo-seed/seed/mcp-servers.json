@@ -1,0 +1,20 @@
+[
+    {
+        "name": "Memory",
+        "slug": "memory",
+        "description": "In-process knowledge-graph store an agent can write to and recall across turns.",
+        "transport": "stdio",
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-memory"],
+        "timeoutMs": 30000
+    },
+    {
+        "name": "Fetch",
+        "slug": "fetch",
+        "description": "Retrieve a URL and convert the response to a model-friendly text representation.",
+        "transport": "stdio",
+        "command": "uvx",
+        "args": ["mcp-server-fetch"],
+        "timeoutMs": 30000
+    }
+]

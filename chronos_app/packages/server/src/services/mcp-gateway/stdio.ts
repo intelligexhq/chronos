@@ -434,3 +434,28 @@ export const buildStdioTransportForServer = async (
     const resolved = await resolveStdioConfig(parsed, deps)
     return buildStdioTransport(resolved, server.slug, runtimeEnv)
 }
+
+/**
+ * Builds a transient stdio transport from a structured config (no persisted
+ * `MCPServer` row) for the pre-save Test & discover flow. Reuses the same
+ * parse + credential-resolution path as `buildStdioTransportForServer` by
+ * round-tripping `args`/`env` through the JSON shapes `parseStdioConfig`
+ * expects, so credential markers resolve and decrypt identically. The caller
+ * owns the returned transport's lifecycle (connect, then close with grace).
+ */
+export const buildStdioTransportForPreview = async (
+    config: { command: string; args?: string[]; env?: Record<string, StdioEnvValue>; slug?: string },
+    runtimeEnv: StdioRuntimeEnv,
+    deps: ResolveStdioDeps = {}
+): Promise<StdioClientTransport> => {
+    const slug = config.slug || 'preview'
+    const synthetic = {
+        slug,
+        command: config.command,
+        args: config.args ? JSON.stringify(config.args) : undefined,
+        env: config.env ? JSON.stringify(config.env) : undefined
+    } as unknown as MCPServer
+    const parsed = parseStdioConfig(synthetic)
+    const resolved = await resolveStdioConfig(parsed, deps)
+    return buildStdioTransport(resolved, slug, runtimeEnv)
+}

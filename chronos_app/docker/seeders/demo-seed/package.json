@@ -1,0 +1,15 @@
+{
+    "name": "chronos-demo-seed",
+    "version": "1.8.0",
+    "private": true,
+    "type": "module",
+    "description": "Demo-stack seeder. Waits for Chronos to come up, logs in as the initial admin, then idempotently POSTs credentials, MCP servers, and agentflows from ./seed/*.json so an evaluator sees a working setup on first boot.",
+    "scripts": {
+        "start": "tsx src/index.ts"
+    },
+    "dependencies": {
+        "tsx": "^4.19.0",
+        "typescript": "^5.6.0",
+        "@types/node": "^22.10.0"
+    }
+}

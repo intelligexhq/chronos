@@ -79,24 +79,6 @@ const dashboard = {
             type: 'group',
             children: [
                 {
-                    id: 'agents',
-                    title: 'Agents',
-                    type: 'item',
-                    url: '/agents',
-                    icon: icons.IconRobot,
-                    breadcrumbs: true,
-                    permission: 'agents:view'
-                },
-                {
-                    id: 'mcp-servers',
-                    title: 'MCP Servers',
-                    type: 'item',
-                    url: '/mcp-servers',
-                    icon: icons.IconPlug,
-                    breadcrumbs: true,
-                    permission: 'mcp-servers:view'
-                },
-                {
                     id: 'agentflows',
                     title: 'Agentflows',
                     type: 'collapse',
@@ -176,6 +158,24 @@ const dashboard = {
                             display: 'feat:webhooks'
                         }
                     ]
+                },
+                {
+                    id: 'agents',
+                    title: 'Agents',
+                    type: 'item',
+                    url: '/agents',
+                    icon: icons.IconRobot,
+                    breadcrumbs: true,
+                    permission: 'agents:view'
+                },
+                {
+                    id: 'mcp-servers',
+                    title: 'MCP Servers',
+                    type: 'item',
+                    url: '/mcp-servers',
+                    icon: icons.IconPlug,
+                    breadcrumbs: true,
+                    permission: 'mcp-servers:view'
                 },
                 {
                     id: 'executions',

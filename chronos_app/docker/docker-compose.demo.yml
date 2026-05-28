@@ -1,0 +1,76 @@
+## Chronos demo stack — 5-minute up and running path.
+##
+## Boots Chronos + Postgres, then runs a one off seeder that POSTs:
+##   - one OpenRouter credential (uses OPENROUTER_API_KEY from host env)
+##   - two MCP servers (Memory + Fetch — match the bundled presets exactly)
+##   - any agentflows present in examples/demo-seed/seed/agentflows.json
+##
+## After boot the evaluator opens http://localhost:3001 and builds a
+## working agentflow in the canvas with the seeded MCPs + OpenRouter
+## already wired into the system.
+##
+## Usage:
+##   docker build -f Dockerfile.demo -t chronos:demo ..
+##   OPENROUTER_API_KEY=sk-or-... OPENROUTER_LLM_MODEL=openai/gpt-4o-mini \
+##     docker compose -f docker-compose.demo.yml up
+##
+## The seeder is idempotent — re-running the stack will not duplicate
+## records. Manual edits to seeded entities in the UI survive subsequent
+## seeder runs.
+services:
+    chronos:
+        image: chronos:demo
+        environment:
+            DATABASE_TYPE: postgres
+            DATABASE_HOST: postgres
+            DATABASE_PORT: 5432
+            DATABASE_NAME: chronos
+            DATABASE_USER: chronos
+            DATABASE_PASSWORD: secret
+            ## The seeder logs in as this user. Must match what the seeder
+            ## sends as CHRONOS_USER_EMAIL / CHRONOS_USER_PASSWORD.
+            CHRONOS_INITIAL_USER: admin@admin.com:test1234:admin
+            DEBUG: true
+            LOG_SANITIZE_HEADER_FIELDS: authorization,x-api-key,x-auth-token,cookie
+            LOG_SANITIZE_BODY_FIELDS: password,pwd,pass,secret,token,apikey,api_key,accesstoken,access_token,refreshtoken
+            ENABLE_AGENTS: 'true'
+            ENABLE_MCP_SERVERS: 'true'
+            ## Docker's bridge network uses RFC1918 addresses, which the SSRF
+            ## gate would otherwise reject for any HTTP agent / MCP URL. Demo-only.
+            ALLOW_LOOPBACK_AGENTS: 'true'
+        ports:
+            - '3001:3000'
+        volumes:
+            - ./.chronos:/root/.chronos
+        depends_on:
+            - postgres
+
+    postgres:
+        image: postgres:15
+        environment:
+            POSTGRES_DB: chronos
+            POSTGRES_USER: chronos
+            POSTGRES_PASSWORD: secret
+        volumes:
+            - ./.postgres_data:/var/lib/postgresql/data
+
+    ## One time seeder. Builds from ./examples/demo-seed, waits for chronos
+    ## to come up, POSTs the seed JSON files, exits. The compose's default
+    ## restart policy is "no", so the container stays Exited after a clean
+    ## run — re-runs of `docker compose up` will re-execute it (idempotent
+    ## by design).
+    demo-seed:
+        build:
+            context: ./seeders/demo-seed
+        environment:
+            CHRONOS_BASE_URL: http://chronos:3000
+            CHRONOS_USER_EMAIL: admin@admin.com
+            CHRONOS_USER_PASSWORD: test1234
+            ## Picked up by the seeder and substituted into credentials.json.
+            ## Both must be set on the host; without OPENROUTER_API_KEY the
+            ## OpenRouter credential is skipped and the demo agentflow
+            ## will fail to run until the evaluator adds a credential by hand.
+            OPENROUTER_API_KEY: '${OPENROUTER_API_KEY:-}'
+            OPENROUTER_LLM_MODEL: '${OPENROUTER_LLM_MODEL:-}'
+        depends_on:
+            - chronos

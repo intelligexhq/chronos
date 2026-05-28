@@ -20,6 +20,7 @@ import {
     StdioBackoffState,
     StdioRuntimeEnv,
     buildStdioTransportForServer,
+    buildStdioTransportForPreview,
     closeStdioTransportWithGrace,
     readStdioRuntimeEnv,
     STDIO_UNHEALTHY_FAILURE_THRESHOLD
@@ -547,20 +548,55 @@ export class MCPGateway {
      */
     public async previewLiveTools(input: {
         transport: MCPServerTransport
-        url: string
+        url?: string
+        command?: string
+        args?: string[]
+        env?: Record<string, string | { credentialId: string; field: string }>
         outboundAuth?: string | object
         requestHeaders?: string | object
         timeoutMs?: number
         slug?: string
     }): Promise<LiveToolDescriptor[]> {
         if (input.transport === MCPServerTransport.STDIO) {
-            // PR-1 ships server-side stdio dispatch only. Pre-save preview for
-            // stdio is deferred — operators save the row and click Test
-            // Connection on the detail page to confirm the spawn works.
-            throw new InternalChronosError(
-                StatusCodes.NOT_IMPLEMENTED,
-                'stdio transport preview is not available — save the server and use Test Connection on the detail page'
-            )
+            // Transient spawn → tools/list → graceful close. No pooling,
+            // backoff, or persistence — this is the pre-save Test & discover
+            // path for an unsaved row. A successful tools/list is also the
+            // connection proof for stdio (spawning is the only way to reach it).
+            if (!input.command) {
+                throw new InternalChronosError(StatusCodes.BAD_REQUEST, 'command is required to preview stdio tools')
+            }
+            const slug = input.slug ?? '(unsaved)'
+            const startedAt = Date.now()
+            const previewClient = new Client({ name: 'chronos-gateway-preview', version: '1.0.0' }, { capabilities: {} })
+            let stdioTransport: import('@modelcontextprotocol/sdk/client/stdio.js').StdioClientTransport
+            try {
+                stdioTransport = await buildStdioTransportForPreview(
+                    { command: input.command, args: input.args, env: input.env, slug },
+                    this.stdioRuntimeEnv
+                )
+                await previewClient.connect(stdioTransport)
+            } catch (error) {
+                throw new InternalChronosError(StatusCodes.BAD_GATEWAY, `Failed to spawn stdio MCP server: ${getErrorMessage(error)}`)
+            }
+            const stdioTimeout = typeof input.timeoutMs === 'number' ? input.timeoutMs : DEFAULT_TOOL_CALL_TIMEOUT_MS
+            try {
+                const result = await previewClient.request({ method: 'tools/list', params: {} }, ListToolsResultSchema, {
+                    timeout: stdioTimeout
+                })
+                const tools = Array.isArray((result as any).tools) ? (result as any).tools : []
+                logger.info({ event: 'mcp.tools.list.preview', slug, count: tools.length, durationMs: Date.now() - startedAt })
+                return tools.map((t: any) => ({ name: t?.name, description: t?.description, inputSchema: t?.inputSchema }))
+            } catch (error) {
+                logger.warn({
+                    event: 'mcp.tools.list.preview.error',
+                    slug,
+                    durationMs: Date.now() - startedAt,
+                    error: getErrorMessage(error)
+                })
+                throw new InternalChronosError(StatusCodes.BAD_GATEWAY, `Failed to list tools: ${getErrorMessage(error)}`)
+            } finally {
+                await closeStdioTransportWithGrace(stdioTransport, slug, this.stdioRuntimeEnv)
+            }
         }
         if (!input.url) {
             throw new InternalChronosError(StatusCodes.BAD_REQUEST, 'url is required to preview tools')

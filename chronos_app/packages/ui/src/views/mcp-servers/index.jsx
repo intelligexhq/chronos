@@ -18,7 +18,7 @@ import {
     Tooltip,
     useTheme
 } from '@mui/material'
-import { IconEdit, IconExternalLink, IconLoader, IconPlug, IconPlus, IconTrash, IconX } from '@tabler/icons-react'
+import { IconAlertTriangle, IconEdit, IconExternalLink, IconLoader, IconPlug, IconPlus, IconTrash, IconX } from '@tabler/icons-react'
 
 import MainCard from '@/ui-component/cards/MainCard'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
@@ -146,7 +146,7 @@ const MCPServers = () => {
     const onPresetPick = (preset) => {
         setShowPresetPicker(false)
         setDialogProps({
-            title: `Register ${preset.displayName}`,
+            title: `Registering ${preset.displayName} MCP Server`,
             type: 'ADD',
             cancelButtonName: 'Cancel',
             confirmButtonName: 'Register',
@@ -377,6 +377,16 @@ const MCPServers = () => {
                                                                 icon={<IconLoader size={14} className='spin-animation' />}
                                                                 label='probing…'
                                                             />
+                                                        ) : server.status === 'UNHEALTHY' ? (
+                                                            <Tooltip title={server.lastHealthError || 'Health check failed'}>
+                                                                <Chip
+                                                                    size='small'
+                                                                    color='error'
+                                                                    icon={<IconAlertTriangle size={14} />}
+                                                                    label='unhealthy'
+                                                                    sx={{ cursor: 'help' }}
+                                                                />
+                                                            </Tooltip>
                                                         ) : (
                                                             <Chip
                                                                 size='small'

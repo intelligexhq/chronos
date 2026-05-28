@@ -1,5 +1,5 @@
 /**
- * v1.8 smoke test runner. Boots an embedded Streamable-HTTP MCP server
+ * Smoke test runner. Boots an embedded Streamable-HTTP MCP server
  * (one tool: `add`) and a tiny agent /health stub, then drives a real
  * MCP-protocol round-trip against a running Chronos instance.
  *
@@ -39,12 +39,9 @@ const AGENT_PUBLIC_URL = process.env.AGENT_PUBLIC_URL ?? `http://smoke-runner:${
 
 const buildMcpServer = (): McpServer => {
     const server = new McpServer({ name: 'smoke-mcp', version: '1.7.0' })
-    server.tool(
-        'add',
-        'Adds two integers and returns the sum as text.',
-        { a: z.number(), b: z.number() },
-        async ({ a, b }) => ({ content: [{ type: 'text', text: String(a + b) }] })
-    )
+    server.tool('add', 'Adds two integers and returns the sum as text.', { a: z.number(), b: z.number() }, async ({ a, b }) => ({
+        content: [{ type: 'text', text: String(a + b) }]
+    }))
     return server
 }
 
@@ -115,9 +112,7 @@ const startAgentStub = (): Promise<void> => {
     const app = express()
     app.use(express.json({ limit: '1mb' }))
     app.get('/health', (_req, res) => res.json({ ok: true }))
-    app.post('/v1/chat/completions', (_req, res) =>
-        res.status(501).json({ error: 'agent endpoint not exercised by smoke test' })
-    )
+    app.post('/v1/chat/completions', (_req, res) => res.status(501).json({ error: 'agent endpoint not exercised by smoke test' }))
     return new Promise((resolve) => {
         app.listen(AGENT_BIND_PORT, () => {
             // eslint-disable-next-line no-console
@@ -414,7 +409,9 @@ const runDriver = async (): Promise<void> => {
         const allowedFromCanvas = JSON.parse(canvasAgent.allowedTools ?? '[]') as string[]
         if (!Array.isArray(allowedFromCanvas) || !allowedFromCanvas.includes('smoke.add')) {
             throw new Error(
-                `BUILT_IN agent allowedTools did not include 'smoke.add' (got ${JSON.stringify(allowedFromCanvas)}) — C3 aggregator regression?`
+                `BUILT_IN agent allowedTools did not include 'smoke.add' (got ${JSON.stringify(
+                    allowedFromCanvas
+                )}) — C3 aggregator regression?`
             )
         }
         // eslint-disable-next-line no-console

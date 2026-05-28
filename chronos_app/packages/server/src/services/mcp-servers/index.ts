@@ -485,6 +485,9 @@ const previewMCPServerTools = async (body: any): Promise<any[]> => {
         return await appServer.mcpGateway.previewLiveTools({
             transport,
             url: body.url,
+            command: body.command,
+            args: body.args,
+            env: body.env,
             outboundAuth: body.outboundAuth,
             requestHeaders: body.requestHeaders,
             timeoutMs: body.timeoutMs,
