@@ -13,25 +13,29 @@
 
 ## Why use Intelligex Chronos?
 
-  - *[Intelligex Chronos](https://intelligex.com/chronos) is a controll plane* - deploy, run and manage agents built on the Chronos visual canvas or standalone, code-first agents via OpenAI API specification. All through one unified interface.
-  - *MCP tool gateway.* Tools are MCP servers. Chronos provides MCP registry and gateway. Agents reach tools in a unified, credential-brokered and audited way.
-  - *Governance is inbuilt.* SSO, RBAC, stop-switches, audit log and PII redaction.
-  - *Observability built in.* Chronos uses OpenTelemetry standrad to keep visibility.
+- _[Intelligex Chronos](https://intelligex.com/chronos) is a controll plane for agents and MCP servers_ - deploy, run and manage agents built on the Chronos visual canvas or standalone agents via OpenAI API specification.
+- _MCP tool registry and gateway._ Register all MCP tools, build controll policies and expose them via unified MCP endpoint.
+- _Governance is inbuilt._ SSO, RBAC, stop-switches, audit log and PII redaction.
+- _Observability built in._ Chronos uses OpenTelemetry standrad to keep visibility.
 
 ## Quick start
 
-Get Intelligex Chronos running locally in under 5 minutes.
-The fastest way to try it is to build and run the `all‑in‑one` Docker container image.
+Get Intelligex Chronos up and running in under 5 minutes.
+The fastest way to try Chronos is to build and run the it as a single Docker container image.
 
 ```bash
 # clone the repository
 git clone git@github.com:intelligexhq/chronos.git
+
+# go to docker directory
 cd chronos_app/docker
 
-# build local image
+# build a local container image
 docker build -f Dockerfile.local -t chronos:local ..
 
-# run Chronos image
+# you need to provide it environment variables which enable the
+
+# run container image
 docker run -d --name chronos -p 3001:3000 chronos:local
 # chronos is now available at:
 # http://localhost:3001
@@ -41,8 +45,8 @@ For more configuration and complex hosting examples, including locally hosted ve
 
 ## Get involved
 
-- ⭐ Star this repo to support development  
-- Contribute via PRs; suggest issues, features and use cases.  
+- ⭐ Star this repo to support development
+- Contribute via PRs; suggest issues, features and use cases.
 
 ## Key concepts
 
