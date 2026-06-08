@@ -73,7 +73,7 @@ export function getUploadsConfigUtilTest() {
 
             mockRepository.findOneBy.mockResolvedValue({
                 id: 'flow-1',
-                flowData: JSON.stringify({ nodes, edges }),
+                flowData: JSON.stringify({ nodes, edges })
             })
 
             const result = await utilGetUploadsConfig('flow-1')
@@ -97,7 +97,7 @@ export function getUploadsConfigUtilTest() {
 
             mockRepository.findOneBy.mockResolvedValue({
                 id: 'flow-1',
-                flowData: JSON.stringify({ nodes, edges: [] }),
+                flowData: JSON.stringify({ nodes, edges: [] })
             })
 
             const result = await utilGetUploadsConfig('flow-1')
@@ -130,7 +130,7 @@ export function getUploadsConfigUtilTest() {
 
             mockRepository.findOneBy.mockResolvedValue({
                 id: 'flow-1',
-                flowData: JSON.stringify({ nodes, edges: [] }),
+                flowData: JSON.stringify({ nodes, edges: [] })
             })
 
             const result = await utilGetUploadsConfig('flow-1')

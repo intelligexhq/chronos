@@ -1479,7 +1479,6 @@ const ChatMessage = ({ open, agentflowid, isDialog, previews, setPreviews }) => 
         setIsLeadSaving(false)
     }
 
-
     const getInputDisabled = () => {
         return (
             loading ||
@@ -2223,134 +2222,138 @@ const ChatMessage = ({ open, agentflowid, isDialog, previews, setPreviews }) => 
                     </Box>
                 )}
                 <form style={{ width: '100%' }} onSubmit={handleSubmit}>
-                        <OutlinedInput
-                            inputRef={inputRef}
-                            // eslint-disable-next-line
+                    <OutlinedInput
+                        inputRef={inputRef}
+                        // eslint-disable-next-line
                             autoFocus
-                            sx={{ width: '100%' }}
-                            disabled={getInputDisabled()}
-                            onKeyDown={handleEnter}
-                            id='userInput'
-                            name='userInput'
-                            placeholder={loading ? 'Waiting for response...' : 'Type your question...'}
-                            value={userInput}
-                            onChange={onChange}
-                            multiline={true}
-                            maxRows={isDialog ? 7 : 2}
-                            startAdornment={
-                                <>
-                                    {isAgentFlowAvailableForImageUploads && !isAgentFlowAvailableForFileUploads && (
-                                        <InputAdornment position='start' sx={{ ml: 2 }}>
-                                            <IconButton
-                                                onClick={handleImageUploadClick}
-                                                type='button'
-                                                disabled={getInputDisabled()}
-                                                edge='start'
-                                            >
-                                                <IconPhotoPlus
-                                                    color={getInputDisabled() ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
-                                                />
-                                            </IconButton>
-                                        </InputAdornment>
-                                    )}
-                                    {!isAgentFlowAvailableForImageUploads && isAgentFlowAvailableForFileUploads && (
-                                        <InputAdornment position='start' sx={{ ml: 2 }}>
-                                            <IconButton
-                                                onClick={handleFileUploadClick}
-                                                type='button'
-                                                disabled={getInputDisabled()}
-                                                edge='start'
-                                            >
-                                                <IconPaperclip
-                                                    color={getInputDisabled() ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
-                                                />
-                                            </IconButton>
-                                        </InputAdornment>
-                                    )}
-                                    {isAgentFlowAvailableForImageUploads && isAgentFlowAvailableForFileUploads && (
-                                        <InputAdornment position='start' sx={{ ml: 2 }}>
-                                            <IconButton
-                                                onClick={handleImageUploadClick}
-                                                type='button'
-                                                disabled={getInputDisabled()}
-                                                edge='start'
-                                            >
-                                                <IconPhotoPlus
-                                                    color={getInputDisabled() ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
-                                                />
-                                            </IconButton>
-                                            <IconButton
-                                                sx={{ ml: 0 }}
-                                                onClick={handleFileUploadClick}
-                                                type='button'
-                                                disabled={getInputDisabled()}
-                                                edge='start'
-                                            >
-                                                <IconPaperclip
-                                                    color={getInputDisabled() ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
-                                                />
-                                            </IconButton>
-                                        </InputAdornment>
-                                    )}
-                                    {!isAgentFlowAvailableForImageUploads && !isAgentFlowAvailableForFileUploads && <Box sx={{ pl: 1 }} />}
-                                </>
-                            }
-                            endAdornment={
-                                <>
-                                    {!loading && (
-                                            <InputAdornment position='end' sx={{ paddingRight: '15px' }}>
-                                                <IconButton type='submit' disabled={getInputDisabled()} edge='end'>
-                                                    <IconSend
-                                                        color={
-                                                            getInputDisabled() ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'
-                                                        }
-                                                    />
-                                                </IconButton>
-                                            </InputAdornment>
-                                        )}
-                                        {loading && (
-                                            <InputAdornment position='end' sx={{ padding: '15px', mr: 1 }}>
-                                                <IconButton
-                                                    edge='end'
-                                                    title={isMessageStopping ? 'Stopping...' : 'Stop'}
-                                                    style={{ border: !isMessageStopping ? '2px solid red' : 'none' }}
-                                                    onClick={() => handleAbort()}
-                                                    disabled={isMessageStopping}
-                                                >
-                                                    {isMessageStopping ? (
-                                                        <div>
-                                                            <CircularProgress color='error' size={20} />
-                                                        </div>
-                                                    ) : (
-                                                        <IconSquareFilled size={15} color='red' />
-                                                    )}
-                                                </IconButton>
-                                            </InputAdornment>
-                                        )}
-                                </>
-                            }
+                        sx={{ width: '100%' }}
+                        disabled={getInputDisabled()}
+                        onKeyDown={handleEnter}
+                        id='userInput'
+                        name='userInput'
+                        placeholder={
+                            !agentflowid
+                                ? 'Save the agentflow to start chatting'
+                                : loading
+                                ? 'Waiting for response...'
+                                : 'Type your question...'
+                        }
+                        value={userInput}
+                        onChange={onChange}
+                        multiline={true}
+                        maxRows={isDialog ? 7 : 2}
+                        startAdornment={
+                            <>
+                                {isAgentFlowAvailableForImageUploads && !isAgentFlowAvailableForFileUploads && (
+                                    <InputAdornment position='start' sx={{ ml: 2 }}>
+                                        <IconButton
+                                            onClick={handleImageUploadClick}
+                                            type='button'
+                                            disabled={getInputDisabled()}
+                                            edge='start'
+                                        >
+                                            <IconPhotoPlus
+                                                color={getInputDisabled() ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
+                                            />
+                                        </IconButton>
+                                    </InputAdornment>
+                                )}
+                                {!isAgentFlowAvailableForImageUploads && isAgentFlowAvailableForFileUploads && (
+                                    <InputAdornment position='start' sx={{ ml: 2 }}>
+                                        <IconButton
+                                            onClick={handleFileUploadClick}
+                                            type='button'
+                                            disabled={getInputDisabled()}
+                                            edge='start'
+                                        >
+                                            <IconPaperclip
+                                                color={getInputDisabled() ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
+                                            />
+                                        </IconButton>
+                                    </InputAdornment>
+                                )}
+                                {isAgentFlowAvailableForImageUploads && isAgentFlowAvailableForFileUploads && (
+                                    <InputAdornment position='start' sx={{ ml: 2 }}>
+                                        <IconButton
+                                            onClick={handleImageUploadClick}
+                                            type='button'
+                                            disabled={getInputDisabled()}
+                                            edge='start'
+                                        >
+                                            <IconPhotoPlus
+                                                color={getInputDisabled() ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
+                                            />
+                                        </IconButton>
+                                        <IconButton
+                                            sx={{ ml: 0 }}
+                                            onClick={handleFileUploadClick}
+                                            type='button'
+                                            disabled={getInputDisabled()}
+                                            edge='start'
+                                        >
+                                            <IconPaperclip
+                                                color={getInputDisabled() ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
+                                            />
+                                        </IconButton>
+                                    </InputAdornment>
+                                )}
+                                {!isAgentFlowAvailableForImageUploads && !isAgentFlowAvailableForFileUploads && <Box sx={{ pl: 1 }} />}
+                            </>
+                        }
+                        endAdornment={
+                            <>
+                                {!loading && (
+                                    <InputAdornment position='end' sx={{ paddingRight: '15px' }}>
+                                        <IconButton type='submit' disabled={getInputDisabled()} edge='end'>
+                                            <IconSend
+                                                color={getInputDisabled() ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
+                                            />
+                                        </IconButton>
+                                    </InputAdornment>
+                                )}
+                                {loading && (
+                                    <InputAdornment position='end' sx={{ padding: '15px', mr: 1 }}>
+                                        <IconButton
+                                            edge='end'
+                                            title={isMessageStopping ? 'Stopping...' : 'Stop'}
+                                            style={{ border: !isMessageStopping ? '2px solid red' : 'none' }}
+                                            onClick={() => handleAbort()}
+                                            disabled={isMessageStopping}
+                                        >
+                                            {isMessageStopping ? (
+                                                <div>
+                                                    <CircularProgress color='error' size={20} />
+                                                </div>
+                                            ) : (
+                                                <IconSquareFilled size={15} color='red' />
+                                            )}
+                                        </IconButton>
+                                    </InputAdornment>
+                                )}
+                            </>
+                        }
+                    />
+                    {isAgentFlowAvailableForImageUploads && (
+                        <input
+                            style={{ display: 'none' }}
+                            multiple
+                            ref={imgUploadRef}
+                            type='file'
+                            onChange={handleFileChange}
+                            accept={imageUploadAllowedTypes || '*'}
                         />
-                        {isAgentFlowAvailableForImageUploads && (
-                            <input
-                                style={{ display: 'none' }}
-                                multiple
-                                ref={imgUploadRef}
-                                type='file'
-                                onChange={handleFileChange}
-                                accept={imageUploadAllowedTypes || '*'}
-                            />
-                        )}
-                        {isAgentFlowAvailableForFileUploads && (
-                            <input
-                                style={{ display: 'none' }}
-                                multiple
-                                ref={fileUploadRef}
-                                type='file'
-                                onChange={handleFileChange}
-                                accept={getFileUploadAllowedTypes()}
-                            />
-                        )}
-                    </form>
+                    )}
+                    {isAgentFlowAvailableForFileUploads && (
+                        <input
+                            style={{ display: 'none' }}
+                            multiple
+                            ref={fileUploadRef}
+                            type='file'
+                            onChange={handleFileChange}
+                            accept={getFileUploadAllowedTypes()}
+                        />
+                    )}
+                </form>
             </div>
             <SourceDocDialog show={sourceDialogOpen} dialogProps={sourceDialogProps} onCancel={() => setSourceDialogOpen(false)} />
             <ChatFeedbackContentDialog
