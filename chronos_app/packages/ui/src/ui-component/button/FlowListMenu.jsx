@@ -14,7 +14,6 @@ import FileCategoryIcon from '@mui/icons-material/Category'
 import PictureInPictureAltIcon from '@mui/icons-material/PictureInPictureAlt'
 import ThumbsUpDownOutlinedIcon from '@mui/icons-material/ThumbsUpDownOutlined'
 import VpnLockOutlinedIcon from '@mui/icons-material/VpnLockOutlined'
-import MicNoneOutlinedIcon from '@mui/icons-material/MicNoneOutlined'
 import ExportTemplateOutlinedIcon from '@mui/icons-material/BookmarksOutlined'
 import Button from '@mui/material/Button'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
@@ -35,7 +34,6 @@ import { generateExportFlowData } from '@/utils/genericHelper'
 import useNotifier from '@/utils/useNotifier'
 import ChatFeedbackDialog from '../dialog/ChatFeedbackDialog'
 import AllowedDomainsDialog from '../dialog/AllowedDomainsDialog'
-import SpeechToTextDialog from '../dialog/SpeechToTextDialog'
 import ExportAsTemplateDialog from '@/ui-component/dialog/ExportAsTemplateDialog'
 
 const StyledMenu = styled((props) => (
@@ -94,8 +92,6 @@ export default function FlowListMenu({ agentflow, setError, updateFlowsApi, curr
     const [chatFeedbackDialogProps, setChatFeedbackDialogProps] = useState({})
     const [allowedDomainsDialogOpen, setAllowedDomainsDialogOpen] = useState(false)
     const [allowedDomainsDialogProps, setAllowedDomainsDialogProps] = useState({})
-    const [speechToTextDialogOpen, setSpeechToTextDialogOpen] = useState(false)
-    const [speechToTextDialogProps, setSpeechToTextDialogProps] = useState({})
 
     const [exportTemplateDialogOpen, setExportTemplateDialogOpen] = useState(false)
     const [exportTemplateDialogProps, setExportTemplateDialogProps] = useState({})
@@ -160,15 +156,6 @@ export default function FlowListMenu({ agentflow, setError, updateFlowsApi, curr
             agentflow: agentflow
         })
         setAllowedDomainsDialogOpen(true)
-    }
-
-    const handleSpeechToText = () => {
-        setAnchorEl(null)
-        setSpeechToTextDialogProps({
-            title: 'Speech To Text - ' + agentflow.name,
-            agentflow: agentflow
-        })
-        setSpeechToTextDialogOpen(true)
     }
 
     const saveFlowRename = async (agentflowName) => {
@@ -362,10 +349,6 @@ export default function FlowListMenu({ agentflow, setError, updateFlowsApi, curr
                     <VpnLockOutlinedIcon />
                     Allowed Domains
                 </PermissionMenuItem>
-                <PermissionMenuItem permissionId={'agentflows:config'} onClick={handleSpeechToText} disableRipple>
-                    <MicNoneOutlinedIcon />
-                    Speech To Text
-                </PermissionMenuItem>
                 <PermissionMenuItem permissionId={'agentflows:update'} onClick={handleFlowCategory} disableRipple>
                     <FileCategoryIcon />
                     Update Category
@@ -408,12 +391,6 @@ export default function FlowListMenu({ agentflow, setError, updateFlowsApi, curr
                 show={allowedDomainsDialogOpen}
                 dialogProps={allowedDomainsDialogProps}
                 onCancel={() => setAllowedDomainsDialogOpen(false)}
-                onConfirm={refreshFlows}
-            />
-            <SpeechToTextDialog
-                show={speechToTextDialogOpen}
-                dialogProps={speechToTextDialogProps}
-                onCancel={() => setSpeechToTextDialogOpen(false)}
                 onConfirm={refreshFlows}
             />
             {exportTemplateDialogOpen && (

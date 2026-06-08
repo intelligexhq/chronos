@@ -14,7 +14,6 @@ import {
     IMessage,
     IServerSideEventStreamer,
     convertChatHistoryToText,
-    convertSpeechToText,
     generateFollowUpPrompts,
     addSingleFileToStorage,
     addArrayFilesToStorage,
@@ -76,7 +75,6 @@ import { ChatMessage } from '../database/entities/ChatMessage'
 import { Telemetry } from './telemetry'
 import { getWorkspaceSearchOptions } from './openSourceStubs'
 import { UsageCacheManager } from '../UsageCacheManager'
-import { generateTTSForResponseStream, shouldAutoPlayTTS } from './ttsUtils'
 import { getRunningExpressApp } from './getRunningExpressApp'
 import { validateFileMimeTypeAndExtensionMatch } from './fileValidation'
 import { validateFlowAPIKey } from './validateKey'
@@ -2469,28 +2467,6 @@ export const executeAgentFlow = async ({
 
     if (sessionId) result.sessionId = sessionId
 
-    if (shouldAutoPlayTTS(agentflow.textToSpeech) && result.text) {
-        const options = {
-            orgId,
-            agentflowid,
-            chatId,
-            appDataSource,
-            databaseEntities
-        }
-
-        if (sseStreamer) {
-            await generateTTSForResponseStream(
-                result.text,
-                agentflow.textToSpeech,
-                options,
-                chatId,
-                chatMessage?.id,
-                sseStreamer,
-                abortController
-            )
-        }
-    }
-
     rootSpan?.setAttribute('workflow.status', status)
     rootSpan?.setAttribute('workflow.execution.id', newExecution?.id || '')
     rootSpan?.end()
@@ -2570,37 +2546,6 @@ export const executeFlow = async ({
                 const filename = upload.name
                 const urlData = upload.data
                 fileUploads[i] = { data: urlData, name: filename, type: 'url', mime: upload.mime ?? 'image/png' }
-            }
-
-            // Run Speech to Text conversion
-            if (upload.mime === 'audio/webm' || upload.mime === 'audio/mp4' || upload.mime === 'audio/ogg') {
-                logger.debug(`Attempting speech to text conversion`)
-                let speechToTextConfig: ICommonObject = {}
-                if (agentflow.speechToText) {
-                    const speechToTextProviders = JSON.parse(agentflow.speechToText)
-                    for (const provider in speechToTextProviders) {
-                        const providerObj = speechToTextProviders[provider]
-                        if (providerObj.status) {
-                            speechToTextConfig = providerObj
-                            speechToTextConfig['name'] = provider
-                            break
-                        }
-                    }
-                }
-                if (speechToTextConfig) {
-                    const options: ICommonObject = {
-                        orgId,
-                        chatId,
-                        agentflowid,
-                        appDataSource,
-                        databaseEntities: databaseEntities
-                    }
-                    const speechToTextResult = await convertSpeechToText(upload, speechToTextConfig, options)
-                    logger.debug(`Speech to text result: ${speechToTextResult}`)
-                    if (speechToTextResult) {
-                        incomingInput.question = speechToTextResult
-                    }
-                }
             }
 
             if (upload.type === 'file:full' && upload.data) {

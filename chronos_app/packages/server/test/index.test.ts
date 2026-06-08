@@ -55,7 +55,6 @@ import { getUploadPathRouteTest } from './routes/v1/get-upload-path.route.test'
 import { componentsCredentialsIconRouteTest } from './routes/v1/components-credentials-icon.route.test'
 import { filesRouteTest } from './routes/v1/files.route.test'
 import { validationRouteTest } from './routes/v1/validation.route.test'
-import { textToSpeechRouteTest } from './routes/v1/text-to-speech.route.test'
 import { agentflowsRouteTest } from './routes/v1/agentflows.route.test'
 import { agentflowVersionsRouteTest } from './routes/v1/agentflow-versions.route.test'
 import { internalChatMessagesRouteTest } from './routes/v1/internal-chat-messages.route.test'
@@ -100,7 +99,6 @@ import { statsServiceTest } from './services/stats.service.test'
 import { componentsCredentialsServiceTest } from './services/components-credentials.service.test'
 import { upsertHistoryServiceTest } from './services/upsert-history.service.test'
 import { loadPromptsServiceTest } from './services/load-prompts.service.test'
-import { textToSpeechServiceTest } from './services/text-to-speech.service.test'
 import { datasetServiceTest } from './services/dataset.service.test'
 import { logServiceTest } from './services/log.service.test'
 import { predictionsServiceTest } from './services/predictions.service.test'
@@ -228,7 +226,6 @@ describe('Routes Test', () => {
     componentsCredentialsIconRouteTest()
     filesRouteTest()
     validationRouteTest()
-    textToSpeechRouteTest()
     agentflowsRouteTest()
     agentflowVersionsRouteTest()
     internalChatMessagesRouteTest()
@@ -272,7 +269,6 @@ describe('Services Test', () => {
     componentsCredentialsServiceTest()
     upsertHistoryServiceTest()
     loadPromptsServiceTest()
-    textToSpeechServiceTest()
     datasetServiceTest()
     logServiceTest()
     predictionsServiceTest()

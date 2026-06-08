@@ -32,43 +32,17 @@ export function getUploadsConfigUtilTest() {
         it('should return default config for simple agentflow with no uploads', async () => {
             mockRepository.findOneBy.mockResolvedValue({
                 id: 'flow-1',
-                flowData: JSON.stringify({ nodes: [], edges: [] }),
-                speechToText: null
+                flowData: JSON.stringify({ nodes: [], edges: [] })
             })
 
             const result = await utilGetUploadsConfig('flow-1')
 
             expect(result).toEqual({
-                isSpeechToTextEnabled: false,
                 isImageUploadAllowed: false,
                 isRAGFileUploadAllowed: false,
                 imgUploadSizeAndTypes: [],
                 fileUploadSizeAndTypes: []
             })
-        })
-
-        it('should detect speech-to-text when enabled', async () => {
-            mockRepository.findOneBy.mockResolvedValue({
-                id: 'flow-1',
-                flowData: JSON.stringify({ nodes: [], edges: [] }),
-                speechToText: JSON.stringify({ whisper: { status: true } })
-            })
-
-            const result = await utilGetUploadsConfig('flow-1')
-
-            expect(result.isSpeechToTextEnabled).toBe(true)
-        })
-
-        it('should not enable STT when provider is none', async () => {
-            mockRepository.findOneBy.mockResolvedValue({
-                id: 'flow-1',
-                flowData: JSON.stringify({ nodes: [], edges: [] }),
-                speechToText: JSON.stringify({ none: { status: true } })
-            })
-
-            const result = await utilGetUploadsConfig('flow-1')
-
-            expect(result.isSpeechToTextEnabled).toBe(false)
         })
 
         it('should detect RAG file upload when vector store has file upload enabled', async () => {
@@ -100,7 +74,6 @@ export function getUploadsConfigUtilTest() {
             mockRepository.findOneBy.mockResolvedValue({
                 id: 'flow-1',
                 flowData: JSON.stringify({ nodes, edges }),
-                speechToText: null
             })
 
             const result = await utilGetUploadsConfig('flow-1')
@@ -125,7 +98,6 @@ export function getUploadsConfigUtilTest() {
             mockRepository.findOneBy.mockResolvedValue({
                 id: 'flow-1',
                 flowData: JSON.stringify({ nodes, edges: [] }),
-                speechToText: null
             })
 
             const result = await utilGetUploadsConfig('flow-1')
@@ -159,7 +131,6 @@ export function getUploadsConfigUtilTest() {
             mockRepository.findOneBy.mockResolvedValue({
                 id: 'flow-1',
                 flowData: JSON.stringify({ nodes, edges: [] }),
-                speechToText: null
             })
 
             const result = await utilGetUploadsConfig('flow-1')

@@ -61,8 +61,6 @@ export interface IAgentFlow {
     isPublic?: boolean
     apikeyid?: string
     analytic?: string
-    speechToText?: string
-    textToSpeech?: string
     chatbotConfig?: string
     followUpPrompts?: string
     apiConfig?: string
@@ -82,8 +80,6 @@ export interface IAgentflowVersion {
     chatbotConfig?: string
     apiConfig?: string
     analytic?: string
-    speechToText?: string
-    textToSpeech?: string
     followUpPrompts?: string
     notes?: string
     publishedBy?: string

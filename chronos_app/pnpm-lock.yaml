@@ -42,19 +42,6 @@ overrides:
 importers:
 
   .:
-    dependencies:
-      '@opentelemetry/api-logs':
-        specifier: ^0.213.0
-        version: 0.213.0
-      '@opentelemetry/exporter-logs-otlp-http':
-        specifier: ^0.213.0
-        version: 0.213.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/sdk-logs':
-        specifier: ^0.213.0
-        version: 0.213.0(@opentelemetry/api@1.9.0)
-      bullmq-otel:
-        specifier: ^1.3.0
-        version: 1.3.0
     devDependencies:
       '@babel/preset-env':
         specifier: ^7.19.4
@@ -186,9 +173,6 @@ importers:
       '@elastic/elasticsearch':
         specifier: ^8.9.0
         version: 8.19.1
-      '@elevenlabs/elevenlabs-js':
-        specifier: ^2.8.0
-        version: 2.31.0(encoding@0.1.13)
       '@flowiseai/nodevm':
         specifier: ^3.9.25
         version: 3.9.25
@@ -230,7 +214,7 @@ importers:
         version: 1.0.4(@langchain/core@1.1.32(@opentelemetry/api@1.9.0)(@opentelemetry/exporter-trace-otlp-proto@0.213.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.6.0(@opentelemetry/api@1.9.0))(openai@4.96.0(encoding@0.1.13)(ws@8.18.3)(zod@4.4.3))(ws@8.18.3))
       '@langchain/community':
         specifier: ^1.1.23
-        version: 1.1.23(35423ee74cbe9f1834804cc62a7ff237)
+        version: 1.1.23(8b9bac022328ecae890a4283697741d4)
       '@langchain/core':
         specifier: ^1.1.32
         version: 1.1.32(@opentelemetry/api@1.9.0)(@opentelemetry/exporter-trace-otlp-proto@0.213.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.6.0(@opentelemetry/api@1.9.0))(openai@4.96.0(encoding@0.1.13)(ws@8.18.3)(zod@4.4.3))(ws@8.18.3)
@@ -278,7 +262,7 @@ importers:
         version: 1.3.9(@langchain/core@1.1.32(@opentelemetry/api@1.9.0)(@opentelemetry/exporter-trace-otlp-proto@0.213.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.6.0(@opentelemetry/api@1.9.0))(openai@4.96.0(encoding@0.1.13)(ws@8.18.3)(zod@4.4.3))(ws@8.18.3))(encoding@0.1.13)(ws@8.18.3)
       '@mem0/community':
         specifier: ^0.0.1
-        version: 0.0.1(170e03e7b992ef1e85eeb0aabf1e394b)
+        version: 0.0.1(9de308727814fc2f96061cfc2481024f)
       '@mendable/firecrawl-js':
         specifier: ^1.18.2
         version: 1.29.3
@@ -366,9 +350,6 @@ importers:
       apify-client:
         specifier: ^2.7.1
         version: 2.21.0
-      assemblyai:
-        specifier: ^4.2.2
-        version: 4.22.1
       axios:
         specifier: 1.16.0
         version: 1.16.0(debug@4.4.3)
@@ -640,18 +621,12 @@ importers:
       '@opentelemetry/api':
         specifier: 1.9.0
         version: 1.9.0
-      '@opentelemetry/api-logs':
-        specifier: ^0.213.0
-        version: 0.213.0
       '@opentelemetry/auto-instrumentations-node':
         specifier: ^0.71.0
         version: 0.71.0(@opentelemetry/api@1.9.0)(@opentelemetry/core@2.6.0(@opentelemetry/api@1.9.0))
       '@opentelemetry/core':
         specifier: 2.6.0
         version: 2.6.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/exporter-logs-otlp-http':
-        specifier: ^0.213.0
-        version: 0.213.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/exporter-metrics-otlp-grpc':
         specifier: 0.213.0
         version: 0.213.0(@opentelemetry/api@1.9.0)
@@ -673,9 +648,6 @@ importers:
       '@opentelemetry/resources':
         specifier: 2.6.0
         version: 2.6.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/sdk-logs':
-        specifier: ^0.213.0
-        version: 0.213.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-metrics':
         specifier: 2.6.0
         version: 2.6.0(@opentelemetry/api@1.9.0)
@@ -2765,10 +2737,6 @@ packages:
   '@elastic/transport@8.10.1':
     resolution: {integrity: sha512-xo2lPBAJEt81fQRAKa9T/gUq1SPGBHpSnVUXhoSpL996fPZRAfQwFA4BZtEUQL1p8Dezodd3ZN8Wwno+mYyKuw==}
     engines: {node: '>=18'}
-
-  '@elevenlabs/elevenlabs-js@2.31.0':
-    resolution: {integrity: sha512-SYrt0yiw6AyLyEKUJBBuiotIqm0mJ1CJYXVbyNbZjVd7fxAyoHpACh6uyblJk0Z7fnbTwGT4zIIP3mF3sOIp+Q==}
-    engines: {node: '>=18.0.0'}
 
   '@emotion/babel-plugin@11.13.5':
     resolution: {integrity: sha512-pxHCpT2ex+0q+HH91/zsdHkw/lXd468DIN2zvfvLtPKLLMo6gQj7oLObq8PhkrxOZb/gGCq03S3Z7PDhS8pduQ==}
@@ -7794,10 +7762,6 @@ packages:
   asn1@0.2.6:
     resolution: {integrity: sha512-ix/FxPn0MDjeyJ7i/yoHGFt/EX6LyNbxSEhPPXODPL+KB0VPk86UYfL0lMdy+KCnv+fmvIzySwaK5COwqVbWTQ==}
 
-  assemblyai@4.22.1:
-    resolution: {integrity: sha512-7IZuOxwxTWs3U+JjH8aBxhA6RM3tOFjEDKgxhvnNpHLjVIKEaxl4hqFd+g0eSNtz7QnHUZJQffaz7JCariC0MQ==}
-    engines: {node: '>=18'}
-
   assert-plus@1.0.0:
     resolution: {integrity: sha512-NfJ4UzBCcQGLDlQq7nHxH+tv3kyZ0hHQqF5BO6J7tNJeP5do1llPr8dZ8zHonfhAu0PHAdMkSo+8o0wxg9lZWw==}
     engines: {node: '>=0.8'}
@@ -8557,9 +8521,6 @@ packages:
 
   comma-separated-tokens@2.0.3:
     resolution: {integrity: sha512-Fu4hJdvzeylCfQPp9SGWidpzrMs7tTrlu6Vb8XGaRGck8QSNZJJp538Wrb60Lax4fPwR64ViY468OIUTbRlGZg==}
-
-  command-exists@1.2.9:
-    resolution: {integrity: sha512-LTQ/SGc+s0Xc0Fu5WaKnR0YiygZkm9eKFvyS+fRsU7/ZWFF8ykFM6Pc9aCVf1+xasOOZpO3BAVgVrKvsqKHV7w==}
 
   command-line-args@6.0.1:
     resolution: {integrity: sha512-Jr3eByUjqyK0qd8W0SGFW1nZwqCaNCtbXjRo2cRJC1OYxWl3MZ5t1US3jq+cO4sPavqgw4l9BMGX0CBe+trepg==}
@@ -20252,16 +20213,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@elevenlabs/elevenlabs-js@2.31.0(encoding@0.1.13)':
-    dependencies:
-      command-exists: 1.2.9
-      node-fetch: 2.7.0(encoding@0.1.13)
-      ws: 8.18.3
-    transitivePeerDependencies:
-      - bufferutil
-      - encoding
-      - utf-8-validate
-
   '@emotion/babel-plugin@11.13.5':
     dependencies:
       '@babel/helper-module-imports': 7.28.6
@@ -21180,7 +21131,7 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
-  '@langchain/community@0.3.59(df4e5e1b9d6073778c18ca196d3629cc)':
+  '@langchain/community@0.3.59(4309b0dbe1ecf79b2cf254508cdcb097)':
     dependencies:
       '@browserbasehq/stagehand': 1.14.0(@playwright/test@1.57.0)(deepmerge@4.3.1)(dotenv@16.6.1)(encoding@0.1.13)(openai@4.96.0(encoding@0.1.13)(ws@8.18.3)(zod@4.4.3))(zod@4.4.3)
       '@ibm-cloud/watsonx-ai': 1.7.6
@@ -21226,7 +21177,6 @@ snapshots:
       '@upstash/vector': 1.1.5
       '@zilliz/milvus2-sdk-node': 2.6.9
       apify-client: 2.21.0
-      assemblyai: 4.22.1
       cheerio: 1.1.2
       chromadb: 3.1.6
       cohere-ai: 7.20.0
@@ -21280,7 +21230,7 @@ snapshots:
       - handlebars
       - peggy
 
-  '@langchain/community@1.1.23(35423ee74cbe9f1834804cc62a7ff237)':
+  '@langchain/community@1.1.23(8b9bac022328ecae890a4283697741d4)':
     dependencies:
       '@browserbasehq/stagehand': 1.14.0(@playwright/test@1.57.0)(deepmerge@4.3.1)(dotenv@16.6.1)(encoding@0.1.13)(openai@4.96.0(encoding@0.1.13)(ws@8.18.3)(zod@4.4.3))(zod@4.4.3)
       '@ibm-cloud/watsonx-ai': 1.7.6
@@ -21320,7 +21270,6 @@ snapshots:
       '@upstash/vector': 1.1.5
       '@zilliz/milvus2-sdk-node': 2.6.9
       apify-client: 2.21.0
-      assemblyai: 4.22.1
       cheerio: 1.1.2
       chromadb: 3.1.6
       cohere-ai: 7.20.0
@@ -21629,9 +21578,9 @@ snapshots:
 
   '@marijn/find-cluster-break@1.0.2': {}
 
-  '@mem0/community@0.0.1(170e03e7b992ef1e85eeb0aabf1e394b)':
+  '@mem0/community@0.0.1(9de308727814fc2f96061cfc2481024f)':
     dependencies:
-      '@langchain/community': 0.3.59(df4e5e1b9d6073778c18ca196d3629cc)
+      '@langchain/community': 0.3.59(4309b0dbe1ecf79b2cf254508cdcb097)
       '@langchain/core': 1.1.32(@opentelemetry/api@1.9.0)(@opentelemetry/exporter-trace-otlp-proto@0.213.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.6.0(@opentelemetry/api@1.9.0))(openai@4.96.0(encoding@0.1.13)(ws@8.18.3)(zod@4.4.3))(ws@8.18.3)
       axios: 1.16.0(debug@4.4.3)
       mem0ai: 2.2.1(@anthropic-ai/sdk@0.74.0(zod@4.4.3))(@azure/identity@4.13.0)(@azure/search-documents@12.2.0)(@cloudflare/workers-types@4.20260115.0)(@google/genai@1.37.0(@modelcontextprotocol/sdk@1.29.0(@cfworker/json-schema@4.1.1)(zod@4.4.3)))(@langchain/core@1.1.32(@opentelemetry/api@1.9.0)(@opentelemetry/exporter-trace-otlp-proto@0.213.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.6.0(@opentelemetry/api@1.9.0))(openai@4.96.0(encoding@0.1.13)(ws@8.18.3)(zod@4.4.3))(ws@8.18.3))(@mistralai/mistralai@0.1.3(encoding@0.1.13))(@qdrant/js-client-rest@1.16.2(typescript@5.9.3))(@supabase/supabase-js@2.90.1)(@types/jest@29.5.14)(@types/pg@8.16.0)(@types/sqlite3@3.1.11)(cloudflare@4.5.0(encoding@0.1.13))(encoding@0.1.13)(groq-sdk@0.3.0(encoding@0.1.13))(neo4j-driver@5.28.2)(ollama@0.5.18)(pg@8.17.1)(redis@4.7.1)(sqlite3@5.1.7)(ws@8.18.3)
@@ -25980,13 +25929,6 @@ snapshots:
     dependencies:
       safer-buffer: 2.1.2
 
-  assemblyai@4.22.1:
-    dependencies:
-      ws: 8.18.3
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-
   assert-plus@1.0.0: {}
 
   assign-symbols@1.0.0: {}
@@ -26886,8 +26828,6 @@ snapshots:
   comma-separated-tokens@1.0.8: {}
 
   comma-separated-tokens@2.0.3: {}
-
-  command-exists@1.2.9: {}
 
   command-line-args@6.0.1:
     dependencies:

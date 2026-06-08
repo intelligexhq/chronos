@@ -353,7 +353,7 @@ const AgentFlowNode = ({ data }) => {
                     )}
 
                     <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                        <Box item style={{ width: 50 }}>
+                        <Box style={{ width: 50 }}>
                             {data.color && !data.icon ? (
                                 <div
                                     style={{

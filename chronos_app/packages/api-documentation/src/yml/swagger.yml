@@ -430,8 +430,6 @@ paths:
                                 properties:
                                     isImageUploadAllowed:
                                         type: boolean
-                                    isSpeechToTextEnabled:
-                                        type: boolean
                                     isRAGFileUploadAllowed:
                                         type: boolean
                                     isFullFileUpload:
@@ -1692,8 +1690,6 @@ components:
                 apiConfig:
                     type: string
                 analytic:
-                    type: string
-                speechToText:
                     type: string
                 category:
                     type: string

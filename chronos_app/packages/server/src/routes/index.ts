@@ -56,7 +56,6 @@ import dashboardRouter from './dashboard'
 import executionsRouter from './executions'
 import validationRouter from './validation'
 import agentflowGeneratorRouter from './agentflow-generator'
-import textToSpeechRouter from './text-to-speech'
 
 // Simple auth router (Apache 2.0 licensed)
 import authRouter from './auth'
@@ -125,7 +124,6 @@ router.use('/dashboard', dashboardRouter)
 router.use('/executions', executionsRouter)
 router.use('/validation', validationRouter)
 router.use('/agentflow-generator', agentflowGeneratorRouter)
-router.use('/text-to-speech', textToSpeechRouter)
 router.use('/logs', logsRouter)
 router.use('/files', filesRouter)
 
