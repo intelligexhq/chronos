@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom'
 
 // material-ui
-import { Alert, Box, Button, OutlinedInput, Stack, Typography, useTheme } from '@mui/material'
+import { Alert, Box, Button, Link, OutlinedInput, Stack, Typography, useTheme } from '@mui/material'
 
 // project imports
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
@@ -174,7 +174,7 @@ const ResetPasswordPage = () => {
                     <Stack sx={{ gap: 1 }}>
                         <Typography variant='h1'>Reset Password</Typography>
                         <Typography variant='body2' sx={{ color: theme.palette.grey[600] }}>
-                            <Link style={{ color: theme.palette.primary.main }} to='/login'>
+                            <Link component={RouterLink} to='/login'>
                                 Back to Login
                             </Link>
                             .

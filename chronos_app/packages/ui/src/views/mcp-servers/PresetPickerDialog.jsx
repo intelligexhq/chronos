@@ -97,10 +97,8 @@ const PresetPickerDialog = ({ show, onCancel, onPick, onCustom }) => {
 
     const component = show ? (
         <Dialog fullWidth maxWidth='md' open={show} onClose={onCancel} aria-labelledby='mcp-preset-picker-title'>
-            <DialogTitle sx={{ fontSize: '1rem', px: 3.5, pt: 3, pb: 1.5 }} id='mcp-preset-picker-title'>
-                Register MCP server. From the preset or custom
-            </DialogTitle>
-            <DialogContent sx={{ px: 3.5, pb: 3, '&.MuiDialogContent-root': { pt: 1 } }}>
+            <DialogTitle id='mcp-preset-picker-title'>Register MCP server. From the preset or custom</DialogTitle>
+            <DialogContent>
                 <Typography variant='body2' sx={{ mb: 2, color: theme.palette.text.secondary }}>
                     <Link
                         component='button'

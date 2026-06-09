@@ -55,6 +55,31 @@ export default function componentStyleOverrides(theme) {
                 }
             }
         },
+        // Dialog padding house style — values validated against the MCP server dialogs
+        // in v1.8.2 and promoted here in v1.8.3. Dialogs that need a different padding
+        // may still override via local `sx`; sx wins over theme.
+        MuiDialogTitle: {
+            styleOverrides: {
+                root: {
+                    fontSize: '1rem',
+                    padding: '24px 28px 12px 28px'
+                }
+            }
+        },
+        MuiDialogContent: {
+            styleOverrides: {
+                root: {
+                    padding: '8px 28px 24px 28px'
+                }
+            }
+        },
+        MuiDialogActions: {
+            styleOverrides: {
+                root: {
+                    padding: '0 28px 20px 28px'
+                }
+            }
+        },
         MuiSvgIcon: {
             styleOverrides: {
                 root: {

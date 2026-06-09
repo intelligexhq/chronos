@@ -3,10 +3,10 @@
  */
 
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link as RouterLink, useNavigate } from 'react-router-dom'
 
 // material-ui
-import { Stack, useTheme, Typography, Box, Alert } from '@mui/material'
+import { Link, Stack, useTheme, Typography, Box, Alert } from '@mui/material'
 import { IconExclamationCircle } from '@tabler/icons-react'
 
 // project imports
@@ -126,7 +126,7 @@ const RegisterPage = () => {
                         <Typography variant='h1'>Create Account</Typography>
                         <Typography variant='body2' sx={{ color: theme.palette.grey[600] }}>
                             Already have an account?{' '}
-                            <Link style={{ color: theme.palette.primary.main }} to='/login'>
+                            <Link component={RouterLink} to='/login'>
                                 Sign in
                             </Link>
                             .

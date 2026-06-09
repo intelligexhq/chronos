@@ -206,7 +206,7 @@ const DeleteDocStoreDialog = ({ show, dialogProps, onCancel, onDelete }) => {
                                 href='https://intelligex.com/integrations/langchain/record-managers'
                                 target='_blank'
                                 rel='noopener noreferrer'
-                                sx={{ fontWeight: 500, color: 'rgb(116,66,16)', textDecoration: 'underline' }}
+                                sx={{ fontWeight: 500 }}
                             >
                                 Learn more
                             </Link>

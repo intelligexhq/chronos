@@ -597,10 +597,8 @@ const MCPServerDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
 
     const component = show ? (
         <Dialog fullWidth maxWidth='md' open={show} onClose={onCancel} aria-labelledby='mcp-server-dialog-title'>
-            <DialogTitle sx={{ fontSize: '1rem', px: 3.5, pt: 3, pb: 1.5 }} id='mcp-server-dialog-title'>
-                {dialogProps.title}
-            </DialogTitle>
-            <DialogContent sx={{ px: 3.5, pb: 3, '&.MuiDialogContent-root': { pt: 1 } }}>
+            <DialogTitle id='mcp-server-dialog-title'>{dialogProps.title}</DialogTitle>
+            <DialogContent>
                 <Stack spacing={2}>
                     {activePreset && (
                         <Box
@@ -1114,7 +1112,7 @@ const MCPServerDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     </Box>
                 </Stack>
             </DialogContent>
-            <DialogActions sx={{ px: 3.5, pb: 2.5 }}>
+            <DialogActions>
                 {isEdit && (
                     <>
                         <StyledButton color='error' variant='contained' onClick={onDelete}>
