@@ -36,12 +36,6 @@ export class AgentFlow implements IAgentFlow {
     analytic?: string
 
     @Column({ nullable: true, type: 'text' })
-    speechToText?: string
-
-    @Column({ nullable: true, type: 'text' })
-    textToSpeech?: string
-
-    @Column({ nullable: true, type: 'text' })
     followUpPrompts?: string
 
     @Column({ nullable: true, type: 'text' })

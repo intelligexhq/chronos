@@ -19,8 +19,6 @@ export const WHITELIST_URLS = [
     '/api/v1/settings',
     '/api/v1/oauth2-credential/callback',
     '/api/v1/oauth2-credential/refresh',
-    '/api/v1/text-to-speech/generate',
-    '/api/v1/text-to-speech/abort',
     // OpenAI-compatible API (uses flow API key validation internally)
     '/api/v1/openai/',
     // Agent → platform MCP gateway surface (uses Agent.mcpGatewayToken bearer)

@@ -75,8 +75,6 @@ const publishAgentflow = async (
                 chatbotConfig: agentflow.chatbotConfig,
                 apiConfig: agentflow.apiConfig,
                 analytic: agentflow.analytic,
-                speechToText: agentflow.speechToText,
-                textToSpeech: agentflow.textToSpeech,
                 followUpPrompts: agentflow.followUpPrompts,
                 notes: body.notes,
                 publishedBy: userContext?.userId

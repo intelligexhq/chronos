@@ -1,7 +1,7 @@
 {
     "name": "chronos",
-    "version": "1.8.2",
-    "releaseDate": "2026-05-28",
+    "version": "1.8.3",
+    "releaseDate": "2026-06-09",
     "description": "Intelligex Chronos — self-hosted control plane for AI agents and MCP tools.",
     "private": true,
     "homepage": "https://intelligex.com/chronos",
@@ -125,11 +125,5 @@
                 }
             ]
         ]
-    },
-    "dependencies": {
-        "@opentelemetry/api-logs": "^0.213.0",
-        "@opentelemetry/exporter-logs-otlp-http": "^0.213.0",
-        "@opentelemetry/sdk-logs": "^0.213.0",
-        "bullmq-otel": "^1.3.0"
     }
 }

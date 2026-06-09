@@ -25,8 +25,6 @@ export function agentflowVersionsServiceTest() {
             chatbotConfig: '{"a":1}',
             apiConfig: null,
             analytic: null,
-            speechToText: null,
-            textToSpeech: null,
             followUpPrompts: null,
             userId: OWNER.userId,
             currentVersion: null,

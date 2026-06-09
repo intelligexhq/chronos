@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link as RouterLink } from 'react-router-dom'
 
 // material-ui
-import { Alert, Box, Stack, Typography, useTheme } from '@mui/material'
+import { Alert, Box, Link, Stack, Typography, useTheme } from '@mui/material'
 
 // project imports
 import { StyledButton } from '@/ui-component/button/StyledButton'
@@ -112,7 +112,7 @@ const ForgotPasswordPage = () => {
                         <Typography variant='h1'>Forgot Password?</Typography>
                         <Typography variant='body2' sx={{ color: theme.palette.grey[600] }}>
                             Have a reset password code?{' '}
-                            <Link style={{ color: theme.palette.primary.main }} to='/reset-password'>
+                            <Link component={RouterLink} to='/reset-password'>
                                 Change your password here
                             </Link>
                             .

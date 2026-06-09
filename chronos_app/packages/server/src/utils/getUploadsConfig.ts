@@ -6,7 +6,6 @@ import { IUploadFileSizeAndTypes, IReactFlowNode, IReactFlowEdge } from '../Inte
 import { InternalChronosError } from '../errors/internalChronosError'
 
 type IUploadConfig = {
-    isSpeechToTextEnabled: boolean
     isImageUploadAllowed: boolean
     isRAGFileUploadAllowed: boolean
     imgUploadSizeAndTypes: IUploadFileSizeAndTypes[]
@@ -30,25 +29,8 @@ export const utilGetUploadsConfig = async (agentflowid: string): Promise<IUpload
     const nodes: IReactFlowNode[] = flowObj.nodes
     const edges: IReactFlowEdge[] = flowObj.edges
 
-    let isSpeechToTextEnabled = false
     let isImageUploadAllowed = false
     let isRAGFileUploadAllowed = false
-
-    /*
-     * Check for STT
-     */
-    if (agentflow.speechToText) {
-        const speechToTextProviders = JSON.parse(agentflow.speechToText)
-        for (const provider in speechToTextProviders) {
-            if (provider !== 'none') {
-                const providerObj = speechToTextProviders[provider]
-                if (providerObj.status) {
-                    isSpeechToTextEnabled = true
-                    break
-                }
-            }
-        }
-    }
 
     /*
      * Condition for isRAGFileUploadAllowed
@@ -125,7 +107,6 @@ export const utilGetUploadsConfig = async (agentflowid: string): Promise<IUpload
     }
 
     return {
-        isSpeechToTextEnabled,
         isImageUploadAllowed,
         isRAGFileUploadAllowed,
         imgUploadSizeAndTypes,
