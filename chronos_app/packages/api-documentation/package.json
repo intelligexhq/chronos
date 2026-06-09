@@ -1,5 +1,5 @@
 {
-    "name": "chronos-api",
+    "name": "chronos-api-specs",
     "version": "1.8.3",
     "description": "Intelligex Chronos API documentation service",
     "scripts": {

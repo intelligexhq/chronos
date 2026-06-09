@@ -1,5 +1,5 @@
 {
-    "name": "chronos",
+    "name": "chronos-server",
     "version": "1.8.3",
     "description": "Intelligex Chronos Server",
     "scripts": {
