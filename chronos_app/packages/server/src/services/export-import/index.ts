@@ -81,7 +81,7 @@ const FileDefaultName = 'ExportData.json'
 const exportData = async (exportInput: ExportInput, activeWorkspaceId: string): Promise<{ FileDefaultName: string } & ExportData> => {
     try {
         let Agentflow: AgentFlow[] | { data: AgentFlow[]; total: number } =
-            exportInput.agentflow === true ? await agentflowService.getAllAgentflows('AGENTFLOW') : []
+            exportInput.agentflow === true ? await agentflowService.getAllAgentflows() : []
         Agentflow = 'data' in Agentflow ? Agentflow.data : Agentflow
 
         let allAgentflow: AgentFlow[] | { data: AgentFlow[]; total: number } =
@@ -588,7 +588,7 @@ const importData = async (importData: ExportData, orgId: string, activeWorkspace
             if (importData.Agentflow.length > 0) {
                 importData.Agentflow = reduceSpaceForAgentflowFlowData(importData.Agentflow)
                 importData.Agentflow = insertWorkspaceId(importData.Agentflow, activeWorkspaceId)
-                const existingAgentflowCount = await agentflowsService.getAllAgentflowsCountByOrganization('AGENTFLOW', orgId)
+                const existingAgentflowCount = await agentflowsService.getAllAgentflowsCountByOrganization(orgId)
                 const newAgentflowCount = importData.Agentflow.length
                 await checkUsageLimit(
                     'flows',

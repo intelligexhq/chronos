@@ -1,6 +1,6 @@
 import client from './client'
 
-const getAllAgentflows = (type, params) => client.get(`/agentflows?type=${type}`, { params })
+const getAllAgentflows = (params) => client.get(`/agentflows`, { params })
 
 const getSpecificAgentflow = (id) => client.get(`/agentflows/${id}`)
 

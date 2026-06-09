@@ -1,8 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
 import supertest from 'supertest'
 import { getRunningExpressApp } from '../../src/utils/getRunningExpressApp'
-import { AgentflowErrorMessage, validateAgentflowType } from '../../src/services/agentflows'
-import { EnumAgentflowType } from '../../src/database/entities/AgentFlow'
 import { Agent } from '../../src/database/entities/Agent'
 import { MCPServer } from '../../src/database/entities/MCPServer'
 import { MCPServerStatus, MCPServerTransport } from '../../src/Interface'
@@ -26,7 +24,6 @@ async function getAuthToken(): Promise<string> {
 async function createTestAgentflow(authToken: string): Promise<string> {
     const newAgentflow = {
         name: 'Test Agentflow ' + Date.now(),
-        type: 'AGENTFLOW',
         flowData: JSON.stringify({ nodes: [], edges: [] })
     }
 
@@ -57,26 +54,11 @@ export function agentflowsServiceTest() {
     describe('Agentflows Service', () => {
         const baseRoute = '/api/v1/agentflows'
 
-        describe('validateAgentflowType', () => {
-            it('should not throw error for valid AGENTFLOW type', () => {
-                expect(() => validateAgentflowType(EnumAgentflowType.AGENTFLOW)).not.toThrow()
-            })
-
-            it('should throw error for invalid agentflow type', () => {
-                expect(() => validateAgentflowType('INVALID_TYPE' as any)).toThrow(AgentflowErrorMessage.INVALID_AGENTFLOW_TYPE)
-            })
-
-            it('should throw error for undefined agentflow type', () => {
-                expect(() => validateAgentflowType(undefined)).toThrow(AgentflowErrorMessage.INVALID_AGENTFLOW_TYPE)
-            })
-        })
-
         describe('Agentflow CRUD Operations', () => {
             it('should create a new agentflow', async () => {
                 const authToken = await getAuthToken()
                 const newAgentflow = {
                     name: 'Test Agentflow Create',
-                    type: 'AGENTFLOW',
                     flowData: JSON.stringify({ nodes: [], edges: [] })
                 }
 
@@ -89,27 +71,9 @@ export function agentflowsServiceTest() {
                 expect(response.status).toEqual(StatusCodes.OK)
                 expect(response.body.id).toBeDefined()
                 expect(response.body.name).toEqual(newAgentflow.name)
-                expect(response.body.type).toEqual(newAgentflow.type)
 
                 // Cleanup
                 await deleteTestAgentflow(authToken, response.body.id)
-            })
-
-            it('should reject agentflow with invalid type', async () => {
-                const authToken = await getAuthToken()
-                const invalidAgentflow = {
-                    name: 'Invalid Agentflow',
-                    type: 'INVALID_TYPE',
-                    flowData: JSON.stringify({ nodes: [], edges: [] })
-                }
-
-                const response = await supertest(getRunningExpressApp().app)
-                    .post(baseRoute)
-                    .set('Authorization', `Bearer ${authToken}`)
-                    .set('x-request-from', 'internal')
-                    .send(invalidAgentflow)
-
-                expect(response.status).toEqual(StatusCodes.BAD_REQUEST)
             })
 
             it('should return all agentflows', async () => {
@@ -122,22 +86,6 @@ export function agentflowsServiceTest() {
 
                 expect(response.status).toEqual(StatusCodes.OK)
                 expect(Array.isArray(response.body)).toBe(true)
-            })
-
-            it('should filter agentflows by type', async () => {
-                const authToken = await getAuthToken()
-
-                const response = await supertest(getRunningExpressApp().app)
-                    .get(`${baseRoute}?type=AGENTFLOW`)
-                    .set('Authorization', `Bearer ${authToken}`)
-                    .set('x-request-from', 'internal')
-
-                expect(response.status).toEqual(StatusCodes.OK)
-                if (Array.isArray(response.body)) {
-                    response.body.forEach((agentflow: any) => {
-                        expect(agentflow.type).toEqual('AGENTFLOW')
-                    })
-                }
             })
 
             it('should support pagination', async () => {
@@ -199,26 +147,6 @@ export function agentflowsServiceTest() {
 
                 expect(response.status).toEqual(StatusCodes.OK)
                 expect(response.body.name).toEqual(updateData.name)
-
-                // Cleanup
-                await deleteTestAgentflow(authToken, agentflowId)
-            })
-
-            it('should reject update with invalid type', async () => {
-                const authToken = await getAuthToken()
-                const agentflowId = await createTestAgentflow(authToken)
-
-                const updateData = {
-                    type: 'INVALID_TYPE'
-                }
-
-                const response = await supertest(getRunningExpressApp().app)
-                    .put(`${baseRoute}/${agentflowId}`)
-                    .set('Authorization', `Bearer ${authToken}`)
-                    .set('x-request-from', 'internal')
-                    .send(updateData)
-
-                expect(response.status).toEqual(StatusCodes.BAD_REQUEST)
 
                 // Cleanup
                 await deleteTestAgentflow(authToken, agentflowId)
@@ -314,7 +242,6 @@ export function agentflowsServiceTest() {
                 const sharedName = `Shared Name ${Date.now()}`
                 const flowPayload = {
                     name: sharedName,
-                    type: 'AGENTFLOW',
                     flowData: JSON.stringify({ nodes: [], edges: [] })
                 }
 
@@ -426,7 +353,6 @@ export function agentflowsServiceTest() {
 
                 const newAgentflow = {
                     name: `Agentflow Agg ${Date.now()}`,
-                    type: 'AGENTFLOW',
                     flowData: flowDataWithRegistryNodes([{ mcpServerId: server.id, mcpActions: ['create_issue', 'search'] }])
                 }
                 const response = await supertest(getRunningExpressApp().app)
@@ -454,7 +380,6 @@ export function agentflowsServiceTest() {
 
                 const newAgentflow = {
                     name: `Agentflow Dedup ${ts}`,
-                    type: 'AGENTFLOW',
                     flowData: flowDataWithRegistryNodes([
                         { mcpServerId: serverA.id, mcpActions: ['t1', 't2'] },
                         { mcpServerId: serverB.id, mcpActions: ['t1'] },
@@ -490,7 +415,6 @@ export function agentflowsServiceTest() {
 
                 const newAgentflow = {
                     name: `Agent Primitive ${ts}`,
-                    type: 'AGENTFLOW',
                     flowData: flowDataWithAgentPrimitive([
                         { mcpServerId: serverA.id, mcpActions: ['read_wiki_contents', 'search'] },
                         { mcpServerId: serverB.id, mcpActions: ['post_message'] }
@@ -523,7 +447,6 @@ export function agentflowsServiceTest() {
 
                 const newAgentflow = {
                     name: `Tool Primitive ${ts}`,
-                    type: 'AGENTFLOW',
                     flowData: flowDataWithToolPrimitive(server.id, ['fetch_url', 'render_pdf'])
                 }
                 const response = await supertest(getRunningExpressApp().app)

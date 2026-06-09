@@ -16,8 +16,6 @@ import { UsageCacheManager } from './UsageCacheManager'
 
 export type MessageType = 'apiMessage' | 'userMessage'
 
-export type AgentflowType = 'AGENTFLOW'
-
 export type ExecutionState = 'INPROGRESS' | 'FINISHED' | 'ERROR' | 'TERMINATED' | 'TIMEOUT' | 'STOPPED'
 
 export enum MODE {
@@ -65,7 +63,6 @@ export interface IAgentFlow {
     followUpPrompts?: string
     apiConfig?: string
     category?: string
-    type?: AgentflowType
     userId?: string
     publishedFlowData?: string
     publishedVersionId?: string

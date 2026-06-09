@@ -87,8 +87,7 @@ export function validationRouteTest() {
                                 }
                             ],
                             edges: []
-                        }),
-                        type: 'AGENTFLOW'
+                        })
                     })
 
                 if (validAgentflowResponse.status === 200 || validAgentflowResponse.status === 201) {
@@ -124,8 +123,7 @@ export function validationRouteTest() {
                                 }
                             ],
                             edges: [{ id: 'edge-1', source: 'node-1', target: 'node-2' }]
-                        }),
-                        type: 'AGENTFLOW'
+                        })
                     })
 
                 if (agentflowMissingInputsResponse.status === 200 || agentflowMissingInputsResponse.status === 201) {
@@ -161,8 +159,7 @@ export function validationRouteTest() {
                                 }
                             ],
                             edges: [] // No edges - nodes are unconnected
-                        }),
-                        type: 'AGENTFLOW'
+                        })
                     })
 
                 if (agentflowUnconnectedResponse.status === 200 || agentflowUnconnectedResponse.status === 201) {
@@ -260,8 +257,7 @@ export function validationRouteTest() {
                                 }
                             ],
                             edges: [{ id: 'edge-1', source: 'node-1', target: 'non-existent-node' }]
-                        }),
-                        type: 'AGENTFLOW'
+                        })
                     })
 
                 if (response.status === 200 || response.status === 201) {
@@ -301,8 +297,7 @@ export function validationRouteTest() {
                                 }
                             ],
                             edges: []
-                        }),
-                        type: 'AGENTFLOW'
+                        })
                     })
 
                 if (response.status === 200 || response.status === 201) {
@@ -344,8 +339,7 @@ export function validationRouteTest() {
                                 }
                             ],
                             edges: []
-                        }),
-                        type: 'AGENTFLOW'
+                        })
                     })
 
                 if (response.status === 200 || response.status === 201) {
@@ -390,8 +384,7 @@ export function validationRouteTest() {
                                 }
                             ],
                             edges: []
-                        }),
-                        type: 'AGENTFLOW'
+                        })
                     })
 
                 if (response.status === 200 || response.status === 201) {
@@ -429,8 +422,7 @@ export function validationRouteTest() {
                                 }
                             ],
                             edges: []
-                        }),
-                        type: 'AGENTFLOW'
+                        })
                     })
 
                 if (response.status === 200 || response.status === 201) {
@@ -452,8 +444,7 @@ export function validationRouteTest() {
                     .set('x-request-from', 'internal')
                     .send({
                         name: `Empty Flow ${Date.now()}`,
-                        flowData: JSON.stringify({ nodes: [], edges: [] }),
-                        type: 'AGENTFLOW'
+                        flowData: JSON.stringify({ nodes: [], edges: [] })
                     })
 
                 if (response.status === 200 || response.status === 201) {

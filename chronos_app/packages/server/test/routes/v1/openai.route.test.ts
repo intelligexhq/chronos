@@ -21,7 +21,6 @@ async function getAuthToken(): Promise<string> {
 async function createTestAgentflow(authToken: string): Promise<string> {
     const newAgentflow = {
         name: 'OpenAI Test Agentflow ' + Date.now(),
-        type: 'AGENTFLOW',
         flowData: JSON.stringify({ nodes: [], edges: [] })
     }
 

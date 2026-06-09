@@ -1,10 +1,6 @@
 /* eslint-disable */
 import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm'
-import { AgentflowType, IAgentFlow } from '../../Interface'
-
-export enum EnumAgentflowType {
-    AGENTFLOW = 'AGENTFLOW'
-}
+import { IAgentFlow } from '../../Interface'
 
 @Entity()
 export class AgentFlow implements IAgentFlow {
@@ -40,9 +36,6 @@ export class AgentFlow implements IAgentFlow {
 
     @Column({ nullable: true, type: 'text' })
     category?: string
-
-    @Column({ type: 'varchar', length: 20, default: EnumAgentflowType.AGENTFLOW })
-    type?: AgentflowType
 
     @Column({ nullable: true })
     userId?: string

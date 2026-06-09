@@ -82,50 +82,7 @@ export function agentflowsExtendedRouteTest() {
             })
         })
 
-        describe('GET /api/v1/agentflows with type filter', () => {
-            it('should filter by AGENTFLOW type', async () => {
-                const response = await supertest(getRunningExpressApp().app)
-                    .get('/api/v1/agentflows?type=AGENTFLOW')
-                    .set('Authorization', `Bearer ${authToken}`)
-                    .set('x-request-from', 'internal')
-
-                expect(response.status).toBe(200)
-            })
-
-            it('should filter by AGENTFLOW type', async () => {
-                const response = await supertest(getRunningExpressApp().app)
-                    .get('/api/v1/agentflows?type=AGENTFLOW')
-                    .set('Authorization', `Bearer ${authToken}`)
-                    .set('x-request-from', 'internal')
-
-                expect(response.status).toBe(200)
-            })
-
-            it('should filter by MULTIAGENT type', async () => {
-                const response = await supertest(getRunningExpressApp().app)
-                    .get('/api/v1/agentflows?type=MULTIAGENT')
-                    .set('Authorization', `Bearer ${authToken}`)
-                    .set('x-request-from', 'internal')
-
-                expect(response.status).toBe(200)
-            })
-        })
-
         describe('POST /api/v1/agentflows validation', () => {
-            it('should reject invalid type', async () => {
-                const response = await supertest(getRunningExpressApp().app)
-                    .post('/api/v1/agentflows')
-                    .set('Authorization', `Bearer ${authToken}`)
-                    .set('x-request-from', 'internal')
-                    .send({
-                        name: 'Test',
-                        type: 'INVALID_TYPE',
-                        flowData: '{}'
-                    })
-
-                expect([400, 412, 500]).toContain(response.status)
-            })
-
             it('should accept valid agentflow with minimal data', async () => {
                 const response = await supertest(getRunningExpressApp().app)
                     .post('/api/v1/agentflows')
@@ -133,7 +90,6 @@ export function agentflowsExtendedRouteTest() {
                     .set('x-request-from', 'internal')
                     .send({
                         name: `Test Agentflow ${Date.now()}`,
-                        type: 'AGENTFLOW',
                         flowData: JSON.stringify({ nodes: [], edges: [] })
                     })
 
@@ -308,18 +264,18 @@ export function agentflowsExtendedRouteTest() {
         })
 
         describe('Combined filters', () => {
-            it('should handle type + pagination', async () => {
+            it('should handle pagination', async () => {
                 const response = await supertest(getRunningExpressApp().app)
-                    .get('/api/v1/agentflows?type=AGENTFLOW&page=1&limit=5')
+                    .get('/api/v1/agentflows?page=1&limit=5')
                     .set('Authorization', `Bearer ${authToken}`)
                     .set('x-request-from', 'internal')
 
                 expect(response.status).toBe(200)
             })
 
-            it('should handle type + search + sort', async () => {
+            it('should handle search + sort', async () => {
                 const response = await supertest(getRunningExpressApp().app)
-                    .get('/api/v1/agentflows?type=AGENTFLOW&search=test&sortBy=name&sortOrder=ASC')
+                    .get('/api/v1/agentflows?search=test&sortBy=name&sortOrder=ASC')
                     .set('Authorization', `Bearer ${authToken}`)
                     .set('x-request-from', 'internal')
 
@@ -328,7 +284,7 @@ export function agentflowsExtendedRouteTest() {
 
             it('should handle all filters combined', async () => {
                 const response = await supertest(getRunningExpressApp().app)
-                    .get('/api/v1/agentflows?type=AGENTFLOW&search=agent&sortBy=createdDate&sortOrder=DESC&page=0&limit=10')
+                    .get('/api/v1/agentflows?search=agent&sortBy=createdDate&sortOrder=DESC&page=0&limit=10')
                     .set('Authorization', `Bearer ${authToken}`)
                     .set('x-request-from', 'internal')
 

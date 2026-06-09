@@ -240,8 +240,7 @@ export function exportImportRouteTest() {
                     .set('x-request-from', 'internal')
                     .send({
                         name: `Export Test Agentflow ${Date.now()}`,
-                        flowData: JSON.stringify({ nodes: [], edges: [] }),
-                        type: 'AGENTFLOW'
+                        flowData: JSON.stringify({ nodes: [], edges: [] })
                     })
                 if (agentflowResponse.status === 200 || agentflowResponse.status === 201) {
                     createdAgentflowId = agentflowResponse.body.id

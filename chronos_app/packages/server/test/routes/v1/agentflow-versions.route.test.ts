@@ -18,8 +18,7 @@ async function createAgentflow(authToken: string): Promise<string> {
         .post('/api/v1/agentflows')
         .send({
             name: 'Versioning Test Flow',
-            flowData: JSON.stringify({ nodes: [], edges: [] }),
-            type: 'AGENTFLOW'
+            flowData: JSON.stringify({ nodes: [], edges: [] })
         })
         .set('Authorization', `Bearer ${authToken}`)
         .set('x-request-from', 'internal')

@@ -227,8 +227,7 @@ const AgentflowCanvas = () => {
                     name: agentflowName,
                     deployed: false,
                     isPublic: false,
-                    flowData,
-                    type: 'AGENTFLOW'
+                    flowData
                 }
                 createNewAgentflowApi.request(newAgentflowBody)
             } else {

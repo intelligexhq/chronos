@@ -16,6 +16,7 @@ import { CreateMCPServerChangeLog1800000000014 } from './1800000000014-CreateMCP
 import { AddPolicyOutcomeToToolInvocationAudit1800000000015 } from './1800000000015-AddPolicyOutcomeToToolInvocationAudit'
 import { AddStdioFieldsToMCPServer1800000000016 } from './1800000000016-AddStdioFieldsToMCPServer'
 import { AddPayloadFieldsToToolInvocationAudit1800000000017 } from './1800000000017-AddPayloadFieldsToToolInvocationAudit'
+import { DropAgentflowTypeColumn1800000000018 } from './1800000000018-DropAgentflowTypeColumn'
 
 export const postgresMigrations = [
     ConsolidatedBaseline1800000000000,
@@ -35,5 +36,6 @@ export const postgresMigrations = [
     CreateMCPServerChangeLog1800000000014,
     AddPolicyOutcomeToToolInvocationAudit1800000000015,
     AddStdioFieldsToMCPServer1800000000016,
-    AddPayloadFieldsToToolInvocationAudit1800000000017
+    AddPayloadFieldsToToolInvocationAudit1800000000017,
+    DropAgentflowTypeColumn1800000000018
 ]

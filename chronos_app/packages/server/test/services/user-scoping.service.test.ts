@@ -184,13 +184,13 @@ export function userScopingServiceTest() {
         })
 
         it('getAllAgentflows should filter by userId for non-admin', async () => {
-            await agentflowsService.getAllAgentflows(undefined, -1, -1, userContext)
+            await agentflowsService.getAllAgentflows(-1, -1, userContext)
 
             expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('chat_flow.userId = :userId', { userId: 'user-1' })
         })
 
         it('getAllAgentflows should not filter by userId for admin', async () => {
-            await agentflowsService.getAllAgentflows(undefined, -1, -1, adminContext)
+            await agentflowsService.getAllAgentflows(-1, -1, adminContext)
 
             expect(mockQueryBuilder.andWhere).not.toHaveBeenCalledWith(
                 'chat_flow.userId = :userId',
@@ -209,7 +209,6 @@ export function userScopingServiceTest() {
         it('saveAgentflow should set userId from userContext', async () => {
             const newAgentFlow = {
                 name: 'Test',
-                type: 'AGENTFLOW',
                 flowData: JSON.stringify({ nodes: [], edges: [] })
             }
             const saved = { id: 'cf-1', ...newAgentFlow, userId: 'user-1' }
@@ -223,7 +222,7 @@ export function userScopingServiceTest() {
         })
 
         it('updateAgentflow should throw 403 for non-owner', async () => {
-            const existingAgentflow = { id: 'cf-1', userId: 'user-1', type: 'AGENTFLOW' }
+            const existingAgentflow = { id: 'cf-1', userId: 'user-1' }
             const updateData = { name: 'Updated' }
 
             await expect(agentflowsService.updateAgentflow(existingAgentflow, updateData, otherUserContext)).rejects.toThrow(
