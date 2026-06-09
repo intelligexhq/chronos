@@ -122,6 +122,7 @@ import { mcpServerChangeLogServiceTest } from './services/mcp-server-change-log.
 import { oauth2RefreshServiceTest } from './services/oauth2-refresh.service.test'
 import { auditServiceTest } from './services/audit.service.test'
 import { auditPayloadRetentionSweeperTest } from './services/audit-payload-retention.service.test'
+import { auditLogRetentionSweeperTest } from './services/audit-log-retention.service.test'
 import { mcpGatewayAuthMiddlewareTest } from './middlewares/mcp-gateway-auth.test'
 import { mcpGatewayRouteTest } from './routes/v1/mcp-gateway.route.test'
 import { nodesPoolTest } from './NodesPool.test'
@@ -163,6 +164,7 @@ import { agentHealthPollerTest } from './schedulers/agent-health-poller.test'
 import { mcpServerHealthPollerTest } from './schedulers/mcp-server-health-poller.test'
 import { oauth2RefreshSchedulerTest } from './schedulers/oauth2-refresh-scheduler.test'
 import { auditPayloadRetentionSchedulerTest } from './schedulers/audit-payload-retention-scheduler.test'
+import { auditLogRetentionSchedulerTest } from './schedulers/audit-log-retention-scheduler.test'
 
 // extend test timeout to 6 minutes for long setups (increase as tests grow)
 jest.setTimeout(360000)
@@ -295,6 +297,7 @@ describe('Services Test', () => {
     oauth2RefreshServiceTest()
     auditServiceTest()
     auditPayloadRetentionSweeperTest()
+    auditLogRetentionSweeperTest()
     nodesPoolTest()
 })
 
@@ -356,4 +359,5 @@ describe('Schedulers Test', () => {
     mcpServerHealthPollerTest()
     oauth2RefreshSchedulerTest()
     auditPayloadRetentionSchedulerTest()
+    auditLogRetentionSchedulerTest()
 })

@@ -6,7 +6,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { InternalChronosError } from '../../errors/internalChronosError'
-import { AgentflowType } from '../../Interface'
 import agentflowsService from '../../services/agentflows'
 import credentialsService from '../../services/credentials'
 import apikeyService from '../../services/apikey'
@@ -14,11 +13,10 @@ import oauthClientService from '../../services/oauth-client'
 
 // ─── Agentflows ───
 
-/** List all agentflows, optionally filtered by type query param. */
-const getAllAgentflows = async (req: Request, res: Response, next: NextFunction) => {
+/** List all agentflows. */
+const getAllAgentflows = async (_req: Request, res: Response, next: NextFunction) => {
     try {
-        const type = req.query.type as AgentflowType | undefined
-        const data = await agentflowsService.getAllAgentflows(type)
+        const data = await agentflowsService.getAllAgentflows()
         return res.json({ success: true, data })
     } catch (error) {
         next(error)

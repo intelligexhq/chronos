@@ -41,6 +41,7 @@ import { AgentHealthPoller } from './schedulers/AgentHealthPoller'
 import { MCPServerHealthPoller } from './schedulers/MCPServerHealthPoller'
 import { OAuth2RefreshScheduler } from './schedulers/OAuth2RefreshScheduler'
 import { AuditPayloadRetentionScheduler } from './schedulers/AuditPayloadRetentionScheduler'
+import { AuditLogRetentionScheduler } from './schedulers/AuditLogRetentionScheduler'
 import { MCPGateway } from './services/mcp-gateway'
 import { CatalogChangeEmitter, MCPGatewaySessionStore } from './services/mcp-gateway-server'
 import { MetricsAggregator } from './services/metrics-aggregator'
@@ -94,6 +95,7 @@ export class App {
     mcpServerHealthPoller?: MCPServerHealthPoller
     oauth2RefreshScheduler?: OAuth2RefreshScheduler
     auditPayloadRetentionScheduler?: AuditPayloadRetentionScheduler
+    auditLogRetentionScheduler?: AuditLogRetentionScheduler
     mcpGateway?: MCPGateway
     mcpGatewaySessionStore?: MCPGatewaySessionStore
     mcpCatalogChangeEmitter?: CatalogChangeEmitter
@@ -261,6 +263,24 @@ export class App {
                 this.auditPayloadRetentionScheduler.start()
             } else {
                 logger.info('ENABLE_AUDIT_PAYLOAD_RETENTION=false — audit payload retention sweeper not started')
+            }
+
+            // Audit log retention sweeper — hard-deletes rows older than
+            // AUDIT_LOG_RETENTION_DAYS from tool_invocation_audit AND
+            // credential_access_audit. Distinct from the payload sweeper
+            // above (which only NULLs payload columns). Gated by presence of
+            // a positive AUDIT_LOG_RETENTION_DAYS env value — when unset the
+            // v1.7 "forever" default is preserved.
+            const auditLogRetentionDaysRaw = process.env.AUDIT_LOG_RETENTION_DAYS
+            const auditLogRetentionDays = auditLogRetentionDaysRaw ? parseInt(auditLogRetentionDaysRaw, 10) : NaN
+            if (Number.isFinite(auditLogRetentionDays) && auditLogRetentionDays > 0) {
+                this.auditLogRetentionScheduler = new AuditLogRetentionScheduler({
+                    appDataSource: this.AppDataSource,
+                    retentionDays: auditLogRetentionDays
+                })
+                this.auditLogRetentionScheduler.start()
+            } else {
+                logger.info('AUDIT_LOG_RETENTION_DAYS not set — audit log retention sweeper not started (rows kept forever)')
             }
 
             // Dashboard metrics aggregator — runs daily rollup of execution_metrics into daily_metrics
@@ -445,6 +465,9 @@ export class App {
             }
             if (this.auditPayloadRetentionScheduler) {
                 this.auditPayloadRetentionScheduler.stop()
+            }
+            if (this.auditLogRetentionScheduler) {
+                this.auditLogRetentionScheduler.stop()
             }
             if (this.mcpGatewaySessionStore) {
                 removePromises.push(this.mcpGatewaySessionStore.stop())

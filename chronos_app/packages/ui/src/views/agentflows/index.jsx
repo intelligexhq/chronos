@@ -63,7 +63,7 @@ const Agentflows = () => {
             page: page || currentPage,
             limit: limit || pageLimit
         }
-        getAllAgentflows.request('AGENTFLOW', params)
+        getAllAgentflows.request(params)
     }
 
     const handleChange = (event, nextView) => {

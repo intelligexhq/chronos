@@ -2,7 +2,6 @@ import { NextFunction, Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { AgentFlow } from '../../database/entities/AgentFlow'
 import { InternalChronosError } from '../../errors/internalChronosError'
-import { AgentflowType } from '../../Interface'
 import { UserContext } from '../../Interface.Auth'
 import apiKeyService from '../../services/apikey'
 import agentflowsService from '../../services/agentflows'
@@ -67,7 +66,7 @@ const deleteAgentflow = async (req: Request, res: Response, next: NextFunction) 
 const getAllAgentflows = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { page, limit } = getPageAndLimitParams(req)
-        const apiResponse = await agentflowsService.getAllAgentflows(req.query?.type as AgentflowType, page, limit, getUserContext(req))
+        const apiResponse = await agentflowsService.getAllAgentflows(page, limit, getUserContext(req))
         return res.json(apiResponse)
     } catch (error) {
         next(error)

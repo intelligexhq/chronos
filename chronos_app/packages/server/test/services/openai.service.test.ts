@@ -193,8 +193,8 @@ export function openaiServiceTest() {
         describe('listModels', () => {
             it('should return models list with correct shape', async () => {
                 const mockAgentflows = [
-                    { id: 'af-1', name: 'Agent 1', createdDate: new Date('2024-01-01'), type: 'AGENTFLOW' },
-                    { id: 'af-2', name: 'Agent 2', createdDate: new Date('2024-01-02'), type: 'AGENTFLOW' }
+                    { id: 'af-1', name: 'Agent 1', createdDate: new Date('2024-01-01') },
+                    { id: 'af-2', name: 'Agent 2', createdDate: new Date('2024-01-02') }
                 ]
                 mockRepository.find.mockResolvedValue(mockAgentflows)
 
@@ -233,7 +233,6 @@ export function openaiServiceTest() {
                 const mockAgentflow = {
                     id: VALID_AGENTFLOW_UUID,
                     name: 'Test Agent',
-                    type: 'AGENTFLOW',
                     createdDate: new Date('2024-01-01')
                 }
                 mockRepository.findOneBy.mockResolvedValue(mockAgentflow)
@@ -259,7 +258,7 @@ export function openaiServiceTest() {
             const VALID_AGENTFLOW_UUID = '11111111-2222-4333-8444-555555555555'
 
             it('should return agentflow for valid id', async () => {
-                const mockAgentflow = { id: VALID_AGENTFLOW_UUID, type: 'AGENTFLOW', name: 'Test' }
+                const mockAgentflow = { id: VALID_AGENTFLOW_UUID, name: 'Test' }
                 mockRepository.findOneBy.mockResolvedValue(mockAgentflow)
 
                 const result = await openaiService.resolveAgentflow(VALID_AGENTFLOW_UUID)

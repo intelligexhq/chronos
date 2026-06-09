@@ -48,8 +48,7 @@ export function agentflowsRouteTest() {
                 const agentflowData = {
                     name: 'Test Agentflow',
                     flowData: '{}',
-                    deployed: false,
-                    type: 'AGENTFLOW'
+                    deployed: false
                 }
 
                 const response = await supertest(getRunningExpressApp().app)
@@ -75,16 +74,6 @@ export function agentflowsRouteTest() {
             it('should get all agentflows', async () => {
                 const response = await supertest(getRunningExpressApp().app)
                     .get('/api/v1/agentflows')
-                    .set('Authorization', `Bearer ${authToken}`)
-                    .set('x-request-from', 'internal')
-
-                expect([200, 404, 500]).toContain(response.status)
-            })
-
-            it('should get all agentflows with type filter', async () => {
-                const response = await supertest(getRunningExpressApp().app)
-                    .get('/api/v1/agentflows')
-                    .query({ type: 'AGENTFLOW' })
                     .set('Authorization', `Bearer ${authToken}`)
                     .set('x-request-from', 'internal')
 

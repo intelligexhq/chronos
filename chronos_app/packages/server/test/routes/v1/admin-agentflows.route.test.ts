@@ -198,16 +198,6 @@ export function adminAgentflowsRouteTest() {
                 expect(response.body.success).toBe(true)
             })
 
-            it('should filter agentflows by type query param', async () => {
-                const response = await supertest(getRunningExpressApp().app)
-                    .get(`${base}?type=AGENTFLOW`)
-                    .set('Authorization', `Bearer ${readToken}`)
-
-                expect(response.status).toEqual(StatusCodes.OK)
-                expect(response.body.success).toBe(true)
-                expect(Array.isArray(response.body.data)).toBe(true)
-            })
-
             it('should delete an agentflow via DELETE /:id', async () => {
                 if (!createdAgentflowId) return
 

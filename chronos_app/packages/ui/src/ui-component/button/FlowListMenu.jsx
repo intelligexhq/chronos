@@ -104,7 +104,7 @@ export default function FlowListMenu({ agentflow, setError, updateFlowsApi, curr
                 page: currentPage,
                 limit: pageLimit
             }
-            await updateFlowsApi.request('AGENTFLOW', params)
+            await updateFlowsApi.request(params)
         } catch (error) {
             if (setError) setError(error)
         }
@@ -169,7 +169,7 @@ export default function FlowListMenu({ agentflow, setError, updateFlowsApi, curr
                 page: currentPage,
                 limit: pageLimit
             }
-            await updateFlowsApi.request('AGENTFLOW', params)
+            await updateFlowsApi.request(params)
         } catch (error) {
             if (setError) setError(error)
             enqueueSnackbar({
@@ -212,7 +212,7 @@ export default function FlowListMenu({ agentflow, setError, updateFlowsApi, curr
                 page: currentPage,
                 limit: pageLimit
             }
-            await updateFlowsApi.request('AGENTFLOW', params)
+            await updateFlowsApi.request(params)
         } catch (error) {
             if (setError) setError(error)
             enqueueSnackbar({
@@ -248,7 +248,7 @@ export default function FlowListMenu({ agentflow, setError, updateFlowsApi, curr
                     page: currentPage,
                     limit: pageLimit
                 }
-                await updateFlowsApi.request('AGENTFLOW', params)
+                await updateFlowsApi.request(params)
             } catch (error) {
                 if (setError) setError(error)
                 enqueueSnackbar({

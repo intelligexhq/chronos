@@ -163,10 +163,6 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         for (let i = 0; i < selectedAgentflows.length; i += 1) {
             selectedAgentflowNames.push(flows.find((f) => f.name === selectedAgentflows[i])?.label)
         }
-        const selectedAgentflowTypes = []
-        for (let i = 0; i < selectedAgentflows.length; i += 1) {
-            selectedAgentflowTypes.push(flows.find((f) => f.name === selectedAgentflows[i])?.type)
-        }
         const agentflowName = JSON.stringify(selectedAgentflowNames)
         const datasetName = datasets.find((f) => f.name === dataset)?.label
         const obj = {
@@ -177,7 +173,6 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             datasetName: datasetName,
             agentflowId: agentflow,
             agentflowName: agentflowName,
-            agentflowType: JSON.stringify(selectedAgentflowTypes),
             selectedSimpleEvaluators: selectedSimpleEvaluators,
             selectedLLMEvaluators: selectedLLMEvaluators,
             model: selectedModel,
@@ -220,7 +215,7 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     useEffect(() => {
         getNodesByCategoryApi.request('Chat Models')
         if (flows.length === 0) {
-            getAllAgentflowsApi.request('AGENTFLOW')
+            getAllAgentflowsApi.request()
         }
         if (datasets.length === 0) {
             getAllDatasetsApi.request()

@@ -1,11 +1,11 @@
 import { ICommonObject, removeFolderFromStorage } from 'chronos-components'
 import { StatusCodes } from 'http-status-codes'
 import { In } from 'typeorm'
-import { AgentflowType, IReactFlowNode, IReactFlowObject } from '../../Interface'
+import { IReactFlowNode, IReactFlowObject } from '../../Interface'
 import { UserContext } from '../../Interface.Auth'
 import { CHRONOS_COUNTER_STATUS, CHRONOS_METRIC_COUNTERS } from '../../Interface.Metrics'
 import { Agent } from '../../database/entities/Agent'
-import { AgentFlow, EnumAgentflowType } from '../../database/entities/AgentFlow'
+import { AgentFlow } from '../../database/entities/AgentFlow'
 import { MCPServer } from '../../database/entities/MCPServer'
 import { AgentflowVersion } from '../../database/entities/AgentflowVersion'
 import { ChatMessage } from '../../database/entities/ChatMessage'
@@ -22,15 +22,6 @@ import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
 import { createModuleLogger } from '../../utils/logger'
 
 const logger = createModuleLogger('agentflows')
-
-export const enum AgentflowErrorMessage {
-    INVALID_AGENTFLOW_TYPE = 'Invalid Agentflow Type'
-}
-
-export function validateAgentflowType(type: AgentflowType | undefined) {
-    if (!Object.values(EnumAgentflowType).includes(type as EnumAgentflowType))
-        throw new InternalChronosError(StatusCodes.BAD_REQUEST, AgentflowErrorMessage.INVALID_AGENTFLOW_TYPE)
-}
 
 // Check if agentflow valid for streaming
 const checkIfAgentflowIsValidForStreaming = async (agentflowId: string): Promise<any> => {
@@ -143,7 +134,7 @@ const attachPublishedVersionNumbers = async (agentflows: AgentFlow[]): Promise<v
     })
 }
 
-const getAllAgentflows = async (type?: AgentflowType, page: number = -1, limit: number = -1, userContext?: UserContext) => {
+const getAllAgentflows = async (page: number = -1, limit: number = -1, userContext?: UserContext) => {
     try {
         const appServer = getRunningExpressApp()
 
@@ -157,9 +148,6 @@ const getAllAgentflows = async (type?: AgentflowType, page: number = -1, limit: 
         if (page > 0 && limit > 0) {
             queryBuilder.skip((page - 1) * limit)
             queryBuilder.take(limit)
-        }
-        if (type) {
-            queryBuilder.andWhere('chat_flow.type = :type', { type })
         }
         const [data, total] = await queryBuilder.getManyAndCount()
 
@@ -179,15 +167,14 @@ const getAllAgentflows = async (type?: AgentflowType, page: number = -1, limit: 
 }
 
 /**
- * Get count of agentflows - stub for open source (counts all agentflows of given type)
- * @param type - Agentflow type
+ * Get count of agentflows - stub for open source (counts all agentflows).
  * @param _organizationId - Ignored in open source
  * @returns Count of agentflows
  */
-async function getAllAgentflowsCountByOrganization(type: AgentflowType, _organizationId: string): Promise<number> {
+async function getAllAgentflowsCountByOrganization(_organizationId: string): Promise<number> {
     try {
         const appServer = getRunningExpressApp()
-        const agentflowsCount = await appServer.AppDataSource.getRepository(AgentFlow).countBy({ type })
+        const agentflowsCount = await appServer.AppDataSource.getRepository(AgentFlow).count()
         return agentflowsCount
     } catch (error) {
         throw new InternalChronosError(
@@ -197,11 +184,10 @@ async function getAllAgentflowsCountByOrganization(type: AgentflowType, _organiz
     }
 }
 
-const getAllAgentflowsCount = async (type?: AgentflowType, userContext?: UserContext): Promise<number> => {
+const getAllAgentflowsCount = async (userContext?: UserContext): Promise<number> => {
     try {
         const appServer = getRunningExpressApp()
         const whereOptions: any = {}
-        if (type) whereOptions.type = type
         if (userContext && userContext.role !== 'admin') whereOptions.userId = userContext.userId
         const dbResponse = await appServer.AppDataSource.getRepository(AgentFlow).countBy(whereOptions)
         return dbResponse
@@ -262,7 +248,6 @@ const getAgentflowById = async (agentflowId: string, userContext?: UserContext):
 }
 
 const saveAgentflow = async (newAgentFlow: AgentFlow, userContext?: UserContext): Promise<any> => {
-    validateAgentflowType(newAgentFlow.type)
     if (userContext) {
         newAgentFlow.userId = userContext.userId
     }
@@ -318,11 +303,6 @@ const updateAgentflow = async (agentflow: AgentFlow, updateAgentFlow: AgentFlow,
     const appServer = getRunningExpressApp()
     if (updateAgentFlow.flowData && containsBase64File(updateAgentFlow)) {
         updateAgentFlow.flowData = await updateFlowDataWithFilePaths(agentflow.id, updateAgentFlow.flowData)
-    }
-    if (updateAgentFlow.type || updateAgentFlow.type === '') {
-        validateAgentflowType(updateAgentFlow.type)
-    } else {
-        updateAgentFlow.type = agentflow.type
     }
     const newDbAgentflow = appServer.AppDataSource.getRepository(AgentFlow).merge(agentflow, updateAgentFlow)
     await _checkAndUpdateDocumentStoreUsage(newDbAgentflow)

@@ -230,7 +230,6 @@ const listModels = async (): Promise<{ object: string; data: OpenAIModelObject[]
     try {
         const appServer = getRunningExpressApp()
         const agentflows = await appServer.AppDataSource.getRepository(AgentFlow).find({
-            where: { type: 'AGENTFLOW' as any },
             order: { updatedDate: 'DESC' }
         })
 
