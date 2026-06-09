@@ -4,6 +4,31 @@ All notable changes to Chronos. Format follows [Keep a Changelog](https://keepac
 
 ---
 
+## [1.8.3] — 2026-06-09
+
+Patch release. Production image cut from ~2.3 GB to ~1.8 GB through dependency hygiene; Flowise-inherited speech-to-text and text-to-speech feature removed; small UI polish.
+
+### Changed
+
+- **Container image down ~540 MB.** UI build-time libraries (MUI, Tabler, Tiptap, Codemirror, MathJax, etc.) moved out of `chronos-ui`'s runtime dependencies; Vite already inlines them into the static bundle. Two misclassified `@types/*` entries moved out of `chronos-components` runtime deps. Three dead OpenTelemetry logs packages and a duplicate `bullmq-otel` declaration removed from the workspace root. No behaviour change. Tier 2 vendor-SDK shrinkage (vector stores, document loaders, embeddings) remains in v1.9 scope.
+- **Dialog padding standardized via theme.** `MuiDialogTitle` / `MuiDialogContent` / `MuiDialogActions` overrides added in `compStyleOverride.js`; the two MCP server dialogs updated to inherit them. Other dialogs keep their explicit `sx` for now.
+- **Health-poll cadence env vars documented.** `AGENT_HEALTH_POLL_INTERVAL_MS` and `MCP_SERVER_HEALTH_POLL_INTERVAL_MS` descriptions in `.env.example` and `docs/environment-variables.md` now spell out the freshness/probe-traffic trade-off and suggest values for demo / steady-state / high-cardinality deployments.
+
+### Removed
+
+- **Speech-to-text and text-to-speech feature.** Flowise-inherited audio side-channel that pre/post-processed chat attachments without going through the audit, gateway, or policy plane. Untutorialised, undocumented, outside the platform governance model. Dropped `assemblyai` and `@elevenlabs/elevenlabs-js` runtime dependencies. Agentflow `speechToText` and `textToSpeech` columns left as nullable text — a future release will drop them in a migration.
+
+### Fixed
+
+- **Chat widget no longer spins forever for unsaved agentflows.** Test-chat input renders with a "Save the agentflow to start chatting" placeholder when no flow id is present.
+- **Console no longer warns about a stray `item` prop on `Box`** in `AgentFlowNode`.
+
+### Documentation
+
+- SQLite MCP tutorial corrected to use `uvx mcp-server-sqlite` (the Python package shipped via `uv`) instead of the non-existent `@modelcontextprotocol/server-sqlite` npm package.
+
+---
+
 ## [1.8.2] — 2026-05-28
 
 ### Added
