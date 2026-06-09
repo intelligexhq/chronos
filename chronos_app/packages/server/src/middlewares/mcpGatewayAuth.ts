@@ -1,9 +1,11 @@
 import { Request, Response, NextFunction } from 'express'
 import { timingSafeEqual } from 'crypto'
+import { StatusCodes } from 'http-status-codes'
 import { Agent } from '../database/entities/Agent'
 import { AgentRuntimeType } from '../Interface'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 import { getErrorMessage } from '../errors/utils'
+import { InternalChronosError } from '../errors/internalChronosError'
 import { createModuleLogger } from '../utils/logger'
 
 const logger = createModuleLogger('mcpGatewayAuth')
@@ -61,7 +63,23 @@ export const mcpGatewayAuth = async (req: Request, res: Response, next: NextFunc
         // run the constant-time compare against an empty stored token so
         // timing on this path matches the "valid UUID, agent missing" path.
         const appServer = getRunningExpressApp()
-        const agent = UUID_RE.test(agentId) ? await appServer.AppDataSource.getRepository(Agent).findOneBy({ id: agentId }) : null
+        let agent: Agent | null = null
+        if (UUID_RE.test(agentId)) {
+            try {
+                agent = await appServer.AppDataSource.getRepository(Agent).findOneBy({ id: agentId })
+            } catch (dbError) {
+                // Distinguish a transient DB failure from "agent missing" — the
+                // latter is a 401 (deliberately, to avoid existence-leak); the
+                // former is a real 5xx that the global error handler should own
+                // so it isn't masked as a flat 500 from this middleware.
+                return next(
+                    new InternalChronosError(
+                        StatusCodes.INTERNAL_SERVER_ERROR,
+                        `MCP gateway auth lookup failed: ${getErrorMessage(dbError)}`
+                    )
+                )
+            }
+        }
 
         // Constant-time-compare even when the agent does not exist so token
         // verification cost does not leak the existence of an agent ID.

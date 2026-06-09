@@ -175,5 +175,24 @@ export function mcpGatewayAuthMiddlewareTest() {
             expect(res.status).toHaveBeenCalledWith(401)
             expect(next).not.toHaveBeenCalled()
         })
+
+        it('forwards DB lookup failures via next() instead of flattening to a 500 response', async () => {
+            // Transient DB errors (connection drop, pool saturation) must reach
+            // the global error handler so they surface as a typed 5xx — masking
+            // them as a flat 500 from this middleware made the route's "503 when
+            // gateway not enabled" assertion flaky under concurrent poller load.
+            const dbErr = new Error('connection terminated')
+            mockAgentRepo.findOneBy.mockRejectedValue(dbErr)
+            const req = buildReq({ headers: { authorization: 'Bearer anything' } })
+            const res = buildRes()
+            const next = jest.fn()
+            await mcpGatewayAuth(req, res, next)
+            expect(res.status).not.toHaveBeenCalled()
+            expect(next).toHaveBeenCalledTimes(1)
+            const forwarded = next.mock.calls[0][0]
+            expect(forwarded).toBeDefined()
+            expect(forwarded.statusCode).toBe(500)
+            expect(forwarded.message).toContain('connection terminated')
+        })
     })
 }

@@ -1,6 +1,6 @@
 {
     "name": "chronos",
-    "version": "1.8.2",
+    "version": "1.8.3",
     "description": "Intelligex Chronos Server",
     "scripts": {
         "build": "tsc && node ./scripts/copy-preset-assets.js",
