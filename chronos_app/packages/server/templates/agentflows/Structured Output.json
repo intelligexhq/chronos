@@ -473,7 +473,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "llmModel": "chatAnthropic",
+                    "llmModel": "chatModelEndpoint",
                     "llmMessages": [
                         {
                             "role": "system",
@@ -507,7 +507,7 @@
                         "extendedThinking": "",
                         "budgetTokens": 1024,
                         "allowImageUploads": "",
-                        "llmModel": "chatAnthropic"
+                        "llmModel": "chatModelEndpoint"
                     }
                 },
                 "outputAnchors": [

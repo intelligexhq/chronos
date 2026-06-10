@@ -232,7 +232,7 @@ const followUpPromptsOptions = {
                 label: 'Connect Credential',
                 name: 'credential',
                 type: 'credential',
-                credentialNames: ['openAIApi']
+                credentialNames: ['apiKey']
             },
             {
                 label: 'Model Name',

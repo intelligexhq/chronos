@@ -469,7 +469,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "llmModel": "chatOpenAI",
+                    "llmModel": "chatModelEndpoint",
                     "llmMessages": [
                         {
                             "role": "developer",
@@ -498,7 +498,7 @@
                         "allowImageUploads": "",
                         "imageResolution": "low",
                         "reasoningEffort": "",
-                        "llmModel": "chatOpenAI"
+                        "llmModel": "chatModelEndpoint"
                     }
                 },
                 "outputAnchors": [
@@ -816,7 +816,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "agentModel": "chatGoogleGenerativeAI",
+                    "agentModel": "chatModelEndpoint",
                     "agentMessages": [
                         {
                             "role": "system",
@@ -865,7 +865,7 @@
                         "harmBlockThreshold": "",
                         "baseUrl": "",
                         "allowImageUploads": "",
-                        "agentModel": "chatGoogleGenerativeAI"
+                        "agentModel": "chatModelEndpoint"
                     }
                 },
                 "outputAnchors": [
@@ -1183,7 +1183,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "agentModel": "chatGoogleGenerativeAI",
+                    "agentModel": "chatModelEndpoint",
                     "agentMessages": [
                         {
                             "role": "system",
@@ -1232,7 +1232,7 @@
                         "harmBlockThreshold": "",
                         "baseUrl": "",
                         "allowImageUploads": "",
-                        "agentModel": "chatGoogleGenerativeAI"
+                        "agentModel": "chatModelEndpoint"
                     }
                 },
                 "outputAnchors": [
@@ -1857,7 +1857,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "llmModel": "chatGoogleGenerativeAI",
+                    "llmModel": "chatModelEndpoint",
                     "llmMessages": [
                         {
                             "role": "system",
@@ -1886,7 +1886,7 @@
                         "harmBlockThreshold": "",
                         "baseUrl": "",
                         "allowImageUploads": "",
-                        "llmModel": "chatGoogleGenerativeAI"
+                        "llmModel": "chatModelEndpoint"
                     }
                 },
                 "outputAnchors": [

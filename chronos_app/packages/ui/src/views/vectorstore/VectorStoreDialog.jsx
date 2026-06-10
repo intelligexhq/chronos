@@ -220,27 +220,27 @@ query(formData).then((response) => {
         if (codeLang === 'Python') {
             return `# Specify multiple values for a config parameter by specifying the node id
 body_data = {
-    "openAIApiKey": {
-        "chatOpenAI_0": "sk-my-openai-1st-key",
-        "openAIEmbeddings_0": "sk-my-openai-2nd-key"
+    "apiKey": {
+        "chatModelEndpoint_0": "sk-my-1st-key",
+        "embeddingsEndpoint_0": "sk-my-2nd-key"
     }
 }`
         } else if (codeLang === 'JavaScript') {
             return `// Specify multiple values for a config parameter by specifying the node id
-formData.append("openAIApiKey[chatOpenAI_0]", "sk-my-openai-1st-key")
-formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
+formData.append("apiKey[chatModelEndpoint_0]", "sk-my-1st-key")
+formData.append("apiKey[embeddingsEndpoint_0]", "sk-my-2nd-key")`
         } else if (codeLang === 'cURL') {
-            return `-F "openAIApiKey[chatOpenAI_0]=sk-my-openai-1st-key" \\
--F "openAIApiKey[openAIEmbeddings_0]=sk-my-openai-2nd-key" \\`
+            return `-F "apiKey[chatModelEndpoint_0]=sk-my-1st-key" \\
+-F "apiKey[embeddingsEndpoint_0]=sk-my-2nd-key" \\`
         }
     }
 
     const getMultiConfigCode = () => {
         return `{
     "overrideConfig": {
-        "openAIApiKey": {
-            "chatOpenAI_0": "sk-my-openai-1st-key",
-            "openAIEmbeddings_0": "sk-my-openai-2nd-key"
+        "apiKey": {
+            "chatModelEndpoint_0": "sk-my-1st-key",
+            "embeddingsEndpoint_0": "sk-my-2nd-key"
         }
     }
 }`

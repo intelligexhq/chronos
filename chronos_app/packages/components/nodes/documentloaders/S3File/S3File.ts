@@ -21,10 +21,6 @@ import * as fsDefault from 'node:fs'
 import * as path from 'node:path'
 import * as os from 'node:os'
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf'
-import { DocxLoader } from '@langchain/community/document_loaders/fs/docx'
-import { CSVLoader } from '@langchain/community/document_loaders/fs/csv'
-import { LoadOfSheet } from '../MicrosoftExcel/ExcelLoader'
-import { PowerpointLoader } from '../MicrosoftPowerpoint/PowerpointLoader'
 import { TextSplitter } from '@langchain/textsplitters'
 import { IDocument } from '../../../src/Interface'
 import { omit } from 'lodash'
@@ -44,13 +40,13 @@ class S3_DocumentLoaders implements INode {
     outputs: INodeOutputsValue[]
 
     constructor() {
-        this.label = 'S3'
+        this.label = 'S3-Compatible File'
         this.name = 'S3'
         this.version = 5.0
         this.type = 'Document'
         this.icon = 's3.svg'
         this.category = 'Document Loaders'
-        this.description = 'Load Data from S3 Buckets'
+        this.description = 'Load a single file from any S3-compatible object store (AWS S3, Cloudflare R2, MinIO, Wasabi, Backblaze B2, Google Cloud Storage with S3 API). PDF and text formats supported.'
         this.baseClasses = [this.type]
         this.credential = {
             label: 'AWS Credential',
@@ -940,31 +936,12 @@ class S3_DocumentLoaders implements INode {
                     docs = await pdfLoader.load()
                     break
                 }
-                case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-                case 'application/msword': {
-                    const docxLoader = new DocxLoader(tempFilePath)
-                    docs = await docxLoader.load()
-                    break
-                }
-                case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-                case 'application/vnd.ms-excel': {
-                    const excelLoader = new LoadOfSheet(tempFilePath)
-                    docs = await excelLoader.load()
-                    break
-                }
-                case 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
-                case 'application/vnd.ms-powerpoint': {
-                    const pptxLoader = new PowerpointLoader(tempFilePath)
-                    docs = await pptxLoader.load()
-                    break
-                }
-                case 'text/csv': {
-                    const csvLoader = new CSVLoader(tempFilePath)
-                    docs = await csvLoader.load()
-                    break
-                }
                 default:
-                    throw new Error(`Unsupported binary file type: ${mimeType}`)
+                    // v1.9 Tier 2 prune: DOCX / Excel / PowerPoint / CSV loaders
+                    // are no longer in the canvas surface — use the appropriate
+                    // MCP server (e.g. an officedocs-mcp) for non-PDF binary
+                    // formats, or pre-convert to text/PDF before upload.
+                    throw new Error(`Unsupported binary file type: ${mimeType}. PDF is the only binary format supported by the S3 loader; route other formats through an MCP server.`)
             }
 
             // Add S3 metadata to each document

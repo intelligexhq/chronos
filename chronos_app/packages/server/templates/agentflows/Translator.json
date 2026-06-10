@@ -473,7 +473,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "llmModel": "chatGoogleGenerativeAI",
+                    "llmModel": "chatModelEndpoint",
                     "llmMessages": [
                         {
                             "role": "system",
@@ -502,7 +502,7 @@
                         "harmBlockThreshold": "",
                         "baseUrl": "",
                         "allowImageUploads": "",
-                        "llmModel": "chatGoogleGenerativeAI"
+                        "llmModel": "chatModelEndpoint"
                     }
                 },
                 "outputAnchors": [

@@ -484,7 +484,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "llmModel": "chatAnthropic",
+                    "llmModel": "chatModelEndpoint",
                     "llmMessages": [
                         {
                             "role": "system",
@@ -523,7 +523,7 @@
                         "extendedThinking": "",
                         "budgetTokens": 1024,
                         "allowImageUploads": "",
-                        "llmModel": "chatAnthropic"
+                        "llmModel": "chatModelEndpoint"
                     },
                     "llmUserMessage": "<p></p>"
                 },
@@ -894,7 +894,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "agentModel": "chatAnthropic",
+                    "agentModel": "chatModelEndpoint",
                     "agentMessages": [
                         {
                             "role": "system",
@@ -955,7 +955,7 @@
                         "extendedThinking": "",
                         "budgetTokens": 1024,
                         "allowImageUploads": "",
-                        "agentModel": "chatAnthropic"
+                        "agentModel": "chatModelEndpoint"
                     }
                 },
                 "outputAnchors": [
@@ -1275,7 +1275,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "agentModel": "chatGoogleGenerativeAI",
+                    "agentModel": "chatModelEndpoint",
                     "agentMessages": [
                         {
                             "role": "system",
@@ -1309,7 +1309,7 @@
                         "harmBlockThreshold": "",
                         "baseUrl": "",
                         "allowImageUploads": "",
-                        "agentModel": "chatGoogleGenerativeAI"
+                        "agentModel": "chatModelEndpoint"
                     },
                     "undefined": ""
                 },
@@ -1536,7 +1536,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "conditionAgentModel": "chatGoogleGenerativeAI",
+                    "conditionAgentModel": "chatModelEndpoint",
                     "conditionAgentInstructions": "<p>Given a research topic, previous subagents and their findings, determine if more subagents are needed for further research or the findings are sufficient for the research topic</p>",
                     "conditionAgentInput": "<p>&lt;research_topic&gt;</p><p><span class=\"variable\" data-type=\"mention\" data-id=\"$form.query\" data-label=\"$form.query\">{{ $form.query }}</span></p><p>&lt;/research_topic&gt;</p><p></p><p>&lt;subagents&gt;</p><p><span class=\"variable\" data-type=\"mention\" data-id=\"$flow.state.subagents\" data-label=\"$flow.state.subagents\">{{ $flow.state.subagents }}</span></p><p>&lt;/subagents&gt;</p><p></p><p>&lt;findings&gt;</p><p><span class=\"variable\" data-type=\"mention\" data-id=\"$flow.state.findings\" data-label=\"$flow.state.findings\">{{ $flow.state.findings }}</span></p><p>&lt;/findings&gt;</p>",
                     "conditionAgentScenarios": [
@@ -1561,7 +1561,7 @@
                         "harmBlockThreshold": "",
                         "baseUrl": "",
                         "allowImageUploads": "",
-                        "conditionAgentModel": "chatGoogleGenerativeAI"
+                        "conditionAgentModel": "chatModelEndpoint"
                     },
                     "undefined": ""
                 },

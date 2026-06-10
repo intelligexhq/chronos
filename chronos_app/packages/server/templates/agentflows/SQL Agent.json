@@ -580,7 +580,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "llmModel": "chatAnthropic",
+                    "llmModel": "chatModelEndpoint",
                     "llmMessages": [
                         {
                             "role": "system",
@@ -617,7 +617,7 @@
                         "extendedThinking": "",
                         "budgetTokens": 1024,
                         "allowImageUploads": "",
-                        "llmModel": "chatAnthropic"
+                        "llmModel": "chatModelEndpoint"
                     }
                 },
                 "outputAnchors": [
@@ -715,7 +715,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "conditionAgentModel": "chatOpenAI",
+                    "conditionAgentModel": "chatModelEndpoint",
                     "conditionAgentInstructions": "<p>You are a SQL expert with a strong attention to detail. Double check the SQL query for common mistakes, including:</p><p>- Using NOT IN with NULL values</p><p>- Using UNION when UNION ALL should have been used</p><p>- Using BETWEEN for exclusive ranges</p><p>- Data type mismatch in predicates</p><p>- Properly quoting identifiers</p><p>- Using the correct number of arguments for functions</p><p>- Casting to the correct data type</p><p>- Using the proper columns for joins</p>",
                     "conditionAgentInput": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"$flow.state.sqlQuery\" data-label=\"$flow.state.sqlQuery\">{{ $flow.state.sqlQuery }}</span> </p>",
                     "conditionAgentScenarios": [
@@ -744,7 +744,7 @@
                         "allowImageUploads": "",
                         "imageResolution": "low",
                         "reasoningEffort": "",
-                        "conditionAgentModel": "chatOpenAI"
+                        "conditionAgentModel": "chatModelEndpoint"
                     }
                 },
                 "outputAnchors": [
@@ -1209,7 +1209,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "llmModel": "chatGoogleGenerativeAI",
+                    "llmModel": "chatModelEndpoint",
                     "llmMessages": [],
                     "llmEnableMemory": true,
                     "llmMemoryType": "allMessages",
@@ -1230,7 +1230,7 @@
                         "harmBlockThreshold": "",
                         "baseUrl": "",
                         "allowImageUploads": "",
-                        "llmModel": "chatGoogleGenerativeAI"
+                        "llmModel": "chatModelEndpoint"
                     },
                     "undefined": ""
                 },
@@ -1329,7 +1329,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "conditionAgentModel": "chatMistralAI",
+                    "conditionAgentModel": "chatModelEndpoint",
                     "conditionAgentInstructions": "<p>You are a SQL expert. Check if the query result is correct or contains error.</p>",
                     "conditionAgentInput": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"customFunctionAgentflow_1\" data-label=\"customFunctionAgentflow_1\">{{ customFunctionAgentflow_1 }}</span> </p>",
                     "conditionAgentScenarios": [
@@ -1350,7 +1350,7 @@
                         "randomSeed": "",
                         "safeMode": "",
                         "overrideEndpoint": "",
-                        "conditionAgentModel": "chatMistralAI"
+                        "conditionAgentModel": "chatModelEndpoint"
                     }
                 },
                 "outputAnchors": [
@@ -1709,7 +1709,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "llmModel": "chatAnthropic",
+                    "llmModel": "chatModelEndpoint",
                     "llmMessages": [
                         {
                             "role": "system",
@@ -1746,7 +1746,7 @@
                         "extendedThinking": "",
                         "budgetTokens": 1024,
                         "allowImageUploads": "",
-                        "llmModel": "chatAnthropic"
+                        "llmModel": "chatModelEndpoint"
                     }
                 },
                 "outputAnchors": [

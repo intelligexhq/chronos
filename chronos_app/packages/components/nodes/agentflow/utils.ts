@@ -346,26 +346,12 @@ export const getPastChatHistoryImageMessages = async (
                                 url: upload.data
                             }
                         })
-                    } else if (upload.type === 'stored-file:full') {
-                        const fileLoaderNodeModule = await import('../../nodes/documentloaders/File/File')
-                        // @ts-ignore
-                        const fileLoaderNodeInstance = new fileLoaderNodeModule.nodeClass()
-                        const nodeOptions = {
-                            retrieveAttachmentChatId: true,
-                            agentflowid: options.agentflowid,
-                            chatId: options.chatId,
-                            orgId: options.orgId
-                        }
-                        let fileInputFieldFromMimeType = 'txtFile'
-                        fileInputFieldFromMimeType = mapMimeTypeToInputField(upload.mime)
-                        const nodeData = {
-                            inputs: {
-                                [fileInputFieldFromMimeType]: `FILE-STORAGE::${JSON.stringify([upload.name])}`
-                            }
-                        }
-                        const documents: string = await fileLoaderNodeInstance.init(nodeData, '', nodeOptions)
-                        messageWithFileUploads += `<doc name='${upload.name}'>${handleEscapeCharacters(documents, true)}</doc>\n\n`
                     }
+                    // The legacy `stored-file:full` branch used to inline-load attached
+                    // files (PDF / DOCX / CSV / Excel / etc.) via the multi-format File
+                    // documentloader. v1.9 Tier 2 prune removed that loader; chat
+                    // attachments now only support image inputs above. For document
+                    // ingestion users build an explicit PDF→Vector→Retriever flow.
                 }
                 const messageContent = messageWithFileUploads ? `${messageWithFileUploads}\n\n${message.content}` : message.content
                 const hasArtifacts = artifacts && Array.isArray(artifacts) && artifacts.length > 0
@@ -606,10 +592,10 @@ export const downloadContainerFile = async (
 ): Promise<{ filePath: string; totalSize: number } | null> => {
     try {
         const credentialData = await getCredentialData(modelNodeData.credential ?? '', options)
-        const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, modelNodeData)
+        const apiKey = getCredentialParam('apiKey', credentialData, modelNodeData)
 
-        if (!openAIApiKey) {
-            logger.warn('[Agentflow Utils] No OpenAI API key available for downloading container file')
+        if (!apiKey) {
+            logger.warn('[Agentflow Utils] No API key available for downloading container file')
             return null
         }
 
@@ -618,7 +604,7 @@ export const downloadContainerFile = async (
             method: 'GET',
             headers: {
                 Accept: '*/*',
-                Authorization: `Bearer ${openAIApiKey}`
+                Authorization: `Bearer ${apiKey}`
             }
         })
 

@@ -293,7 +293,7 @@
                                     }
                                 ],
                                 "show": {
-                                    "agentModel": "chatOpenAI"
+                                    "agentModel": "chatModelEndpoint"
                                 },
                                 "id": "agentAgentflow_0-input-agentToolsBuiltInOpenAI-multiOptions",
                                 "display": false
@@ -321,7 +321,7 @@
                                     }
                                 ],
                                 "show": {
-                                    "agentModel": "chatGoogleGenerativeAI"
+                                    "agentModel": "chatModelEndpoint"
                                 },
                                 "id": "agentAgentflow_0-input-agentToolsBuiltInGemini-multiOptions",
                                 "display": false
@@ -344,7 +344,7 @@
                                     }
                                 ],
                                 "show": {
-                                    "agentModel": "chatAnthropic"
+                                    "agentModel": "chatModelEndpoint"
                                 },
                                 "id": "agentAgentflow_0-input-agentToolsBuiltInAnthropic-multiOptions",
                                 "display": false
@@ -662,7 +662,7 @@
                         ],
                         "inputAnchors": [],
                         "inputs": {
-                            "agentModel": "chatOpenRouter",
+                            "agentModel": "chatModelEndpoint",
                             "agentMessages": "",
                             "agentSkills": "",
                             "agentTools": [
@@ -708,7 +708,7 @@
                                 "baseOptions": "",
                                 "allowImageUploads": "",
                                 "imageResolution": "low",
-                                "agentModel": "chatOpenRouter"
+                                "agentModel": "chatModelEndpoint"
                             }
                         },
                         "outputAnchors": [
