@@ -52,9 +52,10 @@ const renameCredential = async (
             delete data[fromFieldName]
         }
         const reEncrypted = AES.encrypt(JSON.stringify(data), encryptionKey).toString()
-        await queryRunner.query(
-            `UPDATE credential SET "credentialName" = $1, "encryptedData" = $2, "updatedDate" = NOW() WHERE id = $3`,
-            [toCredentialName, reEncrypted, row.id]
-        )
+        await queryRunner.query(`UPDATE credential SET "credentialName" = $1, "encryptedData" = $2, "updatedDate" = NOW() WHERE id = $3`, [
+            toCredentialName,
+            reEncrypted,
+            row.id
+        ])
     }
 }

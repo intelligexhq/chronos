@@ -48,9 +48,7 @@ describe('validateOpenAICompatibleEndpointURL', () => {
             expect(() => validateOpenAICompatibleEndpointURL('https:/', '/chat/completions')).toThrow(/not a valid URL/i)
         })
         it('rejects non-http schemes', () => {
-            expect(() => validateOpenAICompatibleEndpointURL('ftp://example.com/v1', '/chat/completions')).toThrow(
-                /http or https/i
-            )
+            expect(() => validateOpenAICompatibleEndpointURL('ftp://example.com/v1', '/chat/completions')).toThrow(/http or https/i)
         })
     })
 
@@ -75,22 +73,20 @@ describe('validateOpenAICompatibleEndpointURL', () => {
 
     describe('accepts bare-hostname URLs for providers that use them (DeepSeek)', () => {
         it('accepts https://api.deepseek.com without a path', () => {
-            expect(validateOpenAICompatibleEndpointURL('https://api.deepseek.com', '/chat/completions')).toBe(
-                'https://api.deepseek.com'
-            )
+            expect(validateOpenAICompatibleEndpointURL('https://api.deepseek.com', '/chat/completions')).toBe('https://api.deepseek.com')
         })
     })
 
     describe('rejects accidental SDK-suffix duplication', () => {
         it('rejects /chat/completions appended to a chat endpoint URL', () => {
-            expect(() =>
-                validateOpenAICompatibleEndpointURL('https://api.openai.com/v1/chat/completions', '/chat/completions')
-            ).toThrow(/do NOT include "\/chat\/completions"/i)
+            expect(() => validateOpenAICompatibleEndpointURL('https://api.openai.com/v1/chat/completions', '/chat/completions')).toThrow(
+                /do NOT include "\/chat\/completions"/i
+            )
         })
         it('rejects /chat/completions/ (trailing slash variant)', () => {
-            expect(() =>
-                validateOpenAICompatibleEndpointURL('https://api.openai.com/v1/chat/completions/', '/chat/completions')
-            ).toThrow(/do NOT include "\/chat\/completions"/i)
+            expect(() => validateOpenAICompatibleEndpointURL('https://api.openai.com/v1/chat/completions/', '/chat/completions')).toThrow(
+                /do NOT include "\/chat\/completions"/i
+            )
         })
         it('rejects /embeddings appended to an embeddings endpoint URL', () => {
             expect(() => validateOpenAICompatibleEndpointURL('https://api.openai.com/v1/embeddings', '/embeddings')).toThrow(
@@ -106,15 +102,15 @@ describe('validateOpenAICompatibleEndpointURL', () => {
             )
         })
         it('suggests the corrected URL when the suffix was accidentally included', () => {
-            expect(() =>
-                validateOpenAICompatibleEndpointURL('https://api.openai.com/v1/chat/completions', '/chat/completions')
-            ).toThrow(/Expected: "https:\/\/api\.openai\.com\/v1"/)
+            expect(() => validateOpenAICompatibleEndpointURL('https://api.openai.com/v1/chat/completions', '/chat/completions')).toThrow(
+                /Expected: "https:\/\/api\.openai\.com\/v1"/
+            )
         })
 
         it('uses friendly "I received:" phrasing in the OpenRouter-specific error', () => {
-            expect(() =>
-                validateOpenAICompatibleEndpointURL('https://openrouter.ai/api', '/chat/completions')
-            ).toThrow(/note: \/api\/v1\)\. I received: "https:\/\/openrouter\.ai\/api"/)
+            expect(() => validateOpenAICompatibleEndpointURL('https://openrouter.ai/api', '/chat/completions')).toThrow(
+                /note: \/api\/v1\)\. I received: "https:\/\/openrouter\.ai\/api"/
+            )
         })
     })
 })

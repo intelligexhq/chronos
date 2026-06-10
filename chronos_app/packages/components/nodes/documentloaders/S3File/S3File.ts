@@ -46,7 +46,8 @@ class S3_DocumentLoaders implements INode {
         this.type = 'Document'
         this.icon = 's3.svg'
         this.category = 'Document Loaders'
-        this.description = 'Load a single file from any S3-compatible object store (AWS S3, Cloudflare R2, MinIO, Wasabi, Backblaze B2, Google Cloud Storage with S3 API). PDF and text formats supported.'
+        this.description =
+            'Load a single file from any S3-compatible object store (AWS S3, Cloudflare R2, MinIO, Wasabi, Backblaze B2, Google Cloud Storage with S3 API). PDF and text formats supported.'
         this.baseClasses = [this.type]
         this.credential = {
             label: 'AWS Credential',
@@ -941,7 +942,9 @@ class S3_DocumentLoaders implements INode {
                     // are no longer in the canvas surface — use the appropriate
                     // MCP server (e.g. an officedocs-mcp) for non-PDF binary
                     // formats, or pre-convert to text/PDF before upload.
-                    throw new Error(`Unsupported binary file type: ${mimeType}. PDF is the only binary format supported by the S3 loader; route other formats through an MCP server.`)
+                    throw new Error(
+                        `Unsupported binary file type: ${mimeType}. PDF is the only binary format supported by the S3 loader; route other formats through an MCP server.`
+                    )
             }
 
             // Add S3 metadata to each document

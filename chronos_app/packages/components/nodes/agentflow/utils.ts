@@ -4,7 +4,7 @@ import { addSingleFileToStorage, getFileFromStorage } from '../../src/storageUti
 import { ICommonObject, IFileUpload, INodeData } from '../../src/Interface'
 import { BaseMessageLike } from '@langchain/core/messages'
 import { IFlowState } from './Interface.Agentflow'
-import { getCredentialData, getCredentialParam, handleEscapeCharacters, mapMimeTypeToInputField } from '../../src/utils'
+import { getCredentialData, getCredentialParam } from '../../src/utils'
 import logger from '../../src/logger'
 import fetch from 'node-fetch'
 

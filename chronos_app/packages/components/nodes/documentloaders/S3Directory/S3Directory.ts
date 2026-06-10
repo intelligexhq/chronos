@@ -37,7 +37,8 @@ class S3_DocumentLoaders implements INode {
         this.type = 'Document'
         this.icon = 's3.svg'
         this.category = 'Document Loaders'
-        this.description = 'Load multiple files from any S3-compatible object store (AWS S3, Cloudflare R2, MinIO, Wasabi, Backblaze B2). PDF, text, and code files supported.'
+        this.description =
+            'Load multiple files from any S3-compatible object store (AWS S3, Cloudflare R2, MinIO, Wasabi, Backblaze B2). PDF, text, and code files supported.'
         this.baseClasses = [this.type]
         this.credential = {
             label: 'Credential',

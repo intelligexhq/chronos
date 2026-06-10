@@ -135,7 +135,9 @@ export function errorUtilsTest() {
                 // Before the fix, getErrorMessage produced "Error in X: msg [Cause: msg]".
                 const cause = new Error('OpenRouter Endpoint URL must be exactly https://openrouter.ai/api/v1')
                 const wrapped = withCause(`Error in Agent node: ${cause.message}`, cause)
-                expect(getErrorMessage(wrapped)).toBe('Error in Agent node: OpenRouter Endpoint URL must be exactly https://openrouter.ai/api/v1')
+                expect(getErrorMessage(wrapped)).toBe(
+                    'Error in Agent node: OpenRouter Endpoint URL must be exactly https://openrouter.ai/api/v1'
+                )
             })
 
             it('still chains through multi-level causes when each layer adds distinct content', () => {

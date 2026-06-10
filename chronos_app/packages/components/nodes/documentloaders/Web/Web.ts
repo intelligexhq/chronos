@@ -1,5 +1,4 @@
 import { omit } from 'lodash'
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { convert: htmlToText } = require('html-to-text') as { convert: (html: string, opts?: any) => string }
 import { IDocument, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from '@langchain/textsplitters'
@@ -33,7 +32,8 @@ class Web_DocumentLoaders implements INode {
         this.type = 'Document'
         this.icon = 'web.svg'
         this.category = 'Document Loaders'
-        this.description = 'Fetch a web page and extract its text. Static HTML only — for JS-rendered or scraping-heavy sites, route via an MCP server.'
+        this.description =
+            'Fetch a web page and extract its text. Static HTML only — for JS-rendered or scraping-heavy sites, route via an MCP server.'
         this.baseClasses = [this.type]
         this.inputs = [
             {
