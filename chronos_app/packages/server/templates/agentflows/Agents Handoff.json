@@ -270,7 +270,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "conditionAgentModel": "chatOpenAI",
+                    "conditionAgentModel": "chatModelEndpoint",
                     "conditionAgentInstructions": "<p>You are a customer support agent for ACME Inc.</p><p>Follow the following routine with the user:</p><p>1. First, greet the user and see how you can help the user</p><p>2. If user is looking for items, handoff to the Sales Agent</p><p>3. If user is looking for refund, handoff to Refund Agent</p><p>4. If user is asking general query, be helpful and answer the query</p><p>Note: Transfers between agents are handled seamlessly in the background; do not mention or draw attention to these transfers in your conversation with the user</p>",
                     "conditionAgentInput": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"question\" data-label=\"question\">{{ question }}</span> </p>",
                     "conditionAgentScenarios": [
@@ -301,7 +301,7 @@
                         "baseOptions": "",
                         "allowImageUploads": true,
                         "reasoningEffort": "",
-                        "conditionAgentModel": "chatOpenAI"
+                        "conditionAgentModel": "chatModelEndpoint"
                     }
                 },
                 "outputAnchors": [
@@ -634,7 +634,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "agentModel": "chatGoogleGenerativeAI",
+                    "agentModel": "chatModelEndpoint",
                     "agentMessages": [
                         {
                             "role": "system",
@@ -660,7 +660,7 @@
                         "harmCategory": "",
                         "harmBlockThreshold": "",
                         "allowImageUploads": "",
-                        "agentModel": "chatGoogleGenerativeAI"
+                        "agentModel": "chatModelEndpoint"
                     }
                 },
                 "outputAnchors": [
@@ -978,7 +978,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "agentModel": "chatAnthropic",
+                    "agentModel": "chatModelEndpoint",
                     "agentMessages": [
                         {
                             "role": "system",
@@ -1010,7 +1010,7 @@
                         "extendedThinking": "",
                         "budgetTokens": 1024,
                         "allowImageUploads": "",
-                        "agentModel": "chatAnthropic"
+                        "agentModel": "chatModelEndpoint"
                     }
                 },
                 "outputAnchors": [
@@ -1328,7 +1328,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "agentModel": "groqChat",
+                    "agentModel": "chatModelEndpoint",
                     "agentMessages": [
                         {
                             "role": "system",
@@ -1347,7 +1347,7 @@
                         "modelName": "llama-3.2-3b-preview",
                         "temperature": 0.9,
                         "streaming": true,
-                        "agentModel": "groqChat"
+                        "agentModel": "chatModelEndpoint"
                     }
                 },
                 "outputAnchors": [

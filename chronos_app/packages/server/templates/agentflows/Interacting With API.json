@@ -495,7 +495,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "agentModel": "chatOpenAI",
+                    "agentModel": "chatModelEndpoint",
                     "agentMessages": [
                         {
                             "role": "system",
@@ -583,7 +583,7 @@
                         "allowImageUploads": "",
                         "imageResolution": "low",
                         "reasoningEffort": "",
-                        "agentModel": "chatOpenAI"
+                        "agentModel": "chatModelEndpoint"
                     }
                 },
                 "outputAnchors": [
@@ -901,7 +901,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "agentModel": "chatAnthropic",
+                    "agentModel": "chatModelEndpoint",
                     "agentMessages": [
                         {
                             "role": "system",
@@ -940,7 +940,7 @@
                         "extendedThinking": "",
                         "budgetTokens": 1024,
                         "allowImageUploads": "",
-                        "agentModel": "chatAnthropic"
+                        "agentModel": "chatModelEndpoint"
                     }
                 },
                 "outputAnchors": [

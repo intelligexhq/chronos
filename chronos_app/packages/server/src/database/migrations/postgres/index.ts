@@ -17,6 +17,7 @@ import { AddPolicyOutcomeToToolInvocationAudit1800000000015 } from './1800000000
 import { AddStdioFieldsToMCPServer1800000000016 } from './1800000000016-AddStdioFieldsToMCPServer'
 import { AddPayloadFieldsToToolInvocationAudit1800000000017 } from './1800000000017-AddPayloadFieldsToToolInvocationAudit'
 import { DropAgentflowTypeColumn1800000000018 } from './1800000000018-DropAgentflowTypeColumn'
+import { RenameOpenAIApiCredentialToApiKey1800000000019 } from './1800000000019-RenameOpenAIApiCredentialToApiKey'
 
 export const postgresMigrations = [
     ConsolidatedBaseline1800000000000,
@@ -37,5 +38,6 @@ export const postgresMigrations = [
     AddPolicyOutcomeToToolInvocationAudit1800000000015,
     AddStdioFieldsToMCPServer1800000000016,
     AddPayloadFieldsToToolInvocationAudit1800000000017,
-    DropAgentflowTypeColumn1800000000018
+    DropAgentflowTypeColumn1800000000018,
+    RenameOpenAIApiCredentialToApiKey1800000000019
 ]

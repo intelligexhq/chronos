@@ -525,7 +525,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "llmModel": "chatGoogleGenerativeAI",
+                    "llmModel": "chatModelEndpoint",
                     "llmMessages": "",
                     "llmEnableMemory": true,
                     "llmMemoryType": "allMessages",
@@ -545,7 +545,7 @@
                         "harmCategory": "",
                         "harmBlockThreshold": "",
                         "allowImageUploads": "",
-                        "llmModel": "chatGoogleGenerativeAI"
+                        "llmModel": "chatModelEndpoint"
                     }
                 },
                 "outputAnchors": [
@@ -843,7 +843,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "llmModel": "chatOllama",
+                    "llmModel": "chatModelEndpoint",
                     "llmMessages": "",
                     "llmEnableMemory": true,
                     "llmMemoryType": "allMessages",
@@ -871,7 +871,7 @@
                         "repeatPenalty": "",
                         "stop": "",
                         "tfsZ": "",
-                        "llmModel": "chatOllama"
+                        "llmModel": "chatModelEndpoint"
                     }
                 },
                 "outputAnchors": [
@@ -1191,7 +1191,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "agentModel": "chatOpenAI",
+                    "agentModel": "chatModelEndpoint",
                     "agentMessages": "",
                     "agentTools": "",
                     "agentKnowledgeDocumentStores": "",
@@ -1218,7 +1218,7 @@
                         "allowImageUploads": "",
                         "imageResolution": "low",
                         "reasoningEffort": "",
-                        "agentModel": "chatOpenAI"
+                        "agentModel": "chatModelEndpoint"
                     }
                 },
                 "outputAnchors": [

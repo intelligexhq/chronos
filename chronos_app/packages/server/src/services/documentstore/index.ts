@@ -2293,18 +2293,6 @@ const _testVectorStoreConnection = async (
 
     const credentialData = nodeData.credential ? await getCredentialData(nodeData.credential, options) : {}
 
-    // Qdrant
-    if (componentName === 'qdrant') {
-        const { QdrantClient } = await import('@qdrant/js-client-rest')
-        const url = componentConfig.qdrantServerUrl
-        const apiKey = getCredentialParam('qdrantApiKey', credentialData, nodeData as any)
-        const port = url ? (url.includes('localhost') || url.includes('127.0.0.1') ? undefined : 443) : undefined
-        const client = new QdrantClient({ url, apiKey, port })
-        const response = await client.getCollections()
-        const names = response.collections.map((c: ICommonObject) => c.name)
-        return JSON.stringify({ collections: names }, null, 2)
-    }
-
     // Chroma
     if (componentName === 'chroma') {
         const { ChromaClient } = await import('chromadb')
@@ -2313,26 +2301,6 @@ const _testVectorStoreConnection = async (
         const collections = await chromaClient.listCollections()
         const names = Array.isArray(collections) ? collections.map((c: any) => (typeof c === 'string' ? c : c.name)) : []
         return JSON.stringify({ collections: names }, null, 2)
-    }
-
-    // Elasticsearch
-    if (componentName === 'elasticsearch') {
-        const { Client: ElasticClient } = await import('@elastic/elasticsearch')
-        const url = componentConfig.elasticSearchURL || componentConfig.url
-        const cloudId = componentConfig.cloudId
-        const clientOptions: ICommonObject = {}
-        if (cloudId) {
-            clientOptions.cloud = { id: cloudId }
-        } else if (url) {
-            clientOptions.node = url
-        }
-        const apiKey = getCredentialParam('apiKey', credentialData, nodeData as any)
-        if (apiKey) clientOptions.auth = { apiKey }
-        const client = new ElasticClient(clientOptions)
-        const indices = await client.cat.indices({ format: 'json' })
-        const names = Array.isArray(indices) ? indices.map((idx: ICommonObject) => idx.index).filter(Boolean) : []
-        await client.close()
-        return JSON.stringify({ indexes: names }, null, 2)
     }
 
     // Azure AI Search

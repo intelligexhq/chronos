@@ -510,7 +510,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "agentModel": "chatOpenAI",
+                    "agentModel": "chatModelEndpoint",
                     "agentMessages": [
                         {
                             "role": "system",
@@ -555,7 +555,7 @@
                         "allowImageUploads": "",
                         "imageResolution": "low",
                         "reasoningEffort": "",
-                        "agentModel": "chatOpenAI"
+                        "agentModel": "chatModelEndpoint"
                     }
                 },
                 "outputAnchors": [
@@ -684,7 +684,7 @@
                         "allowImageUploads": "",
                         "imageResolution": "low",
                         "reasoningEffort": "",
-                        "humanInputModel": "chatOpenAI"
+                        "humanInputModel": "chatModelEndpoint"
                     },
                     "humanInputDescription": "<p>Are you sure you want to proceed?</p>"
                 },
@@ -1168,7 +1168,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "llmModel": "chatOpenAI",
+                    "llmModel": "chatModelEndpoint",
                     "llmMessages": [],
                     "llmEnableMemory": true,
                     "llmMemoryType": "allMessages",
@@ -1209,7 +1209,7 @@
                         "allowImageUploads": "",
                         "imageResolution": "low",
                         "reasoningEffort": "",
-                        "llmModel": "chatOpenAI"
+                        "llmModel": "chatModelEndpoint"
                     }
                 },
                 "outputAnchors": [

@@ -235,6 +235,66 @@ export function handleErrorMessage(error: any): string {
 }
 
 /**
+ * Validate an OpenAI-spec-compatible API endpoint URL passed to an
+ * "endpoint" canvas node (Chat Model Endpoint, Embeddings Endpoint, …).
+ *
+ * The OpenAI-compat URL surface varies more than you'd think:
+ * - DeepSeek uses a bare hostname (`https://api.deepseek.com`) — no `/v1`.
+ * - OpenRouter uses `/api/v1` (not just `/v1`).
+ * - Groq uses `/openai/v1`.
+ * - Most others use `/v1`.
+ *
+ * So the validator avoids enforcing a path shape generically. It catches
+ * only the wrong patterns we can be sure about:
+ *
+ *  - garbage that doesn't parse as a URL
+ *  - non-http(s) schemes
+ *  - URL ending with `/chat/completions` or `/embeddings` (the SDK appends
+ *    these; including them produces a double suffix and a 404)
+ *  - the specific OpenRouter mistake of `openrouter.ai` without `/api/v1`
+ *    (their marketing site lives at the root and serves a confusing 404 HTML
+ *    when the wrong path is hit — the failure mode that motivated this
+ *    validator)
+ *
+ * The `expectedSuffix` parameter names the SDK-appended path so the error
+ * message can call out the specific double-suffix mistake.
+ */
+export const validateOpenAICompatibleEndpointURL = (
+    raw: string | undefined | null,
+    expectedSuffix: '/chat/completions' | '/embeddings'
+): string => {
+    const trimmed = (raw ?? '').trim().replace(/\/+$/, '')
+    if (!trimmed) return ''
+
+    let parsed: URL
+    try {
+        parsed = new URL(trimmed)
+    } catch {
+        throw new Error(`Endpoint URL "${raw}" is not a valid URL. Expected an absolute http(s) URL like https://openrouter.ai/api/v1.`)
+    }
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+        throw new Error(`Endpoint URL must use http or https scheme; got "${parsed.protocol}" in "${raw}".`)
+    }
+    // Strip the expected suffix if accidentally included — every provider that
+    // implements the OpenAI Chat Completions API does so as a path under the
+    // base URL the user supplies, so including the suffix is unambiguously wrong.
+    const withoutExpected = parsed.pathname.replace(new RegExp(`${expectedSuffix}/?$`), '')
+    if (withoutExpected !== parsed.pathname) {
+        throw new Error(
+            `Endpoint URL must be the API root only — do NOT include "${expectedSuffix}" (the SDK appends it). I received: "${raw}". Expected: "${parsed.origin}${withoutExpected}".`
+        )
+    }
+    // OpenRouter-specific piece. their marketing content is served at the root
+    // and returns a 404 HTML for non-/api paths. Their actual API
+    // root is exactly /api/v1 — anything else (bare host, /api, /v1, /api/v1/foo)
+    // hits the marketing 404 page. Match exactly. Catch the misconfigured API endpoints
+    if (parsed.hostname === 'openrouter.ai' && parsed.pathname !== '/api/v1') {
+        throw new Error(`OpenRouter Endpoint URL must be exactly https://openrouter.ai/api/v1 (note: /api/v1). I received: ${raw}.`)
+    }
+    return trimmed
+}
+
+/**
  * Returns the path of node modules package
  * @param {string} packageName
  * @returns {string}
@@ -749,26 +809,9 @@ export const mapChatMessageToBaseMessage = async (chatmessages: any[] = [], orgI
                                     url: upload.data
                                 }
                             })
-                        } else if (upload.type === 'stored-file:full') {
-                            const fileLoaderNodeModule = await import('../nodes/documentloaders/File/File')
-                            // @ts-ignore
-                            const fileLoaderNodeInstance = new fileLoaderNodeModule.nodeClass()
-                            const options = {
-                                retrieveAttachmentChatId: true,
-                                agentflowid: message.agentflowid,
-                                chatId: message.chatId,
-                                orgId
-                            }
-                            let fileInputFieldFromMimeType = 'txtFile'
-                            fileInputFieldFromMimeType = mapMimeTypeToInputField(upload.mime)
-                            const nodeData = {
-                                inputs: {
-                                    [fileInputFieldFromMimeType]: `FILE-STORAGE::${JSON.stringify([upload.name])}`
-                                }
-                            }
-                            const documents: string = await fileLoaderNodeInstance.init(nodeData, '', options)
-                            messageWithFileUploads += `<doc name='${upload.name}'>${handleEscapeCharacters(documents, true)}</doc>\n\n`
                         }
+                        // Legacy `stored-file:full` branch removed in v1.9 — see the
+                        // matching block in `nodes/agentflow/utils.ts` for context.
                     }
                     const messageContent = messageWithFileUploads ? `${messageWithFileUploads}\n\n${message.content}` : message.content
                     chatHistory.push(

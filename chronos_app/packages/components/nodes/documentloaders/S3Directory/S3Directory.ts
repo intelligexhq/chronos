@@ -15,12 +15,8 @@ import * as os from 'node:os'
 
 import { DirectoryLoader, JSONLoader } from '../../../src/compat/loaders'
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf'
-import { DocxLoader } from '@langchain/community/document_loaders/fs/docx'
 import { TextLoader } from '../../../src/compat/loaders'
 import { TextSplitter } from '@langchain/textsplitters'
-import { CSVLoader } from '../Csv/CsvLoader'
-import { LoadOfSheet } from '../MicrosoftExcel/ExcelLoader'
-import { PowerpointLoader } from '../MicrosoftPowerpoint/PowerpointLoader'
 class S3_DocumentLoaders implements INode {
     label: string
     name: string
@@ -35,13 +31,14 @@ class S3_DocumentLoaders implements INode {
     outputs: INodeOutputsValue[]
 
     constructor() {
-        this.label = 'S3 Directory'
+        this.label = 'S3-Compatible Directory'
         this.name = 's3Directory'
         this.version = 4.0
         this.type = 'Document'
         this.icon = 's3.svg'
         this.category = 'Document Loaders'
-        this.description = 'Load Data from S3 Buckets'
+        this.description =
+            'Load multiple files from any S3-compatible object store (AWS S3, Cloudflare R2, MinIO, Wasabi, Backblaze B2). PDF, text, and code files supported.'
         this.baseClasses = [this.type]
         this.credential = {
             label: 'Credential',
@@ -238,14 +235,6 @@ class S3_DocumentLoaders implements INode {
                 {
                     '.json': (path) => new JSONLoader(path),
                     '.txt': (path) => new TextLoader(path),
-                    '.csv': (path) => new CSVLoader(path),
-                    '.xls': (path) => new LoadOfSheet(path),
-                    '.xlsx': (path) => new LoadOfSheet(path),
-                    '.xlsm': (path) => new LoadOfSheet(path),
-                    '.xlsb': (path) => new LoadOfSheet(path),
-                    '.docx': (path) => new DocxLoader(path),
-                    '.ppt': (path) => new PowerpointLoader(path),
-                    '.pptx': (path) => new PowerpointLoader(path),
                     '.pdf': (path) =>
                         new PDFLoader(path, {
                             splitPages: pdfUsage !== 'perFile',
