@@ -98,7 +98,7 @@ describe('validateOpenAICompatibleEndpointURL', () => {
     describe('error messages name the user-supplied input', () => {
         it('echoes the bad URL back so the user can spot the typo (OpenRouter)', () => {
             expect(() => validateOpenAICompatibleEndpointURL('https://openrouter.ai/api', '/chat/completions')).toThrow(
-                /"https:\/\/openrouter\.ai\/api"/
+                /https:\/\/openrouter\.ai\/api/
             )
         })
         it('suggests the corrected URL when the suffix was accidentally included', () => {
@@ -109,7 +109,7 @@ describe('validateOpenAICompatibleEndpointURL', () => {
 
         it('uses friendly "I received:" phrasing in the OpenRouter-specific error', () => {
             expect(() => validateOpenAICompatibleEndpointURL('https://openrouter.ai/api', '/chat/completions')).toThrow(
-                /note: \/api\/v1\)\. I received: "https:\/\/openrouter\.ai\/api"/
+                /note: \/api\/v1\)\. I received: https:\/\/openrouter\.ai\/api/
             )
         })
     })

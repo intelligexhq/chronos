@@ -1,7 +1,7 @@
 {
     "mode": "allowlist",
     "categories": {
-        "Chat Models": ["chatModelEndpoint", "azureAIFoundry"],
+        "Chat Models": ["chatModelEndpoint"],
         "Tools": "*",
         "Tools (MCP)": "*",
         "Agent Flows": "*",
