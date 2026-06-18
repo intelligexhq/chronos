@@ -5,7 +5,7 @@ import { getErrorMessage } from '../../errors/utils'
 
 /**
  * Result of mapping an `MCPGateway.invoke()` failure into the MCP-protocol
- * shape. Two flavours per the locked decision in v1.8.0-plan.md § Group G:
+ * shape. Two flavours, distinguished by where the failure occurred:
  *
  *  - `kind: 'jsonRpcError'` — the call could not be dispatched. Surfaced as a
  *    JSON-RPC error response from the `tools/call` handler. Throw an `McpError`
