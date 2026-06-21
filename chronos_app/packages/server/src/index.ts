@@ -43,6 +43,7 @@ import { OAuth2RefreshScheduler } from './schedulers/OAuth2RefreshScheduler'
 import { AuditPayloadRetentionScheduler } from './schedulers/AuditPayloadRetentionScheduler'
 import { AuditLogRetentionScheduler } from './schedulers/AuditLogRetentionScheduler'
 import { MCPGateway } from './services/mcp-gateway'
+import { TopologyService } from './services/mcp-topology'
 import { CatalogChangeEmitter, MCPGatewaySessionStore } from './services/mcp-gateway-server'
 import { MetricsAggregator } from './services/metrics-aggregator'
 import 'global-agent/bootstrap'
@@ -98,6 +99,7 @@ export class App {
     auditLogRetentionScheduler?: AuditLogRetentionScheduler
     mcpGateway?: MCPGateway
     mcpGatewaySessionStore?: MCPGatewaySessionStore
+    topologyService?: TopologyService
     mcpCatalogChangeEmitter?: CatalogChangeEmitter
     metricsAggregator: MetricsAggregator
     httpServer: http.Server
@@ -239,6 +241,18 @@ export class App {
                     catalogChangeEmitter: this.mcpCatalogChangeEmitter
                 })
                 this.mcpServerHealthPoller.start()
+
+                // Live MCP topology map — a control-plane poller that re-reads the
+                // tool-invocation audit table on an interval and fans each snapshot
+                // out to connected SSE clients. Default-on whenever MCP servers are
+                // enabled; opt out with ENABLE_MCP_TOPOLOGY=false. It only reads the
+                // audit substrate, so it's harmless when there's no traffic.
+                if (process.env.ENABLE_MCP_TOPOLOGY !== 'false') {
+                    this.topologyService = new TopologyService({ appDataSource: this.AppDataSource })
+                    this.topologyService.start()
+                } else {
+                    logger.info('ENABLE_MCP_TOPOLOGY=false — live topology map not started')
+                }
             }
 
             // OAuth2 refresh scheduler — keeps oauth2-refresh credentials' access
@@ -468,6 +482,9 @@ export class App {
             }
             if (this.auditLogRetentionScheduler) {
                 this.auditLogRetentionScheduler.stop()
+            }
+            if (this.topologyService) {
+                this.topologyService.stop()
             }
             if (this.mcpGatewaySessionStore) {
                 removePromises.push(this.mcpGatewaySessionStore.stop())
