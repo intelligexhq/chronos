@@ -11,75 +11,81 @@ import { computeSnapshot } from '../../src/services/mcp-topology/aggregator'
  */
 export function topologyAggregatorTest() {
     describe('MCP Topology Aggregator', () => {
-        const now = Date.now()
-        const ageSec = (s: number) => new Date(now - s * 1000)
-        const ageMin = (m: number) => new Date(now - m * 60 * 1000)
+        // Row timestamps are generated fresh on every `buildDataSource()` call
+        // (not once at module load): the aggregator buckets rows by their age
+        // against its own `Date.now()`, so a long full-suite run must not be able
+        // to age these rows out of the 1m window before this test actually runs.
+        const makeAuditRows = () => {
+            const now = Date.now()
+            const ageSec = (s: number) => new Date(now - s * 1000)
+            const ageMin = (m: number) => new Date(now - m * 60 * 1000)
 
-        // Four calls on the same agent→postgres→query edge, newest first (the
-        // SQL orders DESC; the mock returns the array verbatim), plus one older
-        // call on a second server that only lands in the 1h window.
-        const auditRows = [
-            {
-                agentId: 'a1',
-                agentSlug: 'agent-one',
-                mcpServerId: 's1',
-                mcpServerSlug: 'postgres',
-                toolName: 'query',
-                namespacedTool: 'postgres.query',
-                success: true,
-                durationMs: 10,
-                callId: 'c1',
-                createdDate: ageSec(1)
-            },
-            {
-                agentId: 'a1',
-                agentSlug: 'agent-one',
-                mcpServerId: 's1',
-                mcpServerSlug: 'postgres',
-                toolName: 'query',
-                namespacedTool: 'postgres.query',
-                success: false,
-                durationMs: 50,
-                callId: 'c2',
-                createdDate: ageSec(2)
-            },
-            {
-                agentId: 'a1',
-                agentSlug: 'agent-one',
-                mcpServerId: 's1',
-                mcpServerSlug: 'postgres',
-                toolName: 'query',
-                namespacedTool: 'postgres.query',
-                success: true,
-                durationMs: 30,
-                callId: 'c3',
-                createdDate: ageSec(3)
-            },
-            {
-                agentId: 'a1',
-                agentSlug: 'agent-one',
-                mcpServerId: 's1',
-                mcpServerSlug: 'postgres',
-                toolName: 'query',
-                namespacedTool: 'postgres.query',
-                success: true,
-                durationMs: 100,
-                callId: 'c4',
-                createdDate: ageSec(4)
-            },
-            {
-                agentId: 'a1',
-                agentSlug: 'agent-one',
-                mcpServerId: 's2',
-                mcpServerSlug: 'github',
-                toolName: 'create_issue',
-                namespacedTool: 'github.create_issue',
-                success: true,
-                durationMs: 20,
-                callId: 'c5',
-                createdDate: ageMin(10)
-            }
-        ]
+            // Four calls on the same agent→postgres→query edge, newest first (the
+            // SQL orders DESC; the mock returns the array verbatim), plus one older
+            // call on a second server that only lands in the 1h window.
+            return [
+                {
+                    agentId: 'a1',
+                    agentSlug: 'agent-one',
+                    mcpServerId: 's1',
+                    mcpServerSlug: 'postgres',
+                    toolName: 'query',
+                    namespacedTool: 'postgres.query',
+                    success: true,
+                    durationMs: 10,
+                    callId: 'c1',
+                    createdDate: ageSec(1)
+                },
+                {
+                    agentId: 'a1',
+                    agentSlug: 'agent-one',
+                    mcpServerId: 's1',
+                    mcpServerSlug: 'postgres',
+                    toolName: 'query',
+                    namespacedTool: 'postgres.query',
+                    success: false,
+                    durationMs: 50,
+                    callId: 'c2',
+                    createdDate: ageSec(2)
+                },
+                {
+                    agentId: 'a1',
+                    agentSlug: 'agent-one',
+                    mcpServerId: 's1',
+                    mcpServerSlug: 'postgres',
+                    toolName: 'query',
+                    namespacedTool: 'postgres.query',
+                    success: true,
+                    durationMs: 30,
+                    callId: 'c3',
+                    createdDate: ageSec(3)
+                },
+                {
+                    agentId: 'a1',
+                    agentSlug: 'agent-one',
+                    mcpServerId: 's1',
+                    mcpServerSlug: 'postgres',
+                    toolName: 'query',
+                    namespacedTool: 'postgres.query',
+                    success: true,
+                    durationMs: 100,
+                    callId: 'c4',
+                    createdDate: ageSec(4)
+                },
+                {
+                    agentId: 'a1',
+                    agentSlug: 'agent-one',
+                    mcpServerId: 's2',
+                    mcpServerSlug: 'github',
+                    toolName: 'create_issue',
+                    namespacedTool: 'github.create_issue',
+                    success: true,
+                    durationMs: 20,
+                    callId: 'c5',
+                    createdDate: ageMin(10)
+                }
+            ]
+        }
 
         // a1 is allowed three tools but only called two of them in the window;
         // `slack.post` is the configured-but-unused delta. a2 has an empty
@@ -89,7 +95,10 @@ export function topologyAggregatorTest() {
             { id: 'a2', slug: 'agent-two', allowedTools: undefined }
         ]
 
-        const buildDataSource = (rows = auditRows, agents = agentRows): any => {
+        // Default args are evaluated per call, so each invocation gets fresh
+        // timestamps. The built rows are returned so a test can assert against
+        // the exact instances the aggregator saw.
+        const buildDataSource = (rows = makeAuditRows(), agents = agentRows): any => {
             const qb: any = {
                 select: jest.fn().mockReturnThis(),
                 where: jest.fn().mockReturnThis(),
@@ -100,6 +109,7 @@ export function topologyAggregatorTest() {
             const auditRepo = { createQueryBuilder: jest.fn().mockReturnValue(qb) }
             const agentRepo = { find: jest.fn().mockResolvedValue(agents) }
             return {
+                rows,
                 qb,
                 agentRepo,
                 getRepository: jest.fn((entity: any) => (entity?.name === 'Agent' ? agentRepo : auditRepo))
@@ -147,11 +157,12 @@ export function topologyAggregatorTest() {
         })
 
         it('keeps at most three recent invocations, newest first', async () => {
-            const snapshot = await computeSnapshot(buildDataSource())
+            const ds = buildDataSource()
+            const snapshot = await computeSnapshot(ds)
             const busy = find(snapshot.edges, (e) => e.id === 'as:a1->s1')
             expect(busy.recent).toHaveLength(3)
             expect(busy.recent.map((r: any) => r.callId)).toEqual(['c1', 'c2', 'c3'])
-            expect(busy.recent[0].createdDate).toBe(auditRows[0].createdDate.toISOString())
+            expect(busy.recent[0].createdDate).toBe(ds.rows[0].createdDate.toISOString())
         })
 
         it('reports configured-but-unused tools and skips agents with an empty allowedTools list', async () => {
