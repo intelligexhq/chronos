@@ -16,6 +16,7 @@ export const ConfigProvider = ({ children }) => {
     const [webhooksEnabled, setWebhooksEnabled] = useState(false)
     const [agentsEnabled, setAgentsEnabled] = useState(false)
     const [mcpServersEnabled, setMcpServersEnabled] = useState(false)
+    const [topologyEnabled, setTopologyEnabled] = useState(false)
 
     useEffect(() => {
         const userSettings = platformsettingsApi.getSettings()
@@ -47,6 +48,7 @@ export const ConfigProvider = ({ children }) => {
                 setWebhooksEnabled(!!finalData.WEBHOOKS_ENABLED)
                 setAgentsEnabled(!!finalData.AGENTS_ENABLED)
                 setMcpServersEnabled(!!finalData.MCP_SERVERS_ENABLED)
+                setTopologyEnabled(!!finalData.TOPOLOGY_ENABLED)
                 setLoading(false)
             })
             .catch((error) => {
@@ -68,7 +70,8 @@ export const ConfigProvider = ({ children }) => {
                 dashboardEnabled,
                 webhooksEnabled,
                 agentsEnabled,
-                mcpServersEnabled
+                mcpServersEnabled,
+                topologyEnabled
             }}
         >
             {children}

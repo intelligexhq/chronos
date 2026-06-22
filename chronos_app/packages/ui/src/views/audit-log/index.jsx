@@ -28,7 +28,7 @@ import {
 } from '@mui/material'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import ErrorIcon from '@mui/icons-material/Error'
-import { IconDownload, IconX } from '@tabler/icons-react'
+import { IconX } from '@tabler/icons-react'
 
 import MainCard from '@/ui-component/cards/MainCard'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
@@ -67,6 +67,9 @@ const AuditLog = () => {
     // Pre-fill the callId filter from `?callId=<id>` so the AuditRowDetails
     // drawer's "Find related rows" jump lands with the filter already applied.
     const initialCallId = searchParams.get('callId') || ''
+    // Pre-fill the tool filter from `?namespacedTool=<tool>`. The Topology edge
+    // drawer links this way for invocations the gateway recorded without a callId.
+    const initialNamespacedTool = searchParams.get('namespacedTool') || ''
 
     const fetchApi = useApi(auditApi.fetchToolInvocations)
     const getMcpServerApi = useApi(mcpServersApi.getMCPServerById)
@@ -90,7 +93,7 @@ const AuditLog = () => {
         policyOutcome: '',
         startDate: null,
         endDate: null,
-        namespacedTool: '',
+        namespacedTool: initialNamespacedTool,
         callId: initialCallId
     })
 
@@ -371,7 +374,7 @@ const AuditLog = () => {
                                     <Button variant='outlined' size='small' onClick={resetFilters}>
                                         Reset
                                     </Button>
-                                    <Tooltip title='Export CSV'>
+                                    {/* <Tooltip title='Export CSV'>
                                         <Button
                                             variant='outlined'
                                             size='small'
@@ -380,7 +383,7 @@ const AuditLog = () => {
                                         >
                                             CSV
                                         </Button>
-                                    </Tooltip>
+                                    </Tooltip> */}
                                 </Stack>
                             </Grid>
                         </Grid>

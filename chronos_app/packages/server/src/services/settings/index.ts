@@ -14,7 +14,10 @@ const getSettings = async () => {
             DASHBOARD_ENABLED: process.env.ENABLE_DASHBOARD !== 'false',
             WEBHOOKS_ENABLED: process.env.ENABLE_WEBHOOKS === 'true',
             AGENTS_ENABLED: process.env.ENABLE_AGENTS === 'true',
-            MCP_SERVERS_ENABLED: process.env.ENABLE_MCP_SERVERS === 'true'
+            MCP_SERVERS_ENABLED: process.env.ENABLE_MCP_SERVERS === 'true',
+            // Live topology map: on whenever MCP servers are enabled, unless explicitly opted out.
+            // Mirrors the server-side start gate so the sidebar item and the running aggregator agree.
+            TOPOLOGY_ENABLED: process.env.ENABLE_MCP_SERVERS === 'true' && process.env.ENABLE_MCP_TOPOLOGY !== 'false'
         }
 
         switch (platformType) {

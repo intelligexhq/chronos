@@ -67,6 +67,7 @@
         "@vitejs/plugin-react": "^4.2.0",
         "axios": "1.16.0",
         "clsx": "^1.1.1",
+        "dagre": "^0.8.5",
         "dompurify": "^3.2.6",
         "dotenv": "^16.0.0",
         "flowise-react-json-view": "*",
