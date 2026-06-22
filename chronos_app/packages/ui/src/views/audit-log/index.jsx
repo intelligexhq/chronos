@@ -160,6 +160,7 @@ const AuditLog = () => {
         applyFilters(page, limit)
     }
 
+    // eslint-disable-next-line unused-imports/no-unused-vars -- wired to the Export CSV button (currently commented out below)
     const downloadCsv = async () => {
         try {
             const csvParams = {}
