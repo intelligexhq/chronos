@@ -29,7 +29,8 @@ import {
     IconCalendarTime,
     IconWebhook,
     IconPlug,
-    IconHistory
+    IconHistory,
+    IconAffiliate
 } from '@tabler/icons-react'
 
 // constant
@@ -63,7 +64,8 @@ const icons = {
     IconCalendarTime,
     IconWebhook,
     IconPlug,
-    IconHistory
+    IconHistory,
+    IconAffiliate
 }
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
@@ -158,6 +160,15 @@ const dashboard = {
                             display: 'feat:webhooks'
                         }
                     ]
+                },
+                {
+                    id: 'topology',
+                    title: 'Topology',
+                    type: 'item',
+                    url: '/topology',
+                    icon: icons.IconAffiliate,
+                    breadcrumbs: true,
+                    permission: 'mcp-servers:view'
                 },
                 {
                     id: 'agents',

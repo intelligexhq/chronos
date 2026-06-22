@@ -1,0 +1,14 @@
+{
+    // Editor-only project so VSCode/tsserver type-checks the test suite with the
+    // Jest ambient globals (describe/it/expect/jest) and the src it imports.
+    // The build (../tsconfig.json) stays scoped to src/ and never emits tests;
+    // ts-jest also keeps using ../tsconfig.json, so this file changes nothing at
+    // build or test runtime — it only gives the editor a project to attach tests to.
+    "extends": "../tsconfig.json",
+    "compilerOptions": {
+        "rootDir": "..",
+        "noEmit": true,
+        "types": ["jest", "node"]
+    },
+    "include": ["**/*.ts", "../src/**/*.ts"]
+}

@@ -123,6 +123,7 @@ import { oauth2RefreshServiceTest } from './services/oauth2-refresh.service.test
 import { auditServiceTest } from './services/audit.service.test'
 import { auditPayloadRetentionSweeperTest } from './services/audit-payload-retention.service.test'
 import { auditLogRetentionSweeperTest } from './services/audit-log-retention.service.test'
+import { topologyAggregatorTest } from './services/mcp-topology-aggregator.service.test'
 import { mcpGatewayAuthMiddlewareTest } from './middlewares/mcp-gateway-auth.test'
 import { mcpGatewayRouteTest } from './routes/v1/mcp-gateway.route.test'
 import { nodesPoolTest } from './NodesPool.test'
@@ -298,6 +299,7 @@ describe('Services Test', () => {
     auditServiceTest()
     auditPayloadRetentionSweeperTest()
     auditLogRetentionSweeperTest()
+    topologyAggregatorTest()
     nodesPoolTest()
 })
 

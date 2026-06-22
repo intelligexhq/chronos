@@ -32,6 +32,9 @@ const MCPServerDetail = Loadable(lazy(() => import('@/views/mcp-servers/MCPServe
 // audit log routing
 const AuditLog = Loadable(lazy(() => import('@/views/audit-log')))
 
+// topology routing
+const Topology = Loadable(lazy(() => import('@/views/topology')))
+
 // agents routing (registered agents — separate from agentflows)
 const Agents = Loadable(lazy(() => import('@/views/agents')))
 const AgentDetail = Loadable(lazy(() => import('@/views/agents/AgentDetail')))
@@ -171,6 +174,14 @@ const MainRoutes = {
             element: (
                 <RequireAuth permission={'mcp-servers:view'}>
                     <AuditLog />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/topology',
+            element: (
+                <RequireAuth permission={'mcp-servers:view'}>
+                    <Topology />
                 </RequireAuth>
             )
         },

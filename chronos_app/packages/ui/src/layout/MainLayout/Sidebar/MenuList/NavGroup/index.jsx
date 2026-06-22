@@ -16,7 +16,7 @@ import { Available } from '@/ui-component/rbac/available'
 const NavGroup = ({ item }) => {
     const theme = useTheme()
     const { hasPermission, hasDisplay } = useAuth()
-    const { schedulesEnabled, evaluationsEnabled, dashboardEnabled, agentsEnabled, mcpServersEnabled } = useConfig()
+    const { schedulesEnabled, evaluationsEnabled, dashboardEnabled, agentsEnabled, mcpServersEnabled, topologyEnabled } = useConfig()
 
     const listItems = (menu, level = 1) => {
         // Filter based on display and permission
@@ -68,6 +68,13 @@ const NavGroup = ({ item }) => {
         // true. Audit log piggybacks on MCP because its data (tool invocations,
         // credential access) only flows through the MCP gateway.
         if ((menu.id === 'mcp-servers' || menu.id === 'audit-log') && !mcpServersEnabled) {
+            return false
+        }
+
+        // Hide the live topology map unless it is enabled on the server. Defaults
+        // on with ENABLE_MCP_SERVERS, off when ENABLE_MCP_TOPOLOGY=false — the
+        // server resolves this into the single TOPOLOGY_ENABLED flag.
+        if (menu.id === 'topology' && !topologyEnabled) {
             return false
         }
 

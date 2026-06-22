@@ -45,6 +45,7 @@ import agentsRouter from './agents'
 import mcpGatewayRouter from './mcp-gateway'
 import mcpServersRouter from './mcp-servers'
 import auditRouter from './audit'
+import topologyRouter from './topology'
 import skillsRouter from './skills'
 import toolsRouter from './tools'
 import upsertHistoryRouter from './upsert-history'
@@ -112,6 +113,7 @@ router.use('/agents', agentsRouter)
 router.use('/mcp-gateway', mcpGatewayRouter)
 router.use('/mcp-servers', mcpServersRouter)
 router.use('/audit', auditRouter)
+router.use('/topology', topologyRouter)
 router.use('/skills', skillsRouter)
 router.use('/tools', toolsRouter)
 router.use('/variables', variablesRouter)
